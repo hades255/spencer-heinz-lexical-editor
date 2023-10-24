@@ -1,0 +1,379 @@
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+/* Track */
+
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey;
+  border-radius: 10px;
+}
+
+/* Handle */
+
+::-webkit-scrollbar-thumb {
+  background: #999;
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+
+::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+.toolbar {
+  position: sticky;
+  z-index: 100;
+  background-color: rgba(250, 250, 251, 0.7);
+  backdrop-filter: blur(3px);
+  top: 0px;
+}
+
+.editor-container {
+  position: relative;
+  border: 1px solid #b9b9b9;
+  border-radius: 10px;
+  box-shadow: 1px 1px 10px #b9b9b9;
+}
+
+.editor-input {
+  min-height: 150px;
+  resize: none;
+  font-size: 20px;
+  caret-color: rgb(5, 5, 5);
+  position: relative;
+  tab-size: 1;
+  outline: 0;
+  padding: 0px 10px;
+  caret-color: #444;
+  border: 1px solid #444;
+}
+
+.editor-placeholder {
+  color: #999;
+  overflow: hidden;
+  position: absolute;
+  text-overflow: ellipsis;
+  top: 45px;
+  left: 10px;
+  font-size: 20px;
+  /* user-select: none; */
+  display: inline-block;
+  pointer-events: none;
+}
+
+.editor-text-bold {
+  font-weight: bold;
+}
+
+.editor-text-highlight {
+  background-color: red;
+}
+
+.editor-text-italic {
+  font-style: italic;
+}
+
+.editor-text-underline {
+  text-decoration: underline;
+}
+
+.editor-text-strikethrough {
+  text-decoration: line-through;
+}
+
+.editor-text-underlineStrikethrough {
+  text-decoration: underline line-through;
+}
+
+.editor-text-code {
+  background-color: rgb(240, 242, 245);
+  padding: 1px 0.25rem;
+  font-family: Menlo, Consolas, Monaco, monospace;
+  font-size: 94%;
+}
+
+.editor-link {
+  color: rgb(33, 111, 219);
+  text-decoration: none;
+}
+
+.editor-code {
+  background-color: rgb(240, 242, 245);
+  font-family: Menlo, Consolas, Monaco, monospace;
+  display: block;
+  padding: 8px 8px 8px 52px;
+  line-height: 1.53;
+  font-size: 13px;
+  margin: 0;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  tab-size: 2;
+  white-space: pre;
+  overflow-x: auto;
+  position: relative;
+}
+
+.editor-code:before {
+  content: attr(data-gutter);
+  position: absolute;
+  background-color: #eee;
+  left: 0;
+  top: 0;
+  border-right: 1px solid #ccc;
+  padding: 8px;
+  color: #777;
+  white-space: pre-wrap;
+  text-align: right;
+  min-width: 25px;
+}
+
+.editor-code:after {
+  content: attr(data-highlight-language);
+  top: 2%;
+  right: 5px;
+  padding: 3px;
+  font-size: 10px;
+  text-transform: uppercase;
+  position: absolute;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.editor-tokenComment {
+  color: slategray;
+}
+
+.editor-tokenPunctuation {
+  color: #999;
+}
+
+.editor-tokenProperty {
+  color: #905;
+}
+
+.editor-tokenSelector {
+  color: #690;
+}
+
+.editor-tokenOperator {
+  color: #9a6e3a;
+}
+
+.editor-tokenAttr {
+  color: #07a;
+}
+
+.editor-tokenVariable {
+  color: #e90;
+}
+
+.editor-tokenFunction {
+  color: #dd4a68;
+}
+
+.editor-paragraph {
+  margin: 0;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.editor-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.editor-heading-h1 {
+  font-size: 24px;
+  color: rgb(5, 5, 5);
+  font-weight: 400;
+  margin: 0;
+  margin-bottom: 12px;
+  padding: 0;
+}
+
+.editor-heading-h2 {
+  font-size: 15px;
+  color: rgb(101, 103, 107);
+  font-weight: 700;
+  margin: 0;
+  margin-top: 10px;
+  padding: 0;
+  text-transform: uppercase;
+}
+
+.editor-quote {
+  margin: 0;
+  margin-left: 20px;
+  font-size: 15px;
+  color: rgb(101, 103, 107);
+  border-left-color: rgb(206, 208, 212);
+  border-left-width: 4px;
+  border-left-style: solid;
+  padding-left: 16px;
+}
+
+.editor-list-ol {
+  padding: 0;
+  margin: 0;
+  margin-left: 16px;
+}
+
+.editor-list-ul {
+  padding: 0;
+  margin: 0;
+  margin-left: 16px;
+}
+
+.editor-listitem {
+  margin: 8px 32px 8px 32px;
+}
+
+.editor-comment {
+  color: white;
+  background-color: #fa2c6a;
+  box-shadow: 1px 1px 4px #ff4d4f;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 1px solid #999;
+}
+
+.multi-mention {
+  color: white;
+  background-color: #97191d;
+  box-shadow: 1px 1px 4px #ff4d4f;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 1px solid #999;
+}
+
+.editor-nested-listitem {
+  list-style-type: none;
+}
+
+.suppressed-comment {
+  color: white !important;
+  background-color: #c9c9c9;
+  box-shadow: 1px 1px 4px #686868;
+  cursor: pointer;
+}
+
+.comment-icon {
+  transition: all 0.2s ease-in-out;
+}
+
+@keyframes commentUnTouched {
+  from {
+    background-color: red;
+    scale: 1;
+  }
+
+  to {
+    background-color: rgb(0, 255, 34);
+  }
+}
+
+.comment-icon-untouched {
+  background-color: rgb(0, 255, 34);
+  border-radius: 5px;
+  animation: commentUnTouched 0.5s linear 5 alternate;
+  scale: 1.5;
+}
+
+.comment-icon:hover {
+  scale: 1.5;
+  background-color: #28e2e2;
+  border-radius: 5px;
+}
+
+.editor-lock {
+  border: 1px dashed red;
+}
+
+.lock-icon:hover {
+  scale: 1.5;
+  background-color: red;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.lock-icon {
+  transition: all 0.2s ease-in-out;
+}
+
+.editor-lock-inactive {
+  cursor: not-allowed;
+  /* user-select: none; */
+  border: 1px dashed red;
+  color: rgb(150, 150, 212);
+}
+
+.editor-black-out {
+  border: 1px dashed black;
+}
+
+.black-out-icon:hover {
+  scale: 1.5;
+  background-color: #eee;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.black-out-icon {
+  transition: all 0.2s ease-in-out;
+}
+
+.editor-black-out-inactive {
+  cursor: not-allowed;
+  border: 1px dashed black;
+  color: rgb(0, 0, 100);
+  /* user-select: none; */
+}
+
+.tooltip {
+  position: relative;
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 250px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 150%;
+  left: 50%;
+  margin-left: -125px;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  transition-delay: 5s;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  transition-delay: 1s;
+}
+
+.tooltip .tooltiptext::after {
+  content: ' ';
+  position: absolute;
+  top: 100%;
+  /* At the bottom of the tooltip */
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.5) transparent transparent transparent;
+}
+
+.editor-jump {
+  border-color: rgba(30, 165, 255, 0.5) transparent transparent transparent;
+  background-color: rgba(30, 165, 255, 0.5);
+}
