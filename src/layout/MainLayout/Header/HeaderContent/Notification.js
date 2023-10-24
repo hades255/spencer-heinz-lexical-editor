@@ -113,7 +113,7 @@ const Notification = () => {
       if (notifications.length) dispatch(setNotificationsRead());
       setOpen(false);
     },
-    [notifications,anchorRef]
+    [notifications, anchorRef]
   );
 
   const iconBackColorOpen = theme.palette.mode === ThemeMode.DARK ? 'grey.200' : 'grey.300';
@@ -173,6 +173,8 @@ const Notification = () => {
                       component="nav"
                       sx={{
                         p: 0,
+                        maxHeight: '400px',
+                        overflowY: 'scroll',
                         '& .MuiListItemButton-root': {
                           py: 0.5,
                           '&.Mui-selected': { bgcolor: 'grey.50', color: 'text.primary' },
@@ -184,17 +186,17 @@ const Notification = () => {
                       {notifications.map((item, key) => (
                         <NotificationItem notification={item} key={key} setOpen={handleToggle} redirect={handleRedirect} />
                       ))}
-                      <ListItemButton sx={{ textAlign: 'center', py: `${12}px !important` }}>
-                        <ListItemText
-                          onClick={handleGoNotificationList}
-                          primary={
-                            <Typography variant="h6" color="primary">
-                              View All
-                            </Typography>
-                          }
-                        />
-                      </ListItemButton>
                     </List>
+                    <ListItemButton sx={{ textAlign: 'center', py: `${12}px !important` }}>
+                      <ListItemText
+                        onClick={handleGoNotificationList}
+                        primary={
+                          <Typography variant="h6" color="primary">
+                            View All
+                          </Typography>
+                        }
+                      />
+                    </ListItemButton>
                   </MainCard>
                 </ClickAwayListener>
               </Paper>

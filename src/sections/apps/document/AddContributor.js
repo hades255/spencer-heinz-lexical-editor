@@ -168,6 +168,7 @@ export default function AddContributor({ users, value, onChange }) {
               }}
               value={pendingValue}
               onChange={(event, newValue, reason) => {
+                console.log(event.type, event.key, reason);
                 if (event.type === 'keydown' && event.key === 'Backspace' && reason === 'removeOption') {
                   return;
                 }
@@ -185,6 +186,7 @@ export default function AddContributor({ users, value, onChange }) {
                 typeof option !== 'string' ? (
                   options.includes(option.inputValue) ? null : (
                     <li {...props} key={'add new'}>
+                        {console.log(props)}
                       <Box
                         component={CheckOutlined}
                         sx={{ width: 17, height: 17, mr: '5px', ml: '-2px', mt: 0.25 }}
@@ -198,6 +200,10 @@ export default function AddContributor({ users, value, onChange }) {
                           '& span': {
                             color: theme.palette.mode === ThemeMode.DARK ? '#586069' : '#8b949e'
                           }
+                        }}
+                        onKeyDown={(e) => {
+                          e.preventDefault();
+                          console.log(e);
                         }}
                         onClick={(e) => {
                           e.preventDefault();

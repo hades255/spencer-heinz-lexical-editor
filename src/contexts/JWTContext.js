@@ -200,12 +200,23 @@ export const JWTProvider = ({ children }) => {
     dispatch({ type: UPDATE, payload: { user } });
   };
 
+  const setUser = (serviceToken, user) => {
+    setSession(serviceToken);
+    dispatch({
+      type: LOGIN,
+      payload: {
+        isLoggedIn: true,
+        user
+      }
+    });
+  };
+
   if (state.isInitialized !== undefined && !state.isInitialized) {
     return <Loader />;
   }
 
   return (
-    <JWTContext.Provider value={{ ...state, login, logout, register, resetPassword, forgetPassword, updateProfile }}>
+    <JWTContext.Provider value={{ ...state, setUser, login, logout, register, resetPassword, forgetPassword, updateProfile }}>
       {children}
     </JWTContext.Provider>
   );
