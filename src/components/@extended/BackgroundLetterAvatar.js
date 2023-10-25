@@ -31,7 +31,7 @@ const stringAvatar = (name) => {
   };
 };
 
-const BackgroundLetterAvatar = ({ name }) => {
+const BackgroundLetterAvatar = ({ name = '' }) => {
   return <Avatar {...stringAvatar(name)} />;
 };
 

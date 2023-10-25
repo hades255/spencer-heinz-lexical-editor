@@ -111,17 +111,19 @@ const DocumentListPage = () => {
           renderRowSubComponent={renderRowSubComponent}
         />
       </ScrollX>
-      <Dialog
-        maxWidth="sm"
-        TransitionComponent={PopupTransition}
-        fullWidth
-        onClose={handleAdd}
-        open={add}
-        sx={{ '& .MuiDialog-paper': { p: 0 }, transition: 'transform 225ms' }}
-        aria-describedby="alert-dialog-slide-description"
-      >
-        <AddDocument user={user} onCancel={handleAdd} />
-      </Dialog>
+      {add && (
+        <Dialog
+          maxWidth="sm"
+          TransitionComponent={PopupTransition}
+          fullWidth
+          onClose={handleAdd}
+          open={add}
+          sx={{ '& .MuiDialog-paper': { p: 0 }, transition: 'transform 225ms' }}
+          aria-describedby="alert-dialog-slide-description"
+        >
+          <AddDocument user={user} onCancel={handleAdd} />
+        </Dialog>
+      )}
       <Dialog
         maxWidth="sm"
         TransitionComponent={PopupTransition}

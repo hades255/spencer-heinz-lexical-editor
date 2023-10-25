@@ -67,8 +67,14 @@ export function GlobalFilter({
           />
           <FormControlLabel
             control={
+              <Checkbox checked={advancedSearch.invited} onChange={handleSearchFilter} name="invited" color="primary" size="small" />
+            }
+            label="Invited"
+          />
+          <FormControlLabel
+            control={
               <Checkbox
-                checked={advancedSearch.deleted && advancedSearch.locked && advancedSearch.pending}
+                checked={advancedSearch.deleted && advancedSearch.locked && advancedSearch.pending && advancedSearch.invited}
                 onChange={handleSearchFilter}
                 name="all"
                 color="primary"

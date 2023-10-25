@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 // material-ui
 import { useTheme, styled } from '@mui/material/styles';
-import { autocompleteClasses, Autocomplete, Box, ButtonBase, ClickAwayListener, InputBase, Popper, Stack } from '@mui/material';
+import { autocompleteClasses, Autocomplete, Box, ButtonBase, ClickAwayListener, InputBase, Popper, Stack, Typography } from '@mui/material';
 import { createFilterOptions } from '@mui/material/Autocomplete';
 // project import
 import MainCard from 'components/MainCard';
@@ -14,6 +14,7 @@ import { CloseOutlined, CheckOutlined } from '@ant-design/icons';
 import CustomCell from 'components/customers/CustomCell';
 import BackgroundLetterAvatar from 'components/@extended/BackgroundLetterAvatar';
 import AddNewInviteDlg from './AddNewInviteDlg';
+import AddNewInviteConfirmDlg from './AddNewInviteConfirmDlg';
 const filter = createFilterOptions();
 
 const StyledAutocompletePopper = styled('div')(({ theme }) => ({
@@ -116,11 +117,17 @@ export default function AddContributor({ users, value, onChange }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [pendingValue, setPendingValue] = useState([]);
   const [dialogValue, setDialogValue] = useState('');
-  const [openDlg, toggleOpenDlg] = React.useState(false);
+  const [openDlg, toggleOpenDlg] = useState(false);
+  const [openCDlg, toggleOpenCDlg] = useState(false);
 
   const handleClick = (event) => {
     setPendingValue(value);
     setAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseCDlg = (res = false) => {
+    toggleOpenCDlg(false);
+    toggleOpenDlg(res);
   };
 
   const handleCloseDlg = (email = '') => {
@@ -143,15 +150,22 @@ export default function AddContributor({ users, value, onChange }) {
   return (
     <MainCard>
       <Box>
-        <Stack direction={'row'}>
+        <Stack direction={'row'} sx={{ mb: '10px' }}>
+          <Stack spacing={1.5} alignItems="center">
+            <Button disableRipple aria-describedby={id} onClick={handleClick}>
+              <Stack direction="row" spacing={1.5} alignItems="center">
+                <BackgroundLetterAvatar name={'+'} />
+                <Stack spacing={0}>
+                  <Typography variant="subtitle1">Add Contributors</Typography>
+                </Stack>
+              </Stack>
+            </Button>
+          </Stack>
+        </Stack>
+        <Stack direction={'row'} flexWrap="wrap">
           {value.map((option, index) => (
             <CustomCell key={index} user={users.find((item) => item.email === option)} />
           ))}
-          <Stack spacing={1.5} alignItems="center">
-            <Button disableRipple aria-describedby={id} onClick={handleClick}>
-              <BackgroundLetterAvatar name={'+'} />
-            </Button>
-          </Stack>
         </Stack>
       </Box>
 
@@ -186,7 +200,7 @@ export default function AddContributor({ users, value, onChange }) {
                 typeof option !== 'string' ? (
                   options.includes(option.inputValue) ? null : (
                     <li {...props} key={'add new'}>
-                        {console.log(props)}
+                      {/* {console.log(props)} */}
                       <Box
                         component={CheckOutlined}
                         sx={{ width: 17, height: 17, mr: '5px', ml: '-2px', mt: 0.25 }}
@@ -208,7 +222,7 @@ export default function AddContributor({ users, value, onChange }) {
                         onClick={(e) => {
                           e.preventDefault();
                           handleClose();
-                          toggleOpenDlg(true);
+                          toggleOpenCDlg(true);
                           setDialogValue(option.inputValue);
                         }}
                       >
@@ -274,6 +288,7 @@ export default function AddContributor({ users, value, onChange }) {
           </div>
         </ClickAwayListener>
       </StyledPopper>
+      <AddNewInviteConfirmDlg open={openCDlg} onClose={handleCloseCDlg} />
       {openDlg && <AddNewInviteDlg open={openDlg} email={dialogValue} onClose={handleCloseDlg} />}
     </MainCard>
   );

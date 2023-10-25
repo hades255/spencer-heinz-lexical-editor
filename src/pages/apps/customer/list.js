@@ -222,19 +222,14 @@ const NumberFormatCell = ({ row }) => {
 
 const StatusCell = ({ value }) => {
   switch (value) {
-    // case 'Complicated':
-    //   return <Chip color="error" label="Rejected" size="small" variant="light" />;
-    // case 'Relationship':
-    //   return <Chip color="success" label="Verified" size="small" variant="light" />;
-    // case 'Single':
-    // default:
-    //   return <Chip color="info" label="Pending" size="small" variant="light" />;
     case 'locked':
       return <Chip color="error" label="Locked" size="small" variant="light" />;
     case 'pending':
       return <Chip color="info" label="Pending" size="small" variant="light" />;
     case 'deleted':
       return <Chip color="warning" label="Deleted" size="small" variant="light" />;
+    case 'invited':
+      return <Chip color="primary" label="Invited" size="small" variant="light" />;
     default:
       return <Chip color="success" label="Active" size="small" variant="light" />;
   }
@@ -321,32 +316,10 @@ const ActionCell = (
           {collapseIcon}
         </IconButton>
       </Tooltip>
-      {row.values.status === 'active' ? (
-        <Tooltip title="Lock">
-          <IconButton
-            color="error"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleCloseLockDlg();
-              setCustomerDeleteId(row.values.name);
-              setUserDeleteId(row.original._id);
-            }}
-          >
-            <LockOutlined twoToneColor={theme.palette.error.main} />
-          </IconButton>
-        </Tooltip>
-      ) : row.values.status === 'locked' ? (
-        <Tooltip title={row.values.comment ? `Locked because ${row.values.comment}` : 'Unlock'}>
-          <IconButton
-            color="info"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleUpdateStatus(row.original._id, 'active');
-            }}
-          >
-            <UnlockOutlined twoToneColor={theme.palette.info.main} />
-          </IconButton>
-        </Tooltip>
+      {row.values.status === 'active' || row.values.status === 'locked' ? (
+        <IconButton disabled>
+          <CheckOutlined />
+        </IconButton>
       ) : (
         <Tooltip title="Approve">
           <IconButton
@@ -357,6 +330,29 @@ const ActionCell = (
             }}
           >
             <CheckOutlined twoToneColor={theme.palette.success.main} />
+          </IconButton>
+        </Tooltip>
+      )}
+      {row.values.status === 'deleted' ? (
+        <IconButton disabled>
+          <UnlockOutlined />
+        </IconButton>
+      ) : (
+        <Tooltip title={row.values.status === 'locked' ? (row.values.comment ? `Locked because ${row.values.comment}` : 'Unlock') : 'Lock'}>
+          <IconButton
+            color={row.values.status === 'locked' ? 'info' : 'error'}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (row.values.status === 'locked') {
+                handleUpdateStatus(row.original._id, 'active');
+              } else {
+                handleCloseLockDlg();
+                setCustomerDeleteId(row.values.name);
+                setUserDeleteId(row.original._id);
+              }
+            }}
+          >
+            <UnlockOutlined twoToneColor={theme.palette.info.main} />
           </IconButton>
         </Tooltip>
       )}
@@ -372,19 +368,25 @@ const ActionCell = (
           <EditTwoTone twoToneColor={theme.palette.primary.main} />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Reset Password">
-        <IconButton
-          color="warning"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleClosePwdresetDlg();
-            setCustomerDeleteId(row.values.name);
-            setUserDeleteId(row.original._id);
-          }}
-        >
-          <ToolOutlined twoToneColor={theme.palette.warning.main} />
+      {row.values.status === 'active' ? (
+        <Tooltip title="Reset Password">
+          <IconButton
+            color="warning"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClosePwdresetDlg();
+              setCustomerDeleteId(row.values.name);
+              setUserDeleteId(row.original._id);
+            }}
+          >
+            <ToolOutlined twoToneColor={theme.palette.warning.main} />
+          </IconButton>
+        </Tooltip>
+      ) : (
+        <IconButton disabled>
+          <ToolOutlined />
         </IconButton>
-      </Tooltip>
+      )}
       <Tooltip title={row.values.status === 'deleted' && row.values.comment ? `Deleted because ${row.values.comment}` : 'Delete'}>
         <IconButton
           color={row.values.status === 'deleted' ? 'secodnary' : 'error'}
@@ -438,7 +440,8 @@ const UserManagementPage = () => {
   const [advancedSearch, setAdvancedSearch] = useState({
     deleted: false,
     locked: false,
-    pending: false
+    pending: false,
+    invited: false
   });
 
   const handleSearchFilter = ({ target: { name, checked } }) => {
@@ -447,13 +450,15 @@ const UserManagementPage = () => {
         setAdvancedSearch({
           deleted: true,
           locked: true,
-          pending: true
+          pending: true,
+          invited: true
         });
       else
         setAdvancedSearch({
           deleted: false,
           locked: false,
-          pending: false
+          pending: false,
+          invited: false
         });
     } else
       setAdvancedSearch({
@@ -574,7 +579,8 @@ const UserManagementPage = () => {
               item.status === 'active' ||
               (advancedSearch.pending && item.status === 'pending') ||
               (advancedSearch.locked && item.status === 'locked') ||
-              (advancedSearch.deleted && item.status === 'deleted')
+              (advancedSearch.deleted && item.status === 'deleted') ||
+              (advancedSearch.invited && item.status === 'invited')
           )}
           handleAdd={handleAdd}
           getHeaderProps={(column) => column.getSortByToggleProps()}
@@ -592,18 +598,20 @@ const UserManagementPage = () => {
         handleClose={handleClosePwdresetDlg}
       />
       {/* add user dialog */}
-      <Dialog
-        maxWidth="sm"
-        TransitionComponent={PopupTransition}
-        keepMounted
-        fullWidth
-        onClose={handleAdd}
-        open={add}
-        sx={{ '& .MuiDialog-paper': { p: 0 }, transition: 'transform 225ms' }}
-        aria-describedby="alert-dialog-slide-description"
-      >
-        <AddCustomer customer={customer} onCancel={handleAdd} />
-      </Dialog>
+      {add && (
+        <Dialog
+          maxWidth="sm"
+          TransitionComponent={PopupTransition}
+          keepMounted
+          fullWidth
+          onClose={handleAdd}
+          open={add}
+          sx={{ '& .MuiDialog-paper': { p: 0 }, transition: 'transform 225ms' }}
+          aria-describedby="alert-dialog-slide-description"
+        >
+          <AddCustomer customer={customer} onCancel={handleAdd} />
+        </Dialog>
+      )}
     </MainCard>
   );
 };

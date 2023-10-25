@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
@@ -25,11 +26,10 @@ import AddContributor from './AddContributor';
 const steps = ['Title', 'Descriptions', 'Contributors'];
 
 const AddDocument = ({ user, onCancel }) => {
+  const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [contributors, setContributors] = useState([]);
-  const users = useSelector((state) => state.user.lists).filter(
-    (item) => (item.status === 'active' || item.status === 'invited') && item._id !== user._id
-  );
+  const users = useSelector((state) => state.user.lists).filter((item) => item._id !== user._id);
 
   const handleAutocompleteChange = (value) => {
     setContributors(value);
@@ -77,12 +77,17 @@ const AddDocument = ({ user, onCancel }) => {
               name: Yup.string().max(255).required('Document title is required'),
               description: Yup.string().max(1024).required('Document description is required')
             })}
-            onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
+            onSubmit={async (values, { setStatus, setSubmitting }) => {
               dispatch(
-                postDocumentCreate({
-                  ...values,
-                  contributors: users.filter((item) => contributors.includes(item.email))
-                })
+                postDocumentCreate(
+                  {
+                    ...values,
+                    contributors: users
+                      .filter((item) => contributors.includes(item.email))
+                      .map(({ _id, name, email, avatar, status, role }) => ({ _id, name, email, avatar, status, role }))
+                  },
+                  navigate
+                )
               );
               setStatus({ success: true });
               setSubmitting(false); //  post document
@@ -100,7 +105,7 @@ const AddDocument = ({ user, onCancel }) => {
                       <Typography sx={{ mt: 2, mb: 1 }}>{values.description}</Typography>
                       <Stack sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', pt: 2 }}>
                         {users
-                          .filter((item) => contributors.includes(item._id))
+                          .filter((item) => contributors.includes(item.email))
                           .map((item, key) => (
                             <CustomCell key={key} user={item} />
                           ))}
@@ -112,7 +117,9 @@ const AddDocument = ({ user, onCancel }) => {
                       </Button>
                       <Box sx={{ flex: '1 1 auto' }} />
                       <Button onClick={handleReset}>Reset</Button>
-                      <Button type="submit">Create</Button>
+                      <Button type="submit" disabled={isSubmitting}>
+                        Create
+                      </Button>
                     </Box>
                   </>
                 ) : (
@@ -156,18 +163,17 @@ const AddDocument = ({ user, onCancel }) => {
                       </>
                     )}
                     {activeStep === 2 && (
-                      <>
-                        <AddContributor
-                          users={users.map(({ _id, name, email, avatar }) => ({
-                            _id,
-                            name,
-                            email,
-                            avatar
-                          }))}
-                          onChange={handleAutocompleteChange}
-                          value={contributors}
-                        />
-                      </>
+                      <AddContributor
+                        users={users.map(({ _id, name, email, avatar, status }) => ({
+                          _id,
+                          name,
+                          email,
+                          avatar,
+                          status
+                        }))}
+                        onChange={handleAutocompleteChange}
+                        value={contributors}
+                      />
                     )}
                   </StepWrapper>
                 )}

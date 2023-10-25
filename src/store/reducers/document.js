@@ -72,9 +72,9 @@ export function getDocumentLists() {
   return async () => {
     try {
       const response = await axiosServices.get(`/document`);
-      dispatch(document.actions.getLists(response.data.data.documents));
+      dispatch(getLists(response.data.data.documents));
     } catch (error) {
-      dispatch(document.actions.hasError(error));
+      dispatch(hasError(error));
     }
   };
 }
@@ -83,19 +83,21 @@ export function getMyDocumentLists() {
   return async () => {
     try {
       const response = await axiosServices.get(`/document/mine`);
-      dispatch(document.actions.getLists(response.data.data.documents));
+      dispatch(getLists(response.data.data.documents));
     } catch (error) {
-      dispatch(document.actions.hasError(error));
+      dispatch(hasError(error));
     }
   };
 }
 
-export function postDocumentCreate(newDocument) {
+export function postDocumentCreate(newDocument, navigate) {
   return async () => {
     try {
-      await axiosServices.post(`/document`, newDocument);
-      // dispatch(document.actions.createDocument(response.data.data.document));
-      dispatch(getMyDocumentLists());
+      const response = await axiosServices.post(`/document`, newDocument);
+      dispatch(createDocument(response.data.data.document));
+      if (navigate) {
+        navigate('/document/' + response.data.data.document._id);
+      }
       dispatch(
         openSnackbar({
           open: true,
@@ -108,7 +110,7 @@ export function postDocumentCreate(newDocument) {
         })
       );
     } catch (error) {
-      dispatch(document.actions.hasError(error));
+      dispatch(hasError(error));
       dispatch(
         openSnackbar({
           open: true,
@@ -129,9 +131,9 @@ export function getDocumentUpdate(uniqueId, updatedDocument) {
   return async () => {
     try {
       const response = await axiosServices.post(`/document/update/${uniqueId}`, { name, description, initialText });
-      dispatch(document.actions.updateDocument(response.data.data));
+      dispatch(updateDocument(response.data.data));
     } catch (error) {
-      dispatch(document.actions.hasError(error));
+      dispatch(hasError(error));
     }
   };
 }
@@ -140,9 +142,9 @@ export function getDocumentDelete(uniqueId) {
   return async () => {
     try {
       await axiosServices.post('/document/delete', { uniqueId });
-      dispatch(document.actions.deleteDocument({ uniqueId }));
+      dispatch(deleteDocument({ uniqueId }));
     } catch (error) {
-      dispatch(document.actions.hasError(error));
+      dispatch(hasError(error));
     }
   };
 }
@@ -151,13 +153,13 @@ export function getDocumentSingleList(documentId) {
   return async () => {
     try {
       const response = await axiosServices.get('/document/' + documentId);
-      dispatch(document.actions.getSingleList(response.data.data.document));
+      dispatch(getSingleList(response.data.data.document));
     } catch (error) {
-      dispatch(document.actions.hasError(error));
+      dispatch(hasError(error));
     }
   };
 }
 
 export function getNavList(navList) {
-  return dispatch(document.actions.getNavListSuccess(navList ?? []));
+  return dispatch(getNavListSuccess(navList ?? []));
 }

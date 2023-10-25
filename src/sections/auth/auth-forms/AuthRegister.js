@@ -70,7 +70,7 @@ const AuthRegister = ({ redirect = true, onCancel = null, customer = null }) => 
           lastname: '',
           email: '',
           company: '',
-          password: '',
+          password: redirect ? '' : 'Welcome123.!@#',
           countryCode: '+91',
           mobilePhone: '',
           workPhone: '',
@@ -79,7 +79,7 @@ const AuthRegister = ({ redirect = true, onCancel = null, customer = null }) => 
         validationSchema={Yup.object().shape({
           firstname: Yup.string().max(255).required('First Name is required'),
           lastname: Yup.string().max(255).required('Last Name is required'),
-          email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
+          email: redirect ? Yup.string().email('Must be a valid email').max(255).required('Email is required') : null,
           password: Yup.string().max(255).required('Password is required'),
           mobilePhone: Yup.number()
             .test('len', 'Contact should be exactly 10 digit', (val) => val?.toString().length === 10)
@@ -110,6 +110,7 @@ const AuthRegister = ({ redirect = true, onCancel = null, customer = null }) => 
                   navigate('/login', { replace: true });
                 }, 1500);
               else {
+                onCancel()
                 dispatch(getUserLists());
               }
             }

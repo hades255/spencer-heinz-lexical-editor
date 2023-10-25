@@ -87,8 +87,11 @@ const Notification = () => {
     };
 
     ws.onmessage = (event) => {
-      if (JSON.parse(event.data)) {
-        dispatch(setLists(JSON.parse(event.data)));
+      const data = JSON.parse(event.data);
+      if (data) {
+        console.log(data);
+        dispatch(setLists(data.notifications));
+        // if (data.type === 'm') dispatch(setLists(data.data));
       }
     };
 
@@ -102,7 +105,7 @@ const Notification = () => {
   }, []);
 
   useEffect(() => {
-    if (socket.opened && user) socket.ws.send(user._id);
+    if (socket.opened && user) socket.ws.send(JSON.stringify({ _id: user._id, role: user.role }));
   }, [socket, user]);
 
   const handleClose = useCallback(

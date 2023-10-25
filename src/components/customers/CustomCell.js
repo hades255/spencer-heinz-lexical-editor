@@ -8,7 +8,14 @@ const CustomCell = ({ user }) => {
     <Stack direction="row" spacing={1.5} alignItems="center">
       <UserAvatar
         user={{
-          online_status: (user && user.online_status) ?? 'none',
+          online_status:
+            user && (user.online_status || user.status)
+              ? user.online_status
+                ? 'available'
+                : user.status === 'active'
+                ? 'offline'
+                : 'do_not_disturb'
+              : 'none',
           avatar: user.avatar,
           name: user.name
         }}
