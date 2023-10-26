@@ -11,10 +11,8 @@ import ScrollX from 'components/ScrollX';
 import IconButton from 'components/@extended/IconButton';
 import { PopupTransition } from 'components/@extended/Transitions';
 
-import CustomerView from 'sections/apps/customer/CustomerView';
-
 // assets
-import { CloseOutlined, EyeTwoTone, EditTwoTone, DeleteTwoTone, MessageOutlined } from '@ant-design/icons';
+import { CloseOutlined, EyeTwoTone, EditTwoTone, MessageOutlined } from '@ant-design/icons';
 import { DOCUMENT_STATUS } from 'Plugins/constants';
 import { getDocumentLists } from 'store/reducers/document';
 import { useSelector } from 'react-redux';
@@ -30,6 +28,10 @@ import DocumentDetail from '../document/DocumentDetail';
 
 const CreatorCell = ({ value }) => {
   return <CustomCell user={value} />;
+};
+
+CreatorCell.propTypes = {
+  value: PropTypes.any
 };
 
 const StatusCell = ({ value }) => {

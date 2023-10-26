@@ -19,7 +19,7 @@ const DocumentCell = ({ row }) => {
         <Typography variant="subtitle1">{values.name}</Typography>
         <Typography variant="caption" color="textSecondary">
           {show ? values.description : TruncatedText(values.description, 150)}
-          <Typography variant="caption" sx={{ pl: 1, pr: 1, fontWeight: 'bold', color:"dark" }} onClick={handleShowMore}>
+          <Typography variant="caption" sx={{ pl: 1, pr: 1, fontWeight: 'bold', color: 'dark' }} onClick={handleShowMore}>
             {values.description.length > 150 && (show ? 'Hide' : 'More')}
           </Typography>
         </Typography>

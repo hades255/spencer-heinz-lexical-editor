@@ -3,11 +3,8 @@ import Loadable from 'components/Loadable';
 
 const WidgetDataTask = Loadable(lazy(() => import('pages/widget/data-task')));
 
-
 const DashboardTaskPage = () => {
-    return (
-        <WidgetDataTask></WidgetDataTask>
-    );
+  return <WidgetDataTask></WidgetDataTask>;
 };
 
 export default DashboardTaskPage;

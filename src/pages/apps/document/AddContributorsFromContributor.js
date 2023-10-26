@@ -33,7 +33,6 @@ import { dispatch } from 'store';
 import { getUserLists } from 'store/reducers/user';
 import { PopupTransition } from 'components/@extended/Transitions';
 import AnimateButton from 'components/@extended/AnimateButton';
-import axiosServices from 'utils/axios';
 const filter = createFilterOptions();
 
 const StyledAutocompletePopper = styled('div')(({ theme }) => ({
@@ -355,7 +354,8 @@ export default function AddContributorsFromContributor({ open: openThis, onClose
 }
 
 AddContributorsFromContributor.propTypes = {
-  users: PropTypes.any,
-  value: PropTypes.any,
-  onChange: PropTypes.any
+  open: PropTypes.bool,
+  user: PropTypes.object,
+  exist: PropTypes.any,
+  onClose: PropTypes.any
 };

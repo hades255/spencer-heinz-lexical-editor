@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
-import { createContext, useEffect, useReducer, useState } from 'react';
+import { createContext, useEffect, useReducer } from 'react';
 
 // third-party
-import { Chance } from 'chance';
+// import { Chance } from 'chance';
 import jwtDecode from 'jwt-decode';
 
 // reducer - state management
@@ -16,7 +16,7 @@ import { dispatch as dispatch_ } from 'store';
 import { openSnackbar } from 'store/reducers/snackbar';
 import { LOGIN_ERROR_MESSAGES } from 'config/constants';
 
-const chance = new Chance();
+// const chance = new Chance();
 
 // constant
 const initialState = {
@@ -184,14 +184,14 @@ export const JWTProvider = ({ children }) => {
   };
 
   const resetPassword = async (currentPassword, newPassword) => {
-    const response = await axios.post('/auth/resetPassword', {
+    await axios.post('/auth/resetPassword', {
       currentPassword,
       newPassword
     });
   };
 
   const forgetPassword = async (email) => {
-    const response = await axios.post('/auth/forgetPassword', {
+    await axios.post('/auth/forgetPassword', {
       email
     });
   };

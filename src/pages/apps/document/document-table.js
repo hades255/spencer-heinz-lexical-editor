@@ -6,10 +6,10 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { Button, Stack, Table, TableBody, TableCell, TableHead, TableRow, useMediaQuery } from '@mui/material';
 
 // third-party
-import { useFilters, useExpanded, useGlobalFilter, useRowSelect, useSortBy, useTable, usePagination } from 'react-table';
+import { useFilters, useExpanded, useGlobalFilter, useSortBy, useTable, usePagination } from 'react-table';
 
 // project import
-import { CSVExport, HeaderSort, SortingSelect, TablePagination, TableRowSelection } from 'components/third-party/ReactTable';
+import { HeaderSort, SortingSelect, TablePagination } from 'components/third-party/ReactTable';
 
 import { renderFilterTypes, GlobalFilter } from 'utils/react-table';
 

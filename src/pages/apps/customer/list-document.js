@@ -1,31 +1,31 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
+import PropTypes from 'prop-types';
 // material-ui
 import { useTheme } from '@mui/material/styles';
 import { Dialog } from '@mui/material';
 import AuthContext from 'contexts/JWTContext';
 
-// third-party
-// project import
-import MainCard from 'components/MainCard';
-import ScrollX from 'components/ScrollX';
-import { PopupTransition } from 'components/@extended/Transitions';
-
-import CustomerView from 'sections/apps/customer/CustomerView';
-
-// assets
 import { getMyDocumentLists } from 'store/reducers/document';
-import { useSelector } from 'react-redux';
 import { dispatch } from 'store';
+// assets
 import DocumentTable from '../document/document-table';
 import AddDocument from 'sections/apps/document/AddDocument';
 import CheckPremium from 'sections/apps/user/CheckPremium';
-import { SelectionCell, SelectionHeader } from 'components/table/Selection';
+import CustomerView from 'sections/apps/customer/CustomerView';
+import MainCard from 'components/MainCard';
+import ScrollX from 'components/ScrollX';
+import { PopupTransition } from 'components/@extended/Transitions';
 import DocumentCell from 'components/documents/DocumentCell';
 import CustomCell from 'components/customers/CustomCell';
 import ContributorsCell from 'components/documents/ContributorsCell';
 
 const CreatorCell = ({ value }) => {
   return <CustomCell user={value} />;
+};
+
+CreatorCell.propTypes = {
+  value: PropTypes.any
 };
 
 const DocumentListPage = () => {

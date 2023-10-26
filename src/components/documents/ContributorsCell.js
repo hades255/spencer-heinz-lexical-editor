@@ -7,17 +7,17 @@ const ContributorsCell = ({ row }) => {
 
   return (
     <AvatarGroup max={5}>
-    {contributors.map((item, key) => (
-      <UserAvatar
-        key={key}
-        user={{
-          online_status: 'none',
-          avatar: item.avatar,
-          name: item.name,
-          email: item.email
-        }}
-      />
-    ))}
+      {contributors.map((item, key) => (
+        <UserAvatar
+          key={key}
+          user={{
+            online_status: 'none',
+            avatar: item.avatar,
+            name: item.name,
+            email: item.email
+          }}
+        />
+      ))}
     </AvatarGroup>
   );
 };

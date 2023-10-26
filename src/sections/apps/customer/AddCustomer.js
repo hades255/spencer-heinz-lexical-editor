@@ -1,4 +1,4 @@
-import { Box, DialogContent, DialogTitle, Divider, Grid, Stack } from '@mui/material';
+import { DialogContent, DialogTitle, Divider, Grid } from '@mui/material';
 import PropTypes from 'prop-types';
 import FirebaseRegister from 'sections/auth/auth-forms/AuthRegister';
 

@@ -13,7 +13,7 @@ const NotificationList = Loadable(lazy(() => import('pages/extra-pages/Notificat
 // import NotificationList from 'pages/extra-pages/NotificationList';
 import DocumentManagementPage from 'pages/apps/customer/list-document-management';
 // import DocumentView from 'pages/apps/document/view';
-import GuestGuard from 'utils/route-guard/GuestGuard';
+// import GuestGuard from 'utils/route-guard/GuestGuard';
 import MessageList from 'pages/extra-pages/MessageList';
 import MessageView from 'pages/extra-pages/MessageView';
 
@@ -27,13 +27,13 @@ const MaintenanceComingSoon = Loadable(lazy(() => import('pages/maintenance/comi
 
 // const AppCustomerList = Loadable(lazy(() => import('pages/apps/customer/list')));
 
-const AccountProfile = Loadable(lazy(() => import('pages/apps/profiles/account')));
+// const AccountProfile = Loadable(lazy(() => import('pages/apps/profiles/account')));
 const AccountTabProfile = Loadable(lazy(() => import('sections/apps/profiles/account/TabProfile')));
-const AccountTabPersonal = Loadable(lazy(() => import('sections/apps/profiles/account/TabPersonal')));
+// const AccountTabPersonal = Loadable(lazy(() => import('sections/apps/profiles/account/TabPersonal')));
 const AccountTabAccount = Loadable(lazy(() => import('sections/apps/profiles/account/TabAccount')));
 const AccountTabPassword = Loadable(lazy(() => import('sections/apps/profiles/account/TabPassword')));
 const AccountTabSettings = Loadable(lazy(() => import('sections/apps/profiles/account/TabSettings')));
-const AccountTabRole = Loadable(lazy(() => import('sections/apps/profiles/account/TabRole')));
+// const AccountTabRole = Loadable(lazy(() => import('sections/apps/profiles/account/TabRole')));
 
 const UserProfile = Loadable(lazy(() => import('pages/apps/profiles/user')));
 const UserTabPersonal = Loadable(lazy(() => import('sections/apps/profiles/user/TabPersonal')));

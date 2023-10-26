@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { AvatarGroup, Box, Button, Grid, Stack, Typography } from '@mui/material';
+import { AvatarGroup, Box, Grid, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 import MainCard from 'components/MainCard';
@@ -30,17 +30,16 @@ const DocumentView = () => {
   const handleAddContributors = useCallback(
     (params = null) => {
       setAddContributorDlg(false);
-      return;
-      // if (params && params.length) {
-      //   (async () => {
-      //     try {
-      //       await axiosServices.post('/document/' + uniqueId + '/invite', { contributors: params });
-      //       dispatch(getDocumentSingleList(uniqueId));
-      //     } catch (error) {
-      //       console.log(error);
-      //     }
-      //   })();
-      // }
+      if (params && params.length) {
+        (async () => {
+          try {
+            await axiosServices.post('/document/' + uniqueId + '/invite', { contributors: params });
+            dispatch(getDocumentSingleList(uniqueId));
+          } catch (error) {
+            console.log(error);
+          }
+        })();
+      }
     },
     [uniqueId]
   );

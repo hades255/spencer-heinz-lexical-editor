@@ -48,7 +48,6 @@ import {
   EyeTwoTone,
   EditTwoTone,
   DeleteTwoTone,
-  LockOutlined,
   UnlockOutlined
 } from '@ant-design/icons';
 
@@ -65,6 +64,9 @@ const CustomerCell = ({ row: { values } }) => {
   return <CustomCell user={values} />;
 };
 
+CustomerCell.propTypes = {
+  row: PropTypes.any
+};
 // ==============================|| REACT TABLE ||============================== //
 
 function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent, handleAdd, advancedSearch, handleSearchFilter }) {
@@ -196,7 +198,9 @@ ReactTable.propTypes = {
   data: PropTypes.array,
   getHeaderProps: PropTypes.func,
   handleAdd: PropTypes.func,
-  renderRowSubComponent: PropTypes.any
+  renderRowSubComponent: PropTypes.any,
+  advancedSearch: PropTypes.any,
+  handleSearchFilter: PropTypes.any
 };
 
 // ==============================|| CUSTOMER - LIST ||============================== //
@@ -568,7 +572,7 @@ const UserManagementPage = () => {
     [theme]
   );
 
-  const renderRowSubComponent = useCallback(({ row }) => <CustomerView data={row.original} user={true} />, [data]);
+  const renderRowSubComponent = useCallback(({ row }) => <CustomerView data={row.original} user={true} />, []);
   return (
     <MainCard content={false}>
       <ScrollX>

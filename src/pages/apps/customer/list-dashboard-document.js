@@ -28,13 +28,7 @@ import ScrollX from 'components/ScrollX';
 import Avatar from 'components/@extended/Avatar';
 import IconButton from 'components/@extended/IconButton';
 import { PopupTransition } from 'components/@extended/Transitions';
-import {
-  CSVExport,
-  HeaderSort,
-  IndeterminateCheckbox,
-  SortingSelect,
-  TableRowSelection
-} from 'components/third-party/ReactTable';
+import { CSVExport, HeaderSort, IndeterminateCheckbox, SortingSelect, TableRowSelection } from 'components/third-party/ReactTable';
 import { TablePagination } from 'components/third-party/ReactTableDashboard';
 
 import AddCustomer from 'sections/apps/customer/AddCustomer';
@@ -89,7 +83,7 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent, hand
     usePagination,
     useRowSelect
   );
-  console.log("??????", data);
+  console.log('??????', data);
 
   useEffect(() => {
     if (matchDownSM) {
@@ -100,7 +94,7 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent, hand
     // eslint-disable-next-line
   }, [matchDownSM]);
 
-  if(page.length) {
+  if (page.length) {
     console.log('Page is exsit');
   } else {
     console.log('Page is not exist');
@@ -313,19 +307,19 @@ const DashboardDocumentPage = () => {
 
   const columns = useMemo(
     () => [
-    //   {
-    //     title: 'Row Selection',
-    //     Header: SelectionHeader,
-    //     accessor: 'selection',
-    //     Cell: SelectionCell,
-    //     disableSortBy: true
-    //   },
-    //   {
-    //     Header: '#',
-    //     accessor: 'id',
-    //     className: 'cell-center',
-    //     disableSortBy: true
-    //   },
+      //   {
+      //     title: 'Row Selection',
+      //     Header: SelectionHeader,
+      //     accessor: 'selection',
+      //     Cell: SelectionCell,
+      //     disableSortBy: true
+      //   },
+      //   {
+      //     Header: '#',
+      //     accessor: 'id',
+      //     className: 'cell-center',
+      //     disableSortBy: true
+      //   },
       {
         Header: 'User Name',
         accessor: 'fatherName',
@@ -335,7 +329,7 @@ const DashboardDocumentPage = () => {
       {
         Header: 'Avatar',
         accessor: 'avatar',
-        disableSortBy: true,
+        disableSortBy: true
       },
       {
         Header: 'Email',
