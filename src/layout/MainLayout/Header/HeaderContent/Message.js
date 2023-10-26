@@ -1,9 +1,9 @@
-import { useRef, useState } from 'react';
-
+import { useCallback, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom';
 // material-ui
 import { useTheme } from '@mui/material/styles';
 import {
-  Avatar,
   Box,
   ClickAwayListener,
   Divider,
@@ -25,11 +25,11 @@ import Transitions from 'components/@extended/Transitions';
 import { ThemeMode } from 'config';
 
 // assets
-import avatar2 from 'assets/images/users/avatar-2.png';
-import avatar3 from 'assets/images/users/avatar-3.png';
-import avatar4 from 'assets/images/users/avatar-4.png';
-import avatar5 from 'assets/images/users/avatar-5.png';
 import { MailOutlined, CloseOutlined } from '@ant-design/icons';
+import { useSelector } from 'store';
+import moment from 'moment';
+import BackgroundLetterAvatar from 'components/@extended/BackgroundLetterAvatar';
+import { MESSAGE_TYPES } from 'config/constants';
 
 // sx styles
 const avatarSX = {
@@ -50,7 +50,10 @@ const actionSX = {
 
 const Message = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const matchesXs = useMediaQuery(theme.breakpoints.down('md'));
+
+  const messages = useSelector((state) => state.message.list);
 
   const anchorRef = useRef(null);
   const [open, setOpen] = useState(false);
@@ -64,6 +67,15 @@ const Message = () => {
     }
     setOpen(false);
   };
+
+  const handleGoList = useCallback(
+    (e) => {
+      setOpen(false);
+      e.preventDefault();
+      navigate('/message');
+    },
+    [navigate]
+  );
 
   const iconBackColorOpen = theme.palette.mode === ThemeMode.DARK ? 'grey.200' : 'grey.300';
   const iconBackColor = theme.palette.mode === ThemeMode.DARK ? 'background.default' : 'grey.100';
@@ -121,7 +133,7 @@ const Message = () => {
                 <MainCard
                   title="Message"
                   elevation={0}
-                  border={false}
+                  border={true}
                   content={false}
                   secondary={
                     <IconButton size="small" onClick={handleToggle}>
@@ -133,6 +145,8 @@ const Message = () => {
                     component="nav"
                     sx={{
                       p: 0,
+                      maxHeight: '400px',
+                      overflowY: 'scroll',
                       '& .MuiListItemButton-root': {
                         py: 1.5,
                         '& .MuiAvatar-root': avatarSX,
@@ -140,105 +154,19 @@ const Message = () => {
                       }
                     }}
                   >
-                    <ListItemButton>
-                      <ListItemAvatar>
-                        <Avatar alt="profile user" src={avatar2} />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={
-                          <Typography variant="h6">
-                            It&apos;s{' '}
-                            <Typography component="span" variant="subtitle1">
-                              Cristina danny&apos;s
-                            </Typography>{' '}
-                            birthday today.
-                          </Typography>
-                        }
-                        secondary="2 min ago"
-                      />
-                      <ListItemSecondaryAction>
-                        <Typography variant="caption" noWrap>
-                          3:00 AM
-                        </Typography>
-                      </ListItemSecondaryAction>
-                    </ListItemButton>
-                    <Divider />
-                    <ListItemButton>
-                      <ListItemAvatar>
-                        <Avatar alt="profile user" src={avatar3} />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={
-                          <Typography variant="h6">
-                            <Typography component="span" variant="subtitle1">
-                              Aida Burg
-                            </Typography>{' '}
-                            commented your post.
-                          </Typography>
-                        }
-                        secondary="5 August"
-                      />
-                      <ListItemSecondaryAction>
-                        <Typography variant="caption" noWrap>
-                          6:00 PM
-                        </Typography>
-                      </ListItemSecondaryAction>
-                    </ListItemButton>
-                    <Divider />
-                    <ListItemButton>
-                      <ListItemAvatar>
-                        <Avatar alt="profile user" src={avatar4} />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={
-                          <Typography component="span" variant="subtitle1">
-                            There was a failure to your setup.
-                          </Typography>
-                        }
-                        secondary="7 hours ago"
-                      />
-                      <ListItemSecondaryAction>
-                        <Typography variant="caption" noWrap>
-                          2:45 PM
-                        </Typography>
-                      </ListItemSecondaryAction>
-                    </ListItemButton>
-                    <Divider />
-                    <ListItemButton>
-                      <ListItemAvatar>
-                        <Avatar alt="profile user" src={avatar5} />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={
-                          <Typography variant="h6">
-                            <Typography component="span" variant="subtitle1">
-                              Cristina Danny
-                            </Typography>{' '}
-                            invited to join{' '}
-                            <Typography component="span" variant="subtitle1">
-                              Meeting.
-                            </Typography>
-                          </Typography>
-                        }
-                        secondary="Daily scrum meeting time"
-                      />
-                      <ListItemSecondaryAction>
-                        <Typography variant="caption" noWrap>
-                          9:10 PM
-                        </Typography>
-                      </ListItemSecondaryAction>
-                    </ListItemButton>
-                    <Divider />
-                    <ListItemButton sx={{ textAlign: 'center' }}>
-                      <ListItemText
-                        primary={
-                          <Typography variant="h6" color="primary">
-                            View All
-                          </Typography>
-                        }
-                      />
-                    </ListItemButton>
+                    {messages.map((item, key) => (
+                      <MessageItem key={key} message={item} navigate={navigate} setOpen={setOpen} />
+                    ))}
                   </List>
+                  <ListItemButton sx={{ textAlign: 'center' }} onClick={handleGoList}>
+                    <ListItemText
+                      primary={
+                        <Typography variant="h6" color="primary">
+                          View All
+                        </Typography>
+                      }
+                    />
+                  </ListItemButton>
                 </MainCard>
               </ClickAwayListener>
             </Paper>
@@ -250,3 +178,67 @@ const Message = () => {
 };
 
 export default Message;
+
+export const MessageItem = ({ message, navigate, setOpen = null }) => {
+  const handleClick = useCallback(
+    (e) => {
+      if (message.type === MESSAGE_TYPES.DOCUMENT_INVITE_RESOLVE) {
+        navigate('/message/' + message._id);
+      }
+      if (setOpen) setOpen(false);
+    },
+    [message, navigate]
+  );
+  return (
+    <>
+      <ListItemButton onClick={handleClick}>
+        <ListItemAvatar>
+          <BackgroundLetterAvatar name={message.from.name} />
+        </ListItemAvatar>
+        <ListItemText
+          primary={
+            <>
+              <Typography variant="h6">
+                <Typography component="span" variant="subtitle1">
+                  {message.from.name}
+                </Typography>
+                {'  '}
+                <Typography component="span" variant="subtitle2">
+                  {message.from.email}
+                </Typography>
+              </Typography>
+              <Typography variant="h6">
+                {message.data.map((text, key) => (
+                  <span key={key}>
+                    {text.variant ? (
+                      <Typography component="span" variant={text.variant}>
+                        {text.text}
+                      </Typography>
+                    ) : (
+                      text.text
+                    )}
+                  </span>
+                ))}
+              </Typography>
+            </>
+          }
+          secondary={moment(message.createdAt).fromNow()}
+        />
+        {message.createdAt !== message.updatedAt && (
+          <ListItemSecondaryAction>
+            <Typography variant="caption" noWrap>
+              {moment(message.createdAt).format('h:mm A')}
+            </Typography>
+          </ListItemSecondaryAction>
+        )}
+      </ListItemButton>
+      <Divider />
+    </>
+  );
+};
+
+MessageItem.propTypes = {
+  message: PropTypes.object,
+  navigate: PropTypes.any,
+  setOpen: PropTypes.any
+};

@@ -14,6 +14,8 @@ const NotificationList = Loadable(lazy(() => import('pages/extra-pages/Notificat
 import DocumentManagementPage from 'pages/apps/customer/list-document-management';
 // import DocumentView from 'pages/apps/document/view';
 import GuestGuard from 'utils/route-guard/GuestGuard';
+import MessageList from 'pages/extra-pages/MessageList';
+import MessageView from 'pages/extra-pages/MessageView';
 
 // render - dashboard
 const DashboardDefault = Loadable(lazy(() => import('pages/dashboard/default')));
@@ -171,6 +173,20 @@ const MainRoutes = {
         {
           path: ':uniqueId',
           element: <DocumentView />
+        }
+      ]
+    },
+    {
+      path: 'message',
+      element: <MainLayout />,
+      children: [
+        {
+          path: '',
+          element: <MessageList />
+        },
+        {
+          path: ':uniqueId',
+          element: <MessageView />
         }
       ]
     },

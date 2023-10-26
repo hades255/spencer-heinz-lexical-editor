@@ -46,7 +46,7 @@ const CheckInvite = () => {
         navigate('/login');
       }
     },
-    [c, u, d, navigate]
+    [c, u, d, navigate, setUser]
   );
 
   return (

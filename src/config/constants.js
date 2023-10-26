@@ -5,6 +5,10 @@ export const LOGIN_ERROR_MESSAGES = {
   deleted: { color: 'error', message: 'Your account is deleted. Please contact admin and check your email.' }
 };
 
+export const MESSAGE_TYPES = {
+  DOCUMENT_INVITE_RESOLVE: '@document/invite/resolve/nonactive-users'
+};
+
 export const NOTIFICATION_TYPES = {
   DOCUMENT_INVITE_SEND: '@document/invite/send',
   DOCUMENT_INVITE_RECEIVE: '@document/invite/receive',

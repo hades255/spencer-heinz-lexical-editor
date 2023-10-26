@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { DialogContent, DialogTitle, Divider, Stack, Button, Grid, Typography, Dialog } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
 
 import PropTypes from 'prop-types';
 
@@ -12,7 +11,7 @@ import { dispatch } from 'store';
 import { setInvitationStatus } from 'store/reducers/notification';
 import { NOTIFICATION_TYPES } from 'config/constants';
 
-export const HandleNotificationDlg = ({ notification, open, handleClose }) => {
+export const HandleNotificationDlg = ({ user, notification, open, handleClose }) => {
   const handleClickClose = useCallback(() => {
     handleClose();
   }, [handleClose]);
@@ -29,20 +28,23 @@ export const HandleNotificationDlg = ({ notification, open, handleClose }) => {
       {notification && notification.type === NOTIFICATION_TYPES.DOCUMENT_INVITE_RECEIVE && (
         <ReceiveInvitation notification={notification} onCancel={handleClickClose} />
       )}
+      {notification && notification.type === NOTIFICATION_TYPES.DOCUMENT_INVITE_ACCEPT && (
+        <ReceiveInvitation notification={notification} onCancel={handleClickClose} send />
+      )}
     </Dialog>
   );
 };
 
-const ReceiveInvitation = ({ notification, onCancel }) => {
+const ReceiveInvitation = ({ notification, onCancel, send = false }) => {
   const handleAccept = useCallback(() => {
     onCancel();
-    dispatch(setInvitationStatus(notification, "accept"));
-  }, [onCancel, dispatch, notification]);
+    dispatch(setInvitationStatus(notification, 'accept'));
+  }, [onCancel, notification]);
 
   const handleReject = useCallback(() => {
     onCancel();
-    dispatch(setInvitationStatus(notification, "reject"));
-  }, [onCancel, dispatch, notification]);
+    dispatch(setInvitationStatus(notification, 'reject'));
+  }, [onCancel, notification]);
 
   return (
     <>
@@ -66,24 +68,38 @@ const ReceiveInvitation = ({ notification, onCancel }) => {
                 ))}
                 .
               </Typography>
-              {moment(notification.updatedAt).fromNow()}
             </Stack>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Grid item xs={6}>
-                <AnimateButton>
-                  <Button disableElevation onClick={handleReject} fullWidth size="large" variant="contained" color="secondary">
-                    Reject
-                  </Button>
-                </AnimateButton>
-              </Grid>
-              <Grid item xs={6}>
-                <AnimateButton>
-                  <Button disableElevation onClick={handleAccept} fullWidth size="large" variant="contained" color="primary">
-                    Accept
-                  </Button>
-                </AnimateButton>
-              </Grid>
+            <Stack spacing={2}>
+              <Typography variant="subtitle1">{moment(notification.createdAt).fromNow()}</Typography>
             </Stack>
+            {send ? (
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Grid item xs={12}>
+                  <AnimateButton>
+                    <Button disableElevation onClick={onCancel} fullWidth size="large" variant="contained" color="secondary">
+                      Close
+                    </Button>
+                  </AnimateButton>
+                </Grid>
+              </Stack>
+            ) : (
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Grid item xs={6}>
+                  <AnimateButton>
+                    <Button disableElevation onClick={handleReject} fullWidth size="large" variant="contained" color="secondary">
+                      Reject
+                    </Button>
+                  </AnimateButton>
+                </Grid>
+                <Grid item xs={6}>
+                  <AnimateButton>
+                    <Button disableElevation onClick={handleAccept} fullWidth size="large" variant="contained" color="primary">
+                      Accept
+                    </Button>
+                  </AnimateButton>
+                </Grid>
+              </Stack>
+            )}
           </Grid>
         </Grid>
       </DialogContent>
@@ -92,6 +108,14 @@ const ReceiveInvitation = ({ notification, onCancel }) => {
 };
 
 ReceiveInvitation.propTypes = {
-  notification: PropTypes.any,
-  onCancel: PropTypes.func
+  user: PropTypes.object,
+  notification: PropTypes.object,
+  onCancel: PropTypes.func,
+  send: PropTypes.bool
+};
+
+HandleNotificationDlg.propTypes = {
+  notification: PropTypes.object,
+  handleClose: PropTypes.func,
+  open: PropTypes.bool
 };

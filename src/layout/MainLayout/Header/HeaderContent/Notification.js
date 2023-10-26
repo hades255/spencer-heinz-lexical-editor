@@ -16,6 +16,7 @@ import { BellOutlined, CheckCircleOutlined, GiftOutlined, MessageOutlined, Setti
 import { useSelector } from 'store';
 import { dispatch } from 'store';
 import { setLists, setNotificationsRead } from 'store/reducers/notification';
+import { setLists as setMessageLists } from 'store/reducers/message';
 import NotificationItem from './NotificationItem';
 import AuthContext from 'contexts/JWTContext';
 import { HandleNotificationDlg } from './HandleNotification';
@@ -89,9 +90,8 @@ const Notification = () => {
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data) {
-        console.log(data);
         dispatch(setLists(data.notifications));
-        // if (data.type === 'm') dispatch(setLists(data.data));
+        dispatch(setMessageLists(data.messages));
       }
     };
 
@@ -207,7 +207,7 @@ const Notification = () => {
           )}
         </Popper>
       </Box>
-      <HandleNotificationDlg notification={notiHandle} open={openHandle} handleClose={handleCloseRedirect} />
+      {openHandle && <HandleNotificationDlg user={user} notification={notiHandle} open={openHandle} handleClose={handleCloseRedirect} />}
     </>
   );
 };

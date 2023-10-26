@@ -25,14 +25,15 @@ const stringToColor = (string) => {
 const stringAvatar = (name) => {
   return {
     sx: {
-      bgcolor: stringToColor(name)
+      bgcolor: stringToColor(name),
+      cursor: 'pointer'
     },
     children: name.indexOf(' ') === -1 ? name[0] : `${name.split(' ')[0][0]}${name.split(' ')[1][0]}`
   };
 };
 
-const BackgroundLetterAvatar = ({ name = '' }) => {
-  return <Avatar {...stringAvatar(name)} />;
+const BackgroundLetterAvatar = ({ name = '', ...props }) => {
+  return <Avatar {...stringAvatar(name)} {...props} />;
 };
 
 BackgroundLetterAvatar.propTypes = {

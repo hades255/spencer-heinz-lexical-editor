@@ -180,6 +180,30 @@ export function setUserStatus(userId, status, comment = '') {
   };
 }
 
+export function setUsersStatus(userIds, status, comment = '') {
+  return async () => {
+    try {
+      await axiosServices.put('/user/s/status', { userIds, status, comment });
+      dispatch(getUserLists());
+
+      dispatch(
+        openSnackbar({
+          open: true,
+          message: `${status} users successfully.`,
+          variant: 'alert',
+          alert: {
+            color: 'success'
+          },
+          close: true
+        })
+      );
+      // dispatch(deleteUser({ userId }));
+    } catch (error) {
+      dispatch(hasError(error));
+    }
+  };
+}
+
 export function setUserRole(userId, role) {
   return async () => {
     try {

@@ -32,7 +32,7 @@ import {
   PhoneOutlined,
   VideoCameraOutlined
 } from '@ant-design/icons';
-import { useParams } from 'react-router';
+import { useParams } from 'react-router-dom';
 import LexicalEditor from 'lexical-editor';
 import Loader from 'components/Loader';
 import { EditorHistoryStateContext } from 'contexts/LexicalEditor';

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-
+import PropTypes from 'prop-types';
 // material-ui
 import {
   Box,
@@ -152,6 +152,11 @@ const NewPassword = ({ GO, token }) => {
       </Formik>
     </>
   );
+};
+
+NewPassword.propTypes = {
+  GO: PropTypes.func,
+  token: PropTypes.string
 };
 
 export default NewPassword;

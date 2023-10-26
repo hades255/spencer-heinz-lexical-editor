@@ -58,7 +58,7 @@ const AddDocument = ({ user, onCancel }) => {
       <DialogContent sx={{ p: 2.5 }}>
         <Box sx={{ width: '100%' }}>
           <Stepper activeStep={activeStep}>
-            {steps.map((label, index) => {
+            {steps.map((label) => {
               const stepProps = {};
               const labelProps = {};
               return (
@@ -103,11 +103,17 @@ const AddDocument = ({ user, onCancel }) => {
                         {values.name}
                       </Typography>
                       <Typography sx={{ mt: 2, mb: 1 }}>{values.description}</Typography>
+                      {users.filter((item) => contributors.includes(item.email) && (item.status !== 'active' || item.status !== 'invited'))
+                        .length !== 0 && (
+                        <Typography sx={{ mt: 2, mb: 1, color: 'red' }} variant="subtitle1">
+                          * Some contributors will not receive an invitation until admin resolves Locked/Deleted status.
+                        </Typography>
+                      )}
                       <Stack sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', pt: 2 }}>
                         {users
                           .filter((item) => contributors.includes(item.email))
                           .map((item, key) => (
-                            <CustomCell key={key} user={item} />
+                            <CustomCell key={key} user={item} status />
                           ))}
                       </Stack>
                     </Stack>
@@ -187,7 +193,7 @@ const AddDocument = ({ user, onCancel }) => {
 };
 
 AddDocument.propTypes = {
-  customer: PropTypes.any,
+  user: PropTypes.any,
   onCancel: PropTypes.func
 };
 
@@ -205,6 +211,13 @@ const StepWrapper = ({ children, activeStep, handleBack, handleNext }) => {
       </Box>
     </>
   );
+};
+
+StepWrapper.propTypes = {
+  children: PropTypes.any,
+  activeStep: PropTypes.any,
+  handleBack: PropTypes.any,
+  handleNext: PropTypes.any
 };
 
 export default AddDocument;

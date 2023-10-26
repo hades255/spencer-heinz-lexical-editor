@@ -164,7 +164,7 @@ export default function AddContributor({ users, value, onChange }) {
         </Stack>
         <Stack direction={'row'} flexWrap="wrap">
           {value.map((option, index) => (
-            <CustomCell key={index} user={users.find((item) => item.email === option)} />
+            <CustomCell status key={index} user={users.find((item) => item.email === option)} />
           ))}
         </Stack>
       </Box>
@@ -247,7 +247,7 @@ export default function AddContributor({ users, value, onChange }) {
                         }
                       }}
                     >
-                      <CustomCell user={users.find((item) => item.email === option)} />
+                      <CustomCell status user={users.find((item) => item.email === option)} />
                     </Box>
                     <Box
                       component={CloseOutlined}
@@ -293,3 +293,9 @@ export default function AddContributor({ users, value, onChange }) {
     </MainCard>
   );
 }
+
+AddContributor.propTypes = {
+  users: PropTypes.any,
+  value: PropTypes.any,
+  onChange: PropTypes.any
+};

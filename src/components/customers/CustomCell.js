@@ -2,14 +2,14 @@ import { Stack, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import UserAvatar from 'sections/apps/user/UserAvatar';
 
-const CustomCell = ({ user }) => {
+const CustomCell = ({ user, status = false }) => {
   if (!user) return <></>;
   return (
     <Stack direction="row" spacing={1.5} alignItems="center">
       <UserAvatar
         user={{
           online_status:
-            user && (user.online_status || user.status)
+            status && user && (user.online_status || user.status)
               ? user.online_status
                 ? 'available'
                 : user.status === 'active'
@@ -31,7 +31,8 @@ const CustomCell = ({ user }) => {
 };
 
 CustomCell.propTypes = {
-  row: PropTypes.object
+  user: PropTypes.object,
+  status: PropTypes.bool
 };
 
 export default CustomCell;

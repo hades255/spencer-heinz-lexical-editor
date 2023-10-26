@@ -220,7 +220,7 @@ const NumberFormatCell = ({ row }) => {
   );
 };
 
-const StatusCell = ({ value }) => {
+export const StatusCell = ({ value }) => {
   switch (value) {
     case 'locked':
       return <Chip color="error" label="Locked" size="small" variant="light" />;

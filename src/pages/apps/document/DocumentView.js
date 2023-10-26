@@ -1,6 +1,6 @@
-import React, { useContext, useEffect } from 'react';
-import { useParams } from 'react-router';
-import { AvatarGroup, Box, Grid, Stack, Typography } from '@mui/material';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { AvatarGroup, Box, Button, Grid, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 import MainCard from 'components/MainCard';
@@ -15,12 +15,35 @@ import SimpleBar from 'simplebar-react';
 import { dispatch } from 'store';
 import { getDocumentSingleList } from 'store/reducers/document';
 import { useSelector } from 'store';
+import BackgroundLetterAvatar from 'components/@extended/BackgroundLetterAvatar';
+import AddContributorsFromContributor from './AddContributorsFromContributor';
+import axiosServices from 'utils/axios';
 
 const DocumentView = () => {
   const theme = useTheme();
   const { uniqueId } = useParams();
   const user = useContext(AuthContext).user;
   const document = useSelector((state) => state.document.document);
+
+  const [addContributorDlg, setAddContributorDlg] = useState(false);
+
+  const handleAddContributors = useCallback(
+    (params = null) => {
+      setAddContributorDlg(false);
+      return;
+      // if (params && params.length) {
+      //   (async () => {
+      //     try {
+      //       await axiosServices.post('/document/' + uniqueId + '/invite', { contributors: params });
+      //       dispatch(getDocumentSingleList(uniqueId));
+      //     } catch (error) {
+      //       console.log(error);
+      //     }
+      //   })();
+      // }
+    },
+    [uniqueId]
+  );
 
   useEffect(() => {
     dispatch(getDocumentSingleList(uniqueId));
@@ -74,6 +97,7 @@ const DocumentView = () => {
                               name: document.creator.name,
                               email: document.creator.email
                             }}
+                            status
                           />
                         )}
                         <Typography variant="h4">{document?.name}</Typography>
@@ -81,19 +105,27 @@ const DocumentView = () => {
                     </Grid>
                     <Grid item xs={12} sm={4}>
                       <Stack direction="row" alignItems="center" justifyContent={'space-between'} spacing={1}>
-                        <AvatarGroup max={5}>
-                          {document?.contributors.map((item, key) => (
-                            <UserAvatar
-                              key={key}
-                              user={{
-                                online_status: item.online_status ?? 'none',
-                                avatar: item.avatar,
-                                name: item.name,
-                                email: item.email
+                        <Stack direction="row">
+                          <AvatarGroup max={6}>
+                            {document?.contributors.map((item, key) => (
+                              <UserAvatar
+                                key={key}
+                                user={{
+                                  online_status: item.online_status ?? 'none',
+                                  avatar: item.avatar,
+                                  name: item.name,
+                                  email: item.email
+                                }}
+                              />
+                            ))}
+                            <BackgroundLetterAvatar
+                              name={'+'}
+                              onClick={() => {
+                                setAddContributorDlg(true);
                               }}
                             />
-                          ))}
-                        </AvatarGroup>
+                          </AvatarGroup>
+                        </Stack>
                         <UserAvatar
                           user={{
                             online_status: 'available',
@@ -119,7 +151,9 @@ const DocumentView = () => {
                   }}
                 >
                   <Typography variant="h5">About Document</Typography>
-                  <Typography variant="subtitle1" color="textSecondary">{document?.description}</Typography>
+                  <Typography variant="subtitle1" color="textSecondary">
+                    {document?.description}
+                  </Typography>
                 </Grid>
               </Grid>
               <Grid container spacing={3}>
@@ -153,6 +187,14 @@ const DocumentView = () => {
           </Grid>
         </Grid>
       </Box>
+      {addContributorDlg && (
+        <AddContributorsFromContributor
+          open={addContributorDlg}
+          onClose={handleAddContributors}
+          user={user}
+          exist={document.invites.map((item) => item._id)}
+        />
+      )}
     </>
   );
 };
