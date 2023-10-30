@@ -15,7 +15,8 @@ import {
   Paper,
   Popper,
   Typography,
-  useMediaQuery
+  useMediaQuery,
+  Badge
 } from '@mui/material';
 
 // project import
@@ -92,7 +93,9 @@ const Message = () => {
         aria-haspopup="true"
         onClick={handleToggle}
       >
-        <MailOutlined />
+        <Badge badgeContent={messages.filter((item) => item.status === 'unread').length} color="primary">
+          <MailOutlined />
+        </Badge>
       </IconButton>
       <Popper
         placement={matchesXs ? 'bottom' : 'bottom-end'}
@@ -180,15 +183,12 @@ const Message = () => {
 export default Message;
 
 export const MessageItem = ({ message, navigate, setOpen = null }) => {
-  const handleClick = useCallback(
-    (e) => {
-      if (message.type === MESSAGE_TYPES.DOCUMENT_INVITE_RESOLVE) {
-        navigate('/message/' + message._id);
-      }
-      if (setOpen) setOpen(false);
-    },
-    [message, navigate]
-  );
+  const handleClick = useCallback(() => {
+    if (message.type === MESSAGE_TYPES.DOCUMENT_INVITE_RESOLVE) {
+      navigate('/message/' + message._id);
+    }
+    if (setOpen) setOpen(false);
+  }, [message, navigate, setOpen]);
   return (
     <>
       <ListItemButton onClick={handleClick}>

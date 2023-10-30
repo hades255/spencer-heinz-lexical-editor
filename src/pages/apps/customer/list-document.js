@@ -127,7 +127,6 @@ const DocumentListPage = () => {
       <Dialog
         maxWidth="sm"
         TransitionComponent={PopupTransition}
-        fullWidth
         onClose={handleCloseCheckPremium}
         open={checkPremium}
         sx={{ '& .MuiDialog-paper': { p: 0 }, transition: 'transform 225ms' }}

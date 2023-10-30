@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
-import React, { forwardRef, useEffect, useRef, useState } from 'react';
-
+import React, { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 // material-ui
 import { styled, useTheme } from '@mui/material/styles';
 import {
@@ -69,21 +69,40 @@ HeaderSort.propTypes = {
 // ==============================|| TABLE PAGINATION ||============================== //
 
 export const TablePagination = ({ gotoPage, rows, setPageSize, pageSize, pageIndex }) => {
+  const location = useLocation();
+
   const [open, setOpen] = useState(false);
 
   const handleClose = () => {
     setOpen(false);
   };
 
+  const updatePageNumber = useCallback(
+    (value) => {
+      const { pathname, search } = location;
+      const searchParams = {
+        page: new URLSearchParams(search).get('page') || pageIndex,
+        perpage: new URLSearchParams(search).get('perpage') || pageSize,
+        ...value
+      };
+      let path = pathname + '?';
+      for (const [k, v] of Object.entries(searchParams)) path += k + '=' + v + '&';
+      window.history.pushState(null, '', path);
+    },
+    [location, pageIndex, pageSize]
+  );
+
   const handleOpen = () => {
     setOpen(true);
   };
 
   const handleChangePagination = (event, value) => {
+    updatePageNumber({ page: value });
     gotoPage(value - 1);
   };
 
   const handleChange = (event) => {
+    updatePageNumber({ perpage: event.target.value, page: 1 });
     setPageSize(+event.target.value);
   };
 
@@ -488,7 +507,8 @@ export const SortingSelect = ({ sortBy, setSortBy, allColumns, desc = false }) =
 SortingSelect.propTypes = {
   setSortBy: PropTypes.func,
   sortBy: PropTypes.string,
-  allColumns: PropTypes.array
+  allColumns: PropTypes.array,
+  desc: PropTypes.any
 };
 
 // ==============================|| CSV EXPORT ||============================== //

@@ -1,5 +1,6 @@
-import PropTypes from 'prop-types';
 import { useCallback, useEffect, useMemo, useState, Fragment, useContext } from 'react';
+import PropTypes from 'prop-types';
+import { useLocation } from 'react-router-dom';
 
 // material-ui
 import { alpha, useTheme } from '@mui/material/styles';
@@ -73,6 +74,9 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent, hand
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
 
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+
   const filterTypes = useMemo(() => renderFilterTypes, []);
   const sortBy = { id: 'name', desc: false };
 
@@ -98,7 +102,12 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent, hand
       columns,
       data,
       filterTypes,
-      initialState: { pageIndex: 0, pageSize: 10, hiddenColumns: ['avatar', 'email', 'workPhone'], sortBy: [sortBy] }
+      initialState: {
+        pageIndex: Number(searchParams.get('page') || '1') - 1,
+        pageSize: Number(searchParams.get('perpage') || '10'),
+        hiddenColumns: ['avatar', 'email', 'workPhone'],
+        sortBy: [sortBy]
+      }
     },
     useGlobalFilter,
     useFilters,
@@ -431,7 +440,7 @@ NumberFormatCell.propTypes = {
 const UserManagementPage = () => {
   const theme = useTheme();
 
-  const data = useSelector((state) => state.user.lists);
+  const data = useSelector((state) => state.user.lists)?.filter((item) => item.role !== 'super admin');
 
   const user = useContext(AuthContext).user;
   const [add, setAdd] = useState(false);
@@ -442,6 +451,7 @@ const UserManagementPage = () => {
   const [customerDeleteId, setCustomerDeleteId] = useState();
   const [userDeleteId, setUserDeleteId] = useState();
   const [advancedSearch, setAdvancedSearch] = useState({
+    active: true,
     deleted: false,
     locked: false,
     pending: false,
@@ -580,7 +590,7 @@ const UserManagementPage = () => {
           columns={columns}
           data={data.filter(
             (item) =>
-              item.status === 'active' ||
+              (advancedSearch.active && item.status === 'active') ||
               (advancedSearch.pending && item.status === 'pending') ||
               (advancedSearch.locked && item.status === 'locked') ||
               (advancedSearch.deleted && item.status === 'deleted') ||

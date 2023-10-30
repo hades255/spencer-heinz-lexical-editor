@@ -1,13 +1,12 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import { DialogContent, DialogTitle, Divider, FormHelperText, Stack } from '@mui/material';
+import { DialogContent, FormHelperText, Stack } from '@mui/material';
 
 import { postDocumentCreate } from 'store/reducers/document';
 
@@ -18,23 +17,23 @@ import { Formik } from 'formik';
 // project import
 import { dispatch } from 'store';
 import StyledTextarea from 'components/form/StyledTextarea';
+import AuthContext from 'contexts/JWTContext';
 import { useSelector } from 'store';
 import { getUserLists } from 'store/reducers/user';
 import CustomCell from 'components/customers/CustomCell';
-import AddContributor from './AddContributor1';
+import AddContributor from 'sections/apps/document/AddContributor1';
+import MainCard from 'components/MainCard';
+import { StepWrapper } from 'sections/apps/document/AddDocument';
 
 const steps = ['Title', 'Descriptions', 'Contributors'];
 
-const AddDocument = ({ user, onCancel }) => {
+const DocumentCreate = () => {
   const navigate = useNavigate();
+  const user = useContext(AuthContext).user;
   const [activeStep, setActiveStep] = useState(0);
   const [contributors, setContributors] = useState([]);
   const users = useSelector((state) => state.user.lists).filter((item) => item._id !== user._id);
   const nextBtn = useRef(null);
-
-  const handleAutocompleteChange = (value) => {
-    setContributors(value);
-  };
 
   const handleKeyDown = useCallback(
     (e) => {
@@ -46,6 +45,10 @@ const AddDocument = ({ user, onCancel }) => {
     },
     [nextBtn]
   );
+
+  const handleAutocompleteChange = (value) => {
+    setContributors(value);
+  };
 
   useEffect(() => {
     dispatch(getUserLists());
@@ -64,9 +67,7 @@ const AddDocument = ({ user, onCancel }) => {
   };
 
   return (
-    <>
-      <DialogTitle>New Document</DialogTitle>
-      <Divider />
+    <MainCard>
       <DialogContent sx={{ p: 2.5 }}>
         <Box sx={{ width: '100%' }}>
           <Stepper activeStep={activeStep}>
@@ -103,7 +104,6 @@ const AddDocument = ({ user, onCancel }) => {
               );
               setStatus({ success: true });
               setSubmitting(false); //  post document
-              onCancel();
             }}
           >
             {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
@@ -201,41 +201,8 @@ const AddDocument = ({ user, onCancel }) => {
           </Formik>
         </Box>
       </DialogContent>
-    </>
+    </MainCard>
   );
 };
 
-AddDocument.propTypes = {
-  user: PropTypes.any,
-  onCancel: PropTypes.func
-};
-
-export const StepWrapper = ({ children, activeStep, handleBack, handleNext, nextBtn }) => {
-  return (
-    <>
-      <Stack sx={{ mt: 2, mb: 1, minHeight: '30vh', maxHeight: '80vh' }}>{children}</Stack>
-      <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-        <Button color="inherit" disabled={activeStep === 0} onClick={handleBack} sx={{ mr: 1 }}>
-          Back
-        </Button>
-        <Box sx={{ flex: '1 1 auto' }} />
-
-        {activeStep < steps.length && (
-          <Button ref={nextBtn} onClick={handleNext}>
-            {activeStep === steps.length - 1 ? 'Overview' : 'Next'}
-          </Button>
-        )}
-      </Box>
-    </>
-  );
-};
-
-StepWrapper.propTypes = {
-  children: PropTypes.any,
-  activeStep: PropTypes.any,
-  handleBack: PropTypes.any,
-  handleNext: PropTypes.any,
-  nextBtn: PropTypes.any
-};
-
-export default AddDocument;
+export default DocumentCreate;

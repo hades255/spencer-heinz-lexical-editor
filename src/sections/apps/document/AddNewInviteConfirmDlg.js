@@ -6,7 +6,6 @@ import { Button, Grid, Dialog, DialogTitle, DialogContent, Stack } from '@mui/ma
 // assets
 // import { getUserLists } from 'store/reducers/user';
 import { PopupTransition } from 'components/@extended/Transitions';
-import AnimateButton from 'components/@extended/AnimateButton';
 
 const AddNewInviteConfirmDlg = ({ open, onClose }) => {
   return (
@@ -15,7 +14,7 @@ const AddNewInviteConfirmDlg = ({ open, onClose }) => {
         maxWidth="sm"
         TransitionComponent={PopupTransition}
         keepMounted
-        onClose={onClose}
+        onClose={() => onClose(false)}
         open={open}
         sx={{ '& .MuiDialog-paper': { p: 2 }, transition: 'transform 225ms' }}
         aria-describedby="alert-dialog-slide-description"
@@ -24,20 +23,16 @@ const AddNewInviteConfirmDlg = ({ open, onClose }) => {
         <DialogContent sx={{ p: 2.5 }}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <Stack direction="row" spacing={2} alignItems="center">
+              <Stack direction="row" spacing={2} alignItems="center" sx={{ p: 1 }}>
                 <Grid item xs={6}>
-                  <AnimateButton>
-                    <Button disableElevation onClick={() => onClose(false)} fullWidth size="large" variant="contained" color="secondary">
-                      Cancel
-                    </Button>
-                  </AnimateButton>
+                  <Button disableElevation onClick={() => onClose(true)} fullWidth size="large" variant="contained" color="primary">
+                    Yes
+                  </Button>
                 </Grid>
                 <Grid item xs={6}>
-                  <AnimateButton>
-                    <Button disableElevation onClick={() => onClose(true)} fullWidth size="large" variant="contained" color="primary">
-                      Yes
-                    </Button>
-                  </AnimateButton>
+                  <Button disableElevation onClick={() => onClose(false)} fullWidth size="large" variant="contained" color="secondary">
+                    Cancel
+                  </Button>
                 </Grid>
               </Stack>
             </Grid>

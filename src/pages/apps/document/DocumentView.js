@@ -125,14 +125,16 @@ const DocumentView = () => {
                             />
                           </AvatarGroup>
                         </Stack>
-                        <UserAvatar
-                          user={{
-                            online_status: 'available',
-                            avatar: user.avatar,
-                            name: user.name,
-                            email: user.email
-                          }}
-                        />
+                        {user && (
+                          <UserAvatar
+                            user={{
+                              online_status: 'none',
+                              avatar: user.avatar,
+                              name: user.name,
+                              email: user.email
+                            }}
+                          />
+                        )}
                       </Stack>
                     </Grid>
                   </Grid>
@@ -191,7 +193,8 @@ const DocumentView = () => {
           open={addContributorDlg}
           onClose={handleAddContributors}
           user={user}
-          exist={document.invites.map((item) => item._id)}
+          exist={document.invites.map((item) => item.email)}
+          creator={document.creator}
         />
       )}
     </>

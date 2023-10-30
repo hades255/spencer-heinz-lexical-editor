@@ -28,7 +28,7 @@ import ScrollX from 'components/ScrollX';
 import Avatar from 'components/@extended/Avatar';
 import IconButton from 'components/@extended/IconButton';
 import { PopupTransition } from 'components/@extended/Transitions';
-import { CSVExport, HeaderSort, IndeterminateCheckbox, SortingSelect, TableRowSelection } from 'components/third-party/ReactTable';
+import { HeaderSort, IndeterminateCheckbox, TableRowSelection } from 'components/third-party/ReactTable';
 import { TablePagination } from 'components/third-party/ReactTableDashboard';
 
 import AddCustomer from 'sections/apps/customer/AddCustomer';

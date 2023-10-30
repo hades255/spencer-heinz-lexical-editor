@@ -9,16 +9,11 @@ import AnimateButton from 'components/@extended/AnimateButton';
 const CheckPremium = ({ onCancel }) => {
   return (
     <>
-      <DialogTitle>Subscription</DialogTitle>
+      <DialogTitle>You have to subscribe to create a new document.</DialogTitle>
       <Divider />
       <DialogContent sx={{ p: 2.5 }}>
         <Grid container spacing={3}>
           <Grid item xs={12}>
-            <Stack spacing={2}>
-              <Typography variant="h4" align="center">
-                You have to subscribe to create a new document.
-              </Typography>
-            </Stack>
             <Stack direction="row" spacing={2} alignItems="center">
               <Grid item xs={6}>
                 <AnimateButton>

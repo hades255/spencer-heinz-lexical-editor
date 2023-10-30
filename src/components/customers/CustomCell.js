@@ -11,7 +11,7 @@ const CustomCell = ({ user, status = false }) => {
           online_status:
             status && user && (user.online_status || user.status)
               ? user.online_status
-                ? 'available'
+                ? user.online_status
                 : user.status === 'active'
                 ? 'offline'
                 : 'do_not_disturb'
@@ -31,7 +31,7 @@ const CustomCell = ({ user, status = false }) => {
 };
 
 CustomCell.propTypes = {
-  user: PropTypes.object,
+  user: PropTypes.any,
   status: PropTypes.bool
 };
 

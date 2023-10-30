@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import { useEffect, useMemo, Fragment } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 // material-ui
 import { alpha, useTheme } from '@mui/material/styles';
@@ -15,12 +16,14 @@ import { renderFilterTypes, GlobalFilter } from 'utils/react-table';
 
 // assets
 import { PlusOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
 
 // ==============================|| REACT TABLE ||============================== //
 
 function DocumentTable({ columns, data, getHeaderProps, renderRowSubComponent, handleAdd }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -48,7 +51,12 @@ function DocumentTable({ columns, data, getHeaderProps, renderRowSubComponent, h
       columns,
       data,
       filterTypes,
-      initialState: { pageIndex: 0, pageSize: 10, hiddenColumns: ['description', '_id', 'createdAt', 'updatedAt'], sortBy: [sortBy] }
+      initialState: {
+        pageIndex: Number(searchParams.get('page') || '1') - 1,
+        pageSize: Number(searchParams.get('perpage') || '10'),
+        hiddenColumns: ['description', '_id', 'createdAt', 'updatedAt'],
+        sortBy: [sortBy]
+      }
     },
     useGlobalFilter,
     useFilters,

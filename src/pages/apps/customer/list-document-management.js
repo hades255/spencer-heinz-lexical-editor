@@ -12,9 +12,9 @@ import IconButton from 'components/@extended/IconButton';
 import { PopupTransition } from 'components/@extended/Transitions';
 
 // assets
-import { CloseOutlined, EyeTwoTone, EditTwoTone, MessageOutlined } from '@ant-design/icons';
+import { CloseOutlined, EyeTwoTone, EditTwoTone, MessageOutlined, DeleteTwoTone } from '@ant-design/icons';
 import { DOCUMENT_STATUS } from 'Plugins/constants';
-import { getDocumentLists } from 'store/reducers/document';
+import { documentDelete, getDocumentLists } from 'store/reducers/document';
 import { useSelector } from 'react-redux';
 import { dispatch } from 'store';
 import { useNavigate } from 'react-router';
@@ -47,7 +47,11 @@ const StatusCell = ({ value }) => {
   }
 };
 
-const ActionCell = (row, setDocument, handleAdd, handleClose, theme) => {
+StatusCell.propTypes = {
+  value: PropTypes.string
+};
+
+const ActionCell = ({ row, setDocument, handleAdd, handleClose, handleDeleteDocument, theme }) => {
   const navigate = useNavigate();
   const collapseIcon = row.isExpanded ? (
     <CloseOutlined style={{ color: theme.palette.error.main }} />
@@ -90,12 +94,30 @@ const ActionCell = (row, setDocument, handleAdd, handleClose, theme) => {
           <MessageOutlined twoToneColor={theme.palette.primary.main} />
         </IconButton>
       </Tooltip>
+      <Tooltip title={'Delete'}>
+        <IconButton
+          color={row.values.status === 'deleted' ? 'secodnary' : 'error'}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (row.values.status === 'deleted') return;
+            handleClose();
+            handleDeleteDocument(row.original._id);
+          }}
+        >
+          <DeleteTwoTone twoToneColor={row.values.status === 'deleted' ? theme.palette.info.main : theme.palette.error.main} />
+        </IconButton>
+      </Tooltip>
     </Stack>
   );
 };
 
-StatusCell.propTypes = {
-  value: PropTypes.string
+ActionCell.propTypes = {
+  row: PropTypes.any,
+  setDocument: PropTypes.any,
+  handleAdd: PropTypes.any,
+  handleClose: PropTypes.any,
+  handleDeleteDocument: PropTypes.any,
+  theme: PropTypes.any
 };
 
 const DocumentManagementPage = () => {
@@ -121,6 +143,10 @@ const DocumentManagementPage = () => {
   const handleClose = () => {
     setOpen(!open);
   };
+
+  const handleDeleteDocument = useCallback((id) => {
+    dispatch(documentDelete(id));
+  }, []);
 
   const columns = useMemo(
     () => [
@@ -169,7 +195,7 @@ const DocumentManagementPage = () => {
         Header: 'Actions',
         className: 'cell-center',
         disableSortBy: true,
-        Cell: ({ row }) => ActionCell(row, setDocument, handleAdd, handleClose, theme)
+        Cell: ({ row }) => ActionCell({ row, setDocument, handleAdd, handleClose, handleDeleteDocument, theme })
       }
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps

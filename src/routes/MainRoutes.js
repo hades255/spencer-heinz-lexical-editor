@@ -16,6 +16,7 @@ import DocumentManagementPage from 'pages/apps/customer/list-document-management
 // import GuestGuard from 'utils/route-guard/GuestGuard';
 import MessageList from 'pages/extra-pages/MessageList';
 import MessageView from 'pages/extra-pages/MessageView';
+import DocumentCreate from 'pages/apps/document/DocumentCreate';
 
 // render - dashboard
 const DashboardDefault = Loadable(lazy(() => import('pages/dashboard/default')));
@@ -165,6 +166,10 @@ const MainRoutes = {
         {
           path: 'list',
           element: <DocumentListPage />
+        },
+        {
+          path: 'create',
+          element: <DocumentCreate />
         },
         {
           path: 'edit/:uniqueId',

@@ -21,14 +21,16 @@ const CheckInvite = () => {
   const [c, setC] = useState('');
   const [u, setU] = useState({});
   const [d, setD] = useState({});
+  const [creator, setCreator] = useState({});
 
   useEffect(() => {
     (async () => {
       try {
         const response = await axiosServices.get('/invite/' + token);
-        const { user, document } = response.data.data;
+        const { user, document, creator: creator_ } = response.data.data;
         setU(user);
         setD(document);
+        setCreator(creator_);
         setC(response.data.code);
       } catch (error) {
         console.log(error);
@@ -67,7 +69,7 @@ const CheckInvite = () => {
           </Stack>
         </Grid>
         <Grid item xs={12}>
-          {c === 'success' && <NewPassword GO={GO} token={token} />}
+          {c === 'success' && <NewPassword GO={GO} token={token} document={d} creator={creator} />}
           {c === 'error' && (
             <Stack direction="row" alignItems="center">
               <Stack>

@@ -27,10 +27,11 @@ import { strengthColor, strengthIndicator } from 'utils/password-strength';
 // assets
 import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import axiosServices from 'utils/axios';
+import NewPasswordConfirm from './NewPasswordConfirm';
 
 // ============================|| JWT - LOGIN ||============================ //
 
-const NewPassword = ({ GO, token }) => {
+const NewPassword = ({ GO, token, creator }) => {
   const scriptedRef = useScriptRef();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -38,6 +39,7 @@ const NewPassword = ({ GO, token }) => {
     setShowPassword(!showPassword);
   };
   const [level, setLevel] = useState();
+  const [confirmDlg, setConfirmDlg] = useState(false);
 
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
@@ -84,6 +86,9 @@ const NewPassword = ({ GO, token }) => {
           <form noValidate onSubmit={handleSubmit}>
             <Grid container spacing={3}>
               <Grid item xs={12}>
+                <Typography variant="h6">
+                  <b>{creator.name}</b> invited you to edit document.
+                </Typography>
                 <Stack spacing={1}>
                   <InputLabel htmlFor="password-signup">Enter New Password</InputLabel>
                   <OutlinedInput
@@ -141,22 +146,44 @@ const NewPassword = ({ GO, token }) => {
               )}
               <Grid item xs={12}>
                 <AnimateButton>
-                  <Button disableElevation disabled={isSubmitting} fullWidth size="large" type="submit" variant="contained" color="primary">
+                  <Button
+                    disableElevation
+                    disabled={isSubmitting}
+                    fullWidth
+                    size="large"
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setConfirmDlg(true)}
+                  >
                     OK
                   </Button>
                 </AnimateButton>
               </Grid>
             </Grid>
+            <NewPasswordConfirm open={confirmDlg} onClose={setConfirmDlg} submit={handleSubmit} />
           </form>
         )}
       </Formik>
+      {/* <Stack sx={{ mt: 2 }}>Read about document</Stack>
+      <Grid sx={{ mt: 1 }}>
+        <Stack>
+          <Typography variant="subtitle1">Title: </Typography>
+          {document.name}
+        </Stack>
+        <Stack>
+          <Typography variant="subtitle1">Description: </Typography>
+          {document.description}
+        </Stack>
+      </Grid> */}
     </>
   );
 };
 
 NewPassword.propTypes = {
   GO: PropTypes.func,
-  token: PropTypes.string
+  token: PropTypes.string,
+  document: PropTypes.object,
+  creator: PropTypes.object
 };
 
 export default NewPassword;

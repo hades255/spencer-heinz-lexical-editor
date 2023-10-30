@@ -58,7 +58,7 @@ const document = createSlice({
     // delete invoice
     deleteDocument(state, action) {
       const { uniqueId } = action.payload;
-      const documents = state.lists.filter((list) => list.uniqueId !== uniqueId);
+      const documents = state.lists.filter((list) => list._id !== uniqueId);
       state.lists = documents;
     }
   }
@@ -138,10 +138,10 @@ export function getDocumentUpdate(uniqueId, updatedDocument) {
   };
 }
 
-export function getDocumentDelete(uniqueId) {
+export function documentDelete(uniqueId) {
   return async () => {
     try {
-      await axiosServices.post('/document/delete', { uniqueId });
+      await axiosServices.delete('/document/' + uniqueId);
       dispatch(deleteDocument({ uniqueId }));
     } catch (error) {
       dispatch(hasError(error));

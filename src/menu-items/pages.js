@@ -54,10 +54,10 @@ const pages = {
         },
         {
           id: 'register',
-          title: <FormattedMessage id="document-edit" />,
+          title: <FormattedMessage id="document-create" />,
           icon: icons.EditOutlined,
           type: 'item',
-          url: '/document/edit/f76ecaeb-300f-4594-b57f-8bd8e96ad650'
+          url: '/document/create'
         }
       ]
     },

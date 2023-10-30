@@ -19,15 +19,7 @@ import IconButton from 'components/@extended/IconButton';
 // assets
 import { CloseOutlined, LineOutlined, SearchOutlined } from '@ant-design/icons';
 
-export function GlobalFilter({
-  preGlobalFilteredRows,
-  globalFilter,
-  setGlobalFilter,
-  deleted,
-  advancedSearch,
-  handleSearchFilter,
-  ...other
-}) {
+export function GlobalFilter({ preGlobalFilteredRows, globalFilter, setGlobalFilter, advancedSearch, handleSearchFilter, ...other }) {
   const count = preGlobalFilteredRows.length;
   const [value, setValue] = useState(globalFilter);
   const onChange = useAsyncDebounce((value) => {
@@ -50,14 +42,8 @@ export function GlobalFilter({
       {advancedSearch && (
         <>
           <FormControlLabel
-            control={
-              <Checkbox checked={advancedSearch.deleted} onChange={handleSearchFilter} name="deleted" color="primary" size="small" />
-            }
-            label="Deleted"
-          />
-          <FormControlLabel
-            control={<Checkbox checked={advancedSearch.locked} onChange={handleSearchFilter} name="locked" color="primary" size="small" />}
-            label="Locked"
+            control={<Checkbox checked={advancedSearch.active} onChange={handleSearchFilter} name="active" color="primary" size="small" />}
+            label="Active"
           />
           <FormControlLabel
             control={
@@ -72,6 +58,16 @@ export function GlobalFilter({
             label="Invited"
           />
           <FormControlLabel
+            control={<Checkbox checked={advancedSearch.locked} onChange={handleSearchFilter} name="locked" color="primary" size="small" />}
+            label="Locked"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox checked={advancedSearch.deleted} onChange={handleSearchFilter} name="deleted" color="primary" size="small" />
+            }
+            label="Deleted"
+          />
+          {/* <FormControlLabel
             control={
               <Checkbox
                 checked={advancedSearch.deleted && advancedSearch.locked && advancedSearch.pending && advancedSearch.invited}
@@ -82,7 +78,7 @@ export function GlobalFilter({
               />
             }
             label="All"
-          />
+          /> */}
         </>
       )}
     </Stack>
@@ -92,7 +88,9 @@ export function GlobalFilter({
 GlobalFilter.propTypes = {
   preGlobalFilteredRows: PropTypes.array,
   globalFilter: PropTypes.string,
-  setGlobalFilter: PropTypes.func
+  setGlobalFilter: PropTypes.func,
+  advancedSearch: PropTypes.any,
+  handleSearchFilter: PropTypes.any
 };
 
 export function DateColumnFilter({ column: { filterValue, setFilter } }) {

@@ -56,7 +56,6 @@ PopperComponent.propTypes = {
 };
 
 const StyledPopper = styled(Popper)(({ theme }) => ({
-  border: `1px solid ${theme.palette.mode === ThemeMode.DARK ? '#30363d' : '#e1e4e8'}`,
   boxShadow: `0 8px 24px ${theme.palette.mode === ThemeMode.DARK ? 'rgb(1, 4, 9)' : 'rgba(149, 157, 165, 0.2)'}`,
   borderRadius: 6,
   width: 300,
@@ -148,7 +147,7 @@ export default function AddContributor({ users, value, onChange }) {
   const id = open ? 'select-contributors' : undefined;
 
   return (
-    <MainCard>
+    <MainCard border={false}>
       <Box>
         <Stack direction={'row'} sx={{ mb: '10px' }}>
           <Stack spacing={1.5} alignItems="center">
