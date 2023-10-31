@@ -95,7 +95,7 @@ const AddNewInviteDlg = ({ open, email, onClose }) => {
                           })
                         );
                       } else {
-                        dispatch(addNewUser(response));
+                        dispatch(addNewUser(response.data.user));
                         setStatus({ success: true });
                         dispatch(
                           openSnackbar({

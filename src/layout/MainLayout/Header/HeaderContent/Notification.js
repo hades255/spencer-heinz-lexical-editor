@@ -27,8 +27,8 @@ import { ThemeMode } from 'config';
 import { BellOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useSelector } from 'store';
 import { dispatch } from 'store';
-import { addLists, setNotificationsRead } from 'store/reducers/notification';
-import { addLists as setMessageLists } from 'store/reducers/message';
+import { addLists, setLists, setNotificationsRead } from 'store/reducers/notification';
+import { addLists as addMessageLists, setLists as setMessageLists } from 'store/reducers/message';
 import NotificationItem from './NotificationItem';
 import AuthContext from 'contexts/JWTContext';
 import { HandleNotificationDlg } from './HandleNotification';
@@ -98,6 +98,11 @@ const Notification = () => {
     setOpenHandle(false);
   }, []);
 
+  useEffect(() => {
+    dispatch(setLists([]));
+    dispatch(setMessageLists([]));
+  }, []);
+
   const [socket, setSocket] = useState({ ws: null, opened: false });
 
   useEffect(() => {
@@ -110,7 +115,7 @@ const Notification = () => {
       const data = JSON.parse(event.data);
       if (data) {
         dispatch(addLists(data.notifications));
-        dispatch(setMessageLists(data.messages));
+        dispatch(addMessageLists(data.messages));
       }
     };
 

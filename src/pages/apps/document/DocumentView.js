@@ -187,9 +187,7 @@ const DocumentView = () => {
                           minHeight: 420
                         }}
                       >
-                        <EditorHistoryStateContext>
-                          <LexicalEditor uniqueId={uniqueId} />
-                        </EditorHistoryStateContext>
+                        <EditorHistoryStateContext>{user && <LexicalEditor uniqueId={uniqueId} user={user} />}</EditorHistoryStateContext>
                       </SimpleBar>
                     </Grid>
                   </Grid>

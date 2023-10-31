@@ -48,9 +48,8 @@ const excludedProperties = new Map();
 excludedProperties.set(CommentNode, new Set(['__suppressed', '__currentUser']));
 excludedProperties.set(LockNode, new Set(['__currentUser']));
 
-const LexicalEditor = ({ uniqueId }) => {
-  const { allUsers } = useSelector((state) => state.chat);
-  const { user } = useAuth();
+const LexicalEditor = ({ uniqueId, user }) => {
+  const allUsers = useSelector((state) => state.user.lists);
   const { historyState } = useEditorHistoryState();
 
   const [isLoading, setIsLoading] = useState(true);
@@ -138,10 +137,6 @@ const LexicalEditor = ({ uniqueId }) => {
           // });
           return provider;
         }}
-        // Optional initial editor state in case collaborative Y.Doc won't
-        // have any existing data on server. Then it'll user this value to populate editor.
-        // It accepts same type of values as LexicalComposer editorState
-        // prop (json string, state object, or a function)
         key={uuidv4()}
         initialEditorState={initialEditorState}
         username={user.name}
@@ -172,7 +167,7 @@ LexicalEditor.propTypes = {
 function initialEditorState() {
   const root = $getRoot();
   const paragraph = $createParagraphNode();
-  const text = $createTextNode("");
+  const text = $createTextNode('');
   paragraph.append(text);
   root.append(paragraph);
 }

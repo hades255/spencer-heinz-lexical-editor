@@ -1,12 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
-import { createPortal } from 'react-dom';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { SELECTION_CHANGE_COMMAND, FORMAT_TEXT_COMMAND, $getSelection, $isRangeSelection, createCommand } from 'lexical';
 import { $isLinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
 import { $wrapNodeInElement } from '@lexical/utils';
 import { $isAtNodeEnd } from '@lexical/selection';
 import { mergeRegister } from '@lexical/utils';
+import { createPortal } from 'react-dom';
 import {
   // $createCodeNode,
   $isCodeNode,
@@ -177,7 +176,7 @@ function FloatingLinkEditor({ editor }) {
               role="button"
               tabIndex={0}
               onMouseDown={(event) => event.preventDefault()}
-              onKeyDown={() => {}}
+              onKeyDown={() => { }}
               onClick={() => {
                 setEditMode(true);
               }}
@@ -189,22 +188,18 @@ function FloatingLinkEditor({ editor }) {
   );
 }
 
-FloatingLinkEditor.propTypes = {
-  editor: PropTypes.any
-};
-
-// function Select({ onChange, className, options, value }) {
-//   return (
-//     <select className={className} onChange={onChange} value={value}>
-//       <option hidden={true} value="" />
-//       {options.map((option) => (
-//         <option key={option} value={option}>
-//           {option}
-//         </option>
-//       ))}
-//     </select>
-//   );
-// }
+function Select({ onChange, className, options, value }) {
+  return (
+    <select className={className} onChange={onChange} value={value}>
+      <option hidden={true} value="" />
+      {options.map((option) => (
+        <option key={option} value={option}>
+          {option}
+        </option>
+      ))}
+    </select>
+  );
+}
 
 function getSelectedNode(selection) {
   const anchor = selection.anchor;
@@ -336,7 +331,7 @@ export default function ToolbarPlugin({ carModel, setCarModel, currentUser, isLo
       nodes.forEach((_node) => {
         const node = _node.getLatest();
 
-        if (anchorNode.is(focusNode) && nodes.length === 1) {
+        if (anchorNode.is(focusNode) && nodes?.length === 1) {
           console.log('single node');
           // check if one whole node is selected
           if (anchorNode.isDirty() && node.getNextSibling()) {
@@ -620,7 +615,7 @@ export default function ToolbarPlugin({ carModel, setCarModel, currentUser, isLo
               alert: {
                 color: 'error'
               },
-              close: true
+              close: false
             })
           );
           return false;
@@ -660,7 +655,7 @@ export default function ToolbarPlugin({ carModel, setCarModel, currentUser, isLo
       nodes.forEach((_node) => {
         const node = _node.getLatest();
 
-        if (anchorNode.is(focusNode) && nodes.length === 1) {
+        if (anchorNode.is(focusNode) && nodes?.length === 1) {
           console.log('single node');
           // check if one whole node is selected
           if (anchorNode.isDirty() && node.getNextSibling()) {
@@ -1057,11 +1052,3 @@ export default function ToolbarPlugin({ carModel, setCarModel, currentUser, isLo
     </div>
   );
 }
-
-ToolbarPlugin.propTypes = {
-  carModel: PropTypes.any,
-  setCarModel: PropTypes.any,
-  currentUser: PropTypes.any,
-  isLockedShow: PropTypes.any,
-  setIsLockedShow: PropTypes.any
-};

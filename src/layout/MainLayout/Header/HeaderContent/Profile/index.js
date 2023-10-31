@@ -52,12 +52,12 @@ const Profile = () => {
   const { logout, user } = useAuth();
   const handleLogout = async () => {
     try {
-      await logout();
       navigate(`/login`, {
         state: {
           from: ''
         }
       });
+      await logout();
     } catch (err) {
       console.error(err);
     }
