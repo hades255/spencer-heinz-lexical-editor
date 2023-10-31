@@ -3,7 +3,19 @@ import { useNavigate } from 'react-router-dom';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
-import { Badge, Box, ClickAwayListener, List, ListItemButton, ListItemText, Paper, Popper, Typography, useMediaQuery } from '@mui/material';
+import {
+  Badge,
+  Box,
+  ClickAwayListener,
+  List,
+  ListItemButton,
+  ListItemText,
+  Paper,
+  Popper,
+  Tooltip,
+  Typography,
+  useMediaQuery
+} from '@mui/material';
 
 // project import
 import MainCard from 'components/MainCard';
@@ -12,23 +24,24 @@ import Transitions from 'components/@extended/Transitions';
 import { ThemeMode } from 'config';
 
 // assets
-import { BellOutlined } from '@ant-design/icons';
+import { BellOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useSelector } from 'store';
 import { dispatch } from 'store';
-import { addLists, getReadNotifications, setRead } from 'store/reducers/notification';
-import { setLists as setMessageLists } from 'store/reducers/message';
+import { addLists, setNotificationsRead } from 'store/reducers/notification';
+import { addLists as setMessageLists } from 'store/reducers/message';
 import NotificationItem from './NotificationItem';
 import AuthContext from 'contexts/JWTContext';
 import { HandleNotificationDlg } from './HandleNotification';
+import { NewNotificationDlg } from './NewNotificationDlg';
 
 // sx styles
-const avatarSX = {
+export const avatarSX = {
   width: 36,
   height: 36,
   fontSize: '1rem'
 };
 
-const actionSX = {
+export const actionSX = {
   mt: '6px',
   ml: 1,
   top: 'auto',
@@ -50,21 +63,26 @@ const Notification = () => {
 
   const anchorRef = useRef(null);
   const [open, setOpen] = useState(false);
+  const [first, setFirst] = useState(true);
 
   const [notiHandle, setNotiHandle] = useState(null);
   const [openHandle, setOpenHandle] = useState(false);
 
   const handleToggle = useCallback(() => {
-    if (open && notifications.length) {
-      dispatch(setRead());
-    }
     setOpen((prevOpen) => !prevOpen);
-  }, [open, notifications]);
+  }, []);
+
+  const handleSetRead = useCallback(() => {
+    if (notifications?.filter((item) => item.status === 'unread').length) {
+      dispatch(setNotificationsRead());
+    }
+  }, [notifications]);
 
   const handleGoNotificationList = useCallback(
     (e) => {
       e.preventDefault();
       navigate('/notifications');
+      setOpen(false);
     },
     [navigate]
   );
@@ -81,10 +99,6 @@ const Notification = () => {
   }, []);
 
   const [socket, setSocket] = useState({ ws: null, opened: false });
-
-  useEffect(() => {
-    dispatch(getReadNotifications());
-  }, []);
 
   useEffect(() => {
     const ws = new WebSocket(process.env.REACT_APP_NOTIFICATION_WEBSOCKET_URL || 'ws://localhost:8000/notification/socket');
@@ -118,10 +132,9 @@ const Notification = () => {
       if (anchorRef.current && anchorRef.current.contains(event.target)) {
         return;
       }
-      if (notifications.length) dispatch(setRead());
       setOpen(false);
     },
-    [notifications, anchorRef]
+    [anchorRef]
   );
 
   const iconBackColorOpen = theme.palette.mode === ThemeMode.DARK ? 'grey.200' : 'grey.300';
@@ -176,7 +189,19 @@ const Notification = () => {
                 }}
               >
                 <ClickAwayListener onClickAway={handleClose}>
-                  <MainCard title="Notification" elevation={0} border={true} content={false}>
+                  <MainCard
+                    title="Notification"
+                    elevation={0}
+                    border={true}
+                    content={false}
+                    secondary={
+                      <Tooltip title="Mark as all read">
+                        <IconButton color="success" size="small" onClick={handleSetRead}>
+                          <CheckCircleOutlined style={{ fontSize: '1.15rem' }} />
+                        </IconButton>
+                      </Tooltip>
+                    }
+                  >
                     <List
                       component="nav"
                       sx={{
@@ -212,7 +237,12 @@ const Notification = () => {
           )}
         </Popper>
       </Box>
-      {openHandle && <HandleNotificationDlg user={user} notification={notiHandle} open={openHandle} handleClose={handleCloseRedirect} />}
+      <HandleNotificationDlg user={user} notification={notiHandle} open={openHandle} handleClose={handleCloseRedirect} />
+      <NewNotificationDlg
+        notifications={notifications?.filter((item) => item.status === 'unread')}
+        open={first && notifications?.filter((item) => item.status === 'unread').length !== 0}
+        handleClose={setFirst}
+      />
     </>
   );
 };

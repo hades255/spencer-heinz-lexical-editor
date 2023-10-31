@@ -166,46 +166,44 @@ const MainRoutes = {
               )
             }
           ]
-        }
-      ]
-    },
-    {
-      path: 'document',
-      element: <MainLayout />,
-      children: [
-        {
-          path: 'list',
-          element: <DocumentListPage />
         },
         {
-          path: 'create',
-          element: (
-            <ContributorGuard>
-              <DocumentCreate />
-            </ContributorGuard>
-          )
+          path: 'document',
+          children: [
+            {
+              path: 'list',
+              element: <DocumentListPage />
+            },
+            {
+              path: 'create',
+              element: (
+                <ContributorGuard>
+                  <DocumentCreate />
+                </ContributorGuard>
+              )
+            },
+            {
+              path: 'edit/:uniqueId',
+              element: <Chat />
+            },
+            {
+              path: ':uniqueId',
+              element: <DocumentView />
+            }
+          ]
         },
         {
-          path: 'edit/:uniqueId',
-          element: <Chat />
-        },
-        {
-          path: ':uniqueId',
-          element: <DocumentView />
-        }
-      ]
-    },
-    {
-      path: 'message',
-      element: <MainLayout />,
-      children: [
-        {
-          path: '',
-          element: <MessageList />
-        },
-        {
-          path: ':uniqueId',
-          element: <MessageView />
+          path: 'message',
+          children: [
+            {
+              path: '',
+              element: <MessageList />
+            },
+            {
+              path: ':uniqueId',
+              element: <MessageView />
+            }
+          ]
         }
       ]
     },

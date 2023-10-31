@@ -16,7 +16,8 @@ import {
   Popper,
   Typography,
   useMediaQuery,
-  Badge
+  Badge,
+  Tooltip
 } from '@mui/material';
 
 // project import
@@ -31,6 +32,8 @@ import { useSelector } from 'store';
 import moment from 'moment';
 import BackgroundLetterAvatar from 'components/@extended/BackgroundLetterAvatar';
 import { MESSAGE_TYPES } from 'config/constants';
+import { dispatch } from 'store';
+import { setMessageRead, setMessagesRead } from 'store/reducers/message';
 
 // sx styles
 const avatarSX = {
@@ -77,6 +80,12 @@ const Message = () => {
     },
     [navigate]
   );
+
+  const handleSetAllRead = useCallback(() => {
+    if (messages?.filter((item) => item.status === 'unread').length) {
+      dispatch(setMessagesRead());
+    }
+  }, [messages]);
 
   const iconBackColorOpen = theme.palette.mode === ThemeMode.DARK ? 'grey.200' : 'grey.300';
   const iconBackColor = theme.palette.mode === ThemeMode.DARK ? 'background.default' : 'grey.100';
@@ -139,9 +148,11 @@ const Message = () => {
                   border={true}
                   content={false}
                   secondary={
-                    <IconButton size="small" onClick={handleToggle}>
-                      <CloseOutlined />
-                    </IconButton>
+                    <Tooltip title="Mark as all read">
+                      <IconButton size="small" onClick={handleSetAllRead}>
+                        <CloseOutlined />
+                      </IconButton>
+                    </Tooltip>
                   }
                 >
                   <List
@@ -184,6 +195,7 @@ export default Message;
 
 export const MessageItem = ({ message, navigate, setOpen = null }) => {
   const handleClick = useCallback(() => {
+    dispatch(setMessageRead(message));
     if (message.type === MESSAGE_TYPES.DOCUMENT_INVITE_RESOLVE) {
       navigate('/message/' + message._id);
     }
@@ -191,7 +203,7 @@ export const MessageItem = ({ message, navigate, setOpen = null }) => {
   }, [message, navigate, setOpen]);
   return (
     <>
-      <ListItemButton onClick={handleClick}>
+      <ListItemButton selected={message.status === 'unread'} onClick={handleClick}>
         <ListItemAvatar>
           <BackgroundLetterAvatar name={message.from.name} />
         </ListItemAvatar>

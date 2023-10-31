@@ -37,19 +37,19 @@ const Breadcrumbs = ({
   let currentPath = location.pathname;
 
   // only used for component demo breadcrumbs
-  if (currentPath.includes('/components-overview/breadcrumbs')) {
-    currentPath = '/apps/kanban/board';
-  }
+  // if (currentPath.includes('/components-overview/breadcrumbs')) {
+  //   currentPath = '/apps/kanban/board';
+  // }
 
-  if (currentPath.includes('/apps/kanban/backlogs')) {
-    currentPath = '/apps/kanban/board';
-  }
+  // if (currentPath.includes('/apps/kanban/backlogs')) {
+  //   currentPath = '/apps/kanban/board';
+  // }
 
-  useEffect(() => {
-    if (currentPath.includes('/apps/profiles/user/payment')) {
-      setItem(undefined);
-    }
-  }, [item, currentPath]);
+  // useEffect(() => {
+  //   if (currentPath.includes('/apps/profiles/user/payment')) {
+  //     setItem(undefined);
+  //   }
+  // }, [item, currentPath]);
 
   const iconSX = {
     marginRight: theme.spacing(0.75),
@@ -62,7 +62,7 @@ const Breadcrumbs = ({
   // set active item state
   const getCollapse = (menu) => {
     if (menu.children) {
-      menu.children.filter((collapse) => {
+      for (let collapse of menu.children) {
         if (collapse.type && collapse.type === 'collapse') {
           getCollapse(collapse);
           if (collapse.url === currentPath) {
@@ -75,8 +75,7 @@ const Breadcrumbs = ({
             setItem(collapse);
           }
         }
-        return false;
-      });
+      }
     }
   };
 
@@ -88,6 +87,8 @@ const Breadcrumbs = ({
       return false;
     });
   });
+
+  if (currentPath !== item?.url) return <></>;
 
   // item separator
   const SeparatorIcon = separator;

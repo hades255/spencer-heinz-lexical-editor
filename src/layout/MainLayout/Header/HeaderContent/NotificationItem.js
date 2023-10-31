@@ -1,15 +1,20 @@
 import { useCallback } from 'react';
+import PropTypes from 'prop-types';
 import moment from 'moment';
 // import { BellOutlined, CheckCircleOutlined, GiftOutlined, MessageOutlined, SettingOutlined } from '@ant-design/icons';
 import { Avatar, Divider, ListItemButton, ListItemAvatar, ListItemText, ListItemSecondaryAction, Typography } from '@mui/material';
 import { NOTIFICATION_ITEM } from 'config/constants';
+import { dispatch } from 'store';
+import { setNotificationRead } from 'store/reducers/notification';
 
 const NotificationItem = ({ notification, setOpen, redirect }) => {
   const handleRedirect = useCallback(() => {
-    if (notification.redirect) {
-      setOpen(false);
-      redirect(notification);
-    }
+    dispatch(setNotificationRead(notification));
+    if (setOpen && redirect)
+      if (notification.redirect) {
+        redirect(notification);
+      }
+    setOpen(false);
   }, [notification, setOpen, redirect]);
 
   return (
@@ -58,3 +63,9 @@ const NotificationItem = ({ notification, setOpen, redirect }) => {
 };
 
 export default NotificationItem;
+
+NotificationItem.propTypes = {
+  notification: PropTypes.any,
+  setOpen: PropTypes.any,
+  redirect: PropTypes.any
+};

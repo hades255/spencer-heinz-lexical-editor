@@ -1,11 +1,12 @@
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
+import { createPortal } from 'react-dom';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { SELECTION_CHANGE_COMMAND, FORMAT_TEXT_COMMAND, $getSelection, $isRangeSelection, createCommand } from 'lexical';
 import { $isLinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
 import { $wrapNodeInElement } from '@lexical/utils';
 import { $isAtNodeEnd } from '@lexical/selection';
 import { mergeRegister } from '@lexical/utils';
-import { createPortal } from 'react-dom';
 import {
   // $createCodeNode,
   $isCodeNode,
@@ -188,18 +189,22 @@ function FloatingLinkEditor({ editor }) {
   );
 }
 
-function Select({ onChange, className, options, value }) {
-  return (
-    <select className={className} onChange={onChange} value={value}>
-      <option hidden={true} value="" />
-      {options.map((option) => (
-        <option key={option} value={option}>
-          {option}
-        </option>
-      ))}
-    </select>
-  );
-}
+FloatingLinkEditor.propTypes = {
+  editor: PropTypes.any
+};
+
+// function Select({ onChange, className, options, value }) {
+//   return (
+//     <select className={className} onChange={onChange} value={value}>
+//       <option hidden={true} value="" />
+//       {options.map((option) => (
+//         <option key={option} value={option}>
+//           {option}
+//         </option>
+//       ))}
+//     </select>
+//   );
+// }
 
 function getSelectedNode(selection) {
   const anchor = selection.anchor;
@@ -1052,3 +1057,11 @@ export default function ToolbarPlugin({ carModel, setCarModel, currentUser, isLo
     </div>
   );
 }
+
+ToolbarPlugin.propTypes = {
+  carModel: PropTypes.any,
+  setCarModel: PropTypes.any,
+  currentUser: PropTypes.any,
+  isLockedShow: PropTypes.any,
+  setIsLockedShow: PropTypes.any
+};
