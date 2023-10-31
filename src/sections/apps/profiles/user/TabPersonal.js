@@ -7,7 +7,6 @@ import {
   Box,
   Button,
   CardHeader,
-  Chip,
   Divider,
   FormHelperText,
   Grid,
@@ -34,7 +33,6 @@ import { dispatch } from 'store';
 import { openSnackbar } from 'store/reducers/snackbar';
 
 // assets
-import { CloseOutlined } from '@ant-design/icons';
 import { getUserUpdate } from 'store/reducers/user';
 // styles & constant
 const ITEM_HEIGHT = 48;
@@ -46,48 +44,6 @@ const MenuProps = {
     }
   }
 };
-
-const skills = [
-  'Adobe XD',
-  'After Effect',
-  'Angular',
-  'Animation',
-  'ASP.Net',
-  'Bootstrap',
-  'C#',
-  'CC',
-  'Corel Draw',
-  'CSS',
-  'DIV',
-  'Dreamweaver',
-  'Figma',
-  'Graphics',
-  'HTML',
-  'Illustrator',
-  'J2Ee',
-  'Java',
-  'Javascript',
-  'JQuery',
-  'Logo Design',
-  'Material UI',
-  'Motion',
-  'MVC',
-  'MySQL',
-  'NodeJS',
-  'npm',
-  'Photoshop',
-  'PHP',
-  'React',
-  'Redux',
-  'Reduxjs & tooltit',
-  'SASS',
-  'SCSS',
-  'SQL Server',
-  'SVG',
-  'UI/UX',
-  'User Interface Designing',
-  'Wordpress'
-];
 
 function useInputRef() {
   return useOutletContext();
@@ -192,7 +148,7 @@ const TabPersonal = () => {
                   alert: {
                     color: 'success'
                   },
-                  close: false
+                  close: true
                 })
               );
               updateProfile(newUser);
@@ -322,7 +278,8 @@ const TabPersonal = () => {
                           MenuProps={MenuProps}
                         >
                           {[
-                            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
+                            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+                            31
                           ].map((i) => (
                             <MenuItem
                               key={i}

@@ -70,6 +70,7 @@ const Notification = () => {
   );
 
   const handleRedirect = useCallback((params) => {
+    // if (params?.status === 'read') return;
     setNotiHandle(params);
     setOpenHandle(true);
   }, []);

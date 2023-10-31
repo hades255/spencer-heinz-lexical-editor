@@ -93,7 +93,7 @@ const ToolbarLock = ({ user, users, editor }) => {
           alert: {
             color: 'error'
           },
-          close: false
+          close: true
         })
       );
       return false;
@@ -135,7 +135,7 @@ const ToolbarLock = ({ user, users, editor }) => {
                 alert: {
                   color: 'error'
                 },
-                close: false
+                close: true
               })
             );
           }

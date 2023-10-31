@@ -43,7 +43,7 @@ const TabPassword = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const { user, resetPassword } = useAuth();
+  const { resetPassword } = useAuth();
   const [pwdResetAt, setPwdResetAt] = useState('');
   const [lastLogonTime, setLastLogonTime] = useState('');
   const [IpAddress, setIpAddress] = useState('');
@@ -115,9 +115,8 @@ const TabPassword = () => {
             .test('confirm', `Passwords don't match.`, (confirm, yup) => yup.parent.password === confirm)
         })}
         onSubmit={async (values, { resetForm, setErrors, setStatus, setSubmitting }) => {
-
           try {
-            const response = await resetPassword(values.old, values.password);
+            await resetPassword(values.old, values.password);
             dispatch(
               openSnackbar({
                 open: true,
@@ -126,14 +125,13 @@ const TabPassword = () => {
                 alert: {
                   color: 'success'
                 },
-                close: false
+                close: true
               })
             );
 
             resetForm();
             setStatus({ success: false });
             setSubmitting(false);
-
           } catch (err) {
             setStatus({ success: false });
             setErrors({ submit: err.message });
@@ -146,14 +144,13 @@ const TabPassword = () => {
                 alert: {
                   color: 'error'
                 },
-                close: false
+                close: true
               })
             );
           }
-
         }}
       >
-        {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
+        {({ errors, handleBlur, handleChange, handleSubmit, touched, values }) => (
           <form noValidate onSubmit={handleSubmit}>
             <Grid container spacing={3}>
               <Grid item container spacing={3} xs={12} sm={6}>

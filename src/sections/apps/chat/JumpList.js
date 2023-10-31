@@ -71,7 +71,7 @@ function JumpList({ search }) {
           alert: {
             color: 'error'
           },
-          close: false
+          close: true
         })
       );
     }

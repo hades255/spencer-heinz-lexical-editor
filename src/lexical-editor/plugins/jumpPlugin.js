@@ -44,7 +44,7 @@ export const JumpPlugin = () => {
             alert: {
               color: 'error'
             },
-            close: false
+            close: true
           });
         }
         return false;

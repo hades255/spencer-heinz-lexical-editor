@@ -123,7 +123,7 @@ export const BlackoutPlugin = ({ user, users }) => {
             alert: {
               color: 'error'
             },
-            close: false
+            close: true
           })
         );
         return false;

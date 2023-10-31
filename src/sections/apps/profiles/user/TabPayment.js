@@ -216,7 +216,7 @@ const TabPayment = () => {
                       alert: {
                         color: 'success'
                       },
-                      close: false
+                      close: true
                     })
                   );
                   setStatus({ success: false });
@@ -294,7 +294,7 @@ const TabPayment = () => {
                       alert: {
                         color: 'success'
                       },
-                      close: false
+                      close: true
                     })
                   );
 

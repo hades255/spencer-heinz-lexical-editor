@@ -152,7 +152,7 @@ export const LockPlugin = ({ user, users }) => {
             alert: {
               color: 'error'
             },
-            close: false
+            close: true
           })
         );
         return false;

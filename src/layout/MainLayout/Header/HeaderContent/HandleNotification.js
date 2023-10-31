@@ -92,20 +92,35 @@ const ReceiveInvitation = ({ notification, onCancel, send = false }) => {
               </Stack>
             ) : (
               <Stack direction="row" spacing={2} alignItems="center">
-                <Grid item xs={6}>
-                  <AnimateButton>
-                    <Button disableElevation onClick={handleReject} fullWidth size="large" variant="contained" color="secondary">
-                      Reject
-                    </Button>
-                  </AnimateButton>
-                </Grid>
-                <Grid item xs={6}>
-                  <AnimateButton>
-                    <Button disableElevation onClick={handleAccept} fullWidth size="large" variant="contained" color="primary">
-                      Accept
-                    </Button>
-                  </AnimateButton>
-                </Grid>
+                {notification.status === 'unread' ? (
+                  <>
+                    <Grid item xs={6}>
+                      <AnimateButton>
+                        <Button disableElevation onClick={handleReject} fullWidth size="large" variant="contained" color="secondary">
+                          Reject
+                        </Button>
+                      </AnimateButton>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <AnimateButton>
+                        <Button disableElevation onClick={handleAccept} fullWidth size="large" variant="contained" color="primary">
+                          Accept
+                        </Button>
+                      </AnimateButton>
+                    </Grid>
+                  </>
+                ) : (
+                  <>
+                    <Grid item xs={12}>
+                      <Typography variant="h6">You{"'"}ve handled this request.</Typography>
+                      <AnimateButton>
+                        <Button disableElevation onClick={onCancel} fullWidth size="large" variant="contained" color="secondary">
+                          Close
+                        </Button>
+                      </AnimateButton>
+                    </Grid>
+                  </>
+                )}
               </Stack>
             )}
           </Grid>

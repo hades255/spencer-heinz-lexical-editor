@@ -87,28 +87,28 @@ const AuthResetPassword = () => {
                 alert: {
                   color: 'success'
                 },
-                close: false
+                close: true
               })
             );
 
-          //   setTimeout(() => {
-          //     navigate(isLoggedIn ? '/auth/login' : '/login', { replace: true });
-          //   }, 1500);
-          // } else {
-          //   setStatus({ success: false });
-          //   setSubmitting(false);
+            //   setTimeout(() => {
+            //     navigate(isLoggedIn ? '/auth/login' : '/login', { replace: true });
+            //   }, 1500);
+            // } else {
+            //   setStatus({ success: false });
+            //   setSubmitting(false);
 
-          //   dispatch(
-          //     openSnackbar({
-          //       open: true,
-          //       message: 'Password mismatch.',
-          //       variant: 'alert',
-          //       alert: {
-          //         color: 'danger'
-          //       },
-          //       close: false
-          //     })
-          //   );
+            //   dispatch(
+            //     openSnackbar({
+            //       open: true,
+            //       message: 'Password mismatch.',
+            //       variant: 'alert',
+            //       alert: {
+            //         color: 'danger'
+            //       },
+            //       close: true
+            //     })
+            //   );
 
             setTimeout(() => {
               navigate(isLoggedIn ? '/auth/login' : '/login', { replace: true });

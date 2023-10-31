@@ -108,7 +108,7 @@ export function ActionsPlugin({ user }) {
                     alert: {
                       color: 'error'
                     },
-                    close: false
+                    close: true
                   })
                 );
               }
@@ -159,7 +159,7 @@ export function ActionsPlugin({ user }) {
               alert: {
                 color: 'error'
               },
-              close: false
+              close: true
             })
           );
           editor.setEditable(false);
@@ -208,7 +208,7 @@ export function ActionsPlugin({ user }) {
               alert: {
                 color: 'error'
               },
-              close: false
+              close: true
             })
           );
           editor.setEditable(false);

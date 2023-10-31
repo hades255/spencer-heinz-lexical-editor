@@ -32,7 +32,7 @@ const DocumentCreate = () => {
   const user = useContext(AuthContext).user;
   const [activeStep, setActiveStep] = useState(0);
   const [contributors, setContributors] = useState([]);
-  const users = useSelector((state) => state.user.lists).filter((item) => item._id !== user._id);
+  const users = useSelector((state) => state.user.lists).filter((item) => item._id !== user?._id);
   const nextBtn = useRef(null);
 
   const handleKeyDown = useCallback(

@@ -4,18 +4,20 @@ import { useNavigate } from 'react-router-dom';
 
 // project import
 import AuthContext from 'contexts/JWTContext';
+import useAuth from 'hooks/useAuth';
 
 // ==============================|| AUTH GUARD ||============================== //
 
 const AdminGuard = ({ children }) => {
+  const { isLoggedIn } = useAuth();
   const user = useContext(AuthContext).user;
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user.role !== 'admin' && user.role !== 'super admin') {
+    if (isLoggedIn && user.role !== 'admin' && user.role !== 'super admin') {
       navigate('/dashboard');
     }
-  }, [user, navigate]);
+  }, [user, isLoggedIn, navigate]);
 
   return children;
 };

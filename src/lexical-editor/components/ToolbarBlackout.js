@@ -98,7 +98,7 @@ const ToolbarBlackout = ({ user, users, editor }) => {
           alert: {
             color: 'error'
           },
-          close: false
+          close: true
         })
       );
       return false;
@@ -137,7 +137,7 @@ const ToolbarBlackout = ({ user, users, editor }) => {
                 alert: {
                   color: 'error'
                 },
-                close: false
+                close: true
               })
             );
           }

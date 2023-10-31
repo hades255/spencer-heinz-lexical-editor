@@ -102,7 +102,7 @@ export function postDocumentCreate(newDocument, navigate) {
           alert: {
             color: 'success'
           },
-          close: false
+          close: true
         })
       );
       if (response.data.data.document) {
@@ -121,7 +121,7 @@ export function postDocumentCreate(newDocument, navigate) {
           alert: {
             color: 'error'
           },
-          close: false
+          close: true
         })
       );
     }
@@ -153,7 +153,7 @@ export function documentDelete(uniqueId) {
           alert: {
             color: 'success'
           },
-          close: false
+          close: true
         })
       );
     } catch (error) {

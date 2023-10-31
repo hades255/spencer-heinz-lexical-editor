@@ -91,7 +91,7 @@ const AddNewInviteDlg = ({ open, email, onClose }) => {
                             alert: {
                               color: 'error'
                             },
-                            close: false
+                            close: true
                           })
                         );
                       } else {
@@ -105,7 +105,7 @@ const AddNewInviteDlg = ({ open, email, onClose }) => {
                             alert: {
                               color: 'success'
                             },
-                            close: false
+                            close: true
                           })
                         );
                         setTimeout(() => {
@@ -126,7 +126,7 @@ const AddNewInviteDlg = ({ open, email, onClose }) => {
                           alert: {
                             color: 'error'
                           },
-                          close: false
+                          close: true
                         })
                       );
                     }

@@ -41,7 +41,7 @@ const TabPassword = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const { user, resetPassword } = useAuth();
+  const { resetPassword } = useAuth();
 
   const handleClickShowOldPassword = () => {
     setShowOldPassword(!showOldPassword);
@@ -89,7 +89,7 @@ const TabPassword = () => {
                 alert: {
                   color: 'success'
                 },
-                close: false
+                close: true
               })
             );
 
@@ -108,13 +108,13 @@ const TabPassword = () => {
                 alert: {
                   color: 'error'
                 },
-                close: false
+                close: true
               })
             );
           }
         }}
       >
-        {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
+        {({ errors, handleBlur, handleChange, handleSubmit, touched, values }) => (
           <form noValidate onSubmit={handleSubmit}>
             <Grid container spacing={3}>
               <Grid item container spacing={3} xs={12} sm={6}>

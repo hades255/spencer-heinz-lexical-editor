@@ -7,19 +7,21 @@ import AuthContext from 'contexts/JWTContext';
 import { Dialog } from '@mui/material';
 import CheckPremium from 'sections/apps/user/CheckPremium';
 import { PopupTransition } from 'components/@extended/Transitions';
+import useAuth from 'hooks/useAuth';
 
 // ==============================|| AUTH GUARD ||============================== //
 
 const ContributorGuard = ({ children }) => {
+  const { isLoggedIn } = useAuth();
   const user = useContext(AuthContext).user;
   const navigate = useNavigate();
   const [checkPremium, setCheckPremium] = useState(false);
 
   useEffect(() => {
-    if (user.role === 'contributor') {
+    if (isLoggedIn && user.role === 'contributor') {
       setCheckPremium(true);
     }
-  }, [user]);
+  }, [isLoggedIn, user]);
 
   const handleCloseCheckPremium = useCallback(() => {
     setCheckPremium(false);

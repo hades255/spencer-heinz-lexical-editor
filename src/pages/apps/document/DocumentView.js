@@ -44,7 +44,7 @@ const DocumentView = () => {
                 alert: {
                   color: 'success'
                 },
-                close: false
+                close: true
               })
             );
           } catch (error) {

@@ -47,7 +47,7 @@ const AuthForgotPassword = () => {
                     alert: {
                       color: 'success'
                     },
-                    close: false
+                    close: true
                   })
                 );
                 setTimeout(() => {

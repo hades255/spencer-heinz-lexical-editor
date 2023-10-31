@@ -103,7 +103,7 @@ const ToolbarJump = ({ editor }) => {
                 alert: {
                   color: 'error'
                 },
-                close: false
+                close: true
               })
             );
           }

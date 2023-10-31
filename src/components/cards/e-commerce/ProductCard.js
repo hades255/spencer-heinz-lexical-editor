@@ -40,7 +40,7 @@ const ProductCard = ({ id, color, name, brand, offer, isStock, image, descriptio
         alert: {
           color: 'success'
         },
-        close: false
+        close: true
       })
     );
   };
@@ -55,7 +55,7 @@ const ProductCard = ({ id, color, name, brand, offer, isStock, image, descriptio
         alert: {
           color: 'success'
         },
-        close: false
+        close: true
       })
     );
   };

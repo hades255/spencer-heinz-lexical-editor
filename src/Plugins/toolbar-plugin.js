@@ -176,7 +176,7 @@ function FloatingLinkEditor({ editor }) {
               role="button"
               tabIndex={0}
               onMouseDown={(event) => event.preventDefault()}
-              onKeyDown={() => { }}
+              onKeyDown={() => {}}
               onClick={() => {
                 setEditMode(true);
               }}
@@ -615,7 +615,7 @@ export default function ToolbarPlugin({ carModel, setCarModel, currentUser, isLo
               alert: {
                 color: 'error'
               },
-              close: false
+              close: true
             })
           );
           return false;

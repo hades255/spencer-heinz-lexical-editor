@@ -105,7 +105,7 @@ const AuthRegister = ({ redirect = true, onCancel = null, customer = null }) => 
                     alert: {
                       color: 'error'
                     },
-                    close: false
+                    close: true
                   })
                 );
               } else {
@@ -118,7 +118,7 @@ const AuthRegister = ({ redirect = true, onCancel = null, customer = null }) => 
                     alert: {
                       color: 'success'
                     },
-                    close: false
+                    close: true
                   })
                 );
                 if (redirect)
