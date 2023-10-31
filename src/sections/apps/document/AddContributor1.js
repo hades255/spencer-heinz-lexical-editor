@@ -52,7 +52,7 @@ ListCell.propTypes = {
   dir: PropTypes.bool
 };
 
-export default function AddContributor({ users, value, onChange }) {
+export default function AddContributor({ users, value, onChange, exist = [], mine = false }) {
   const [checked, setChecked] = useState([]);
   const [searchVal, setSearchVal] = useState('');
   const [search, setSearch] = useState('');
@@ -125,8 +125,8 @@ export default function AddContributor({ users, value, onChange }) {
     setSearchVal('');
   };
 
-  const customList = (title, items, dbClick) => {
-    const ids = items.map((item) => item.email);
+  const customList = (title, items) => {
+    const ids = items.map((item) => item.email).filter((item) => mine || !exist.includes(item));
     return (
       <Card>
         <CardHeader
@@ -134,16 +134,16 @@ export default function AddContributor({ users, value, onChange }) {
           avatar={
             <Checkbox
               onClick={handleToggleAll(ids)}
-              checked={numberOfChecked(ids) === items.length && items.length !== 0}
-              indeterminate={numberOfChecked(ids) !== items.length && numberOfChecked(ids) !== 0}
-              disabled={items.length === 0}
+              checked={numberOfChecked(ids) === ids.length && ids.length !== 0}
+              indeterminate={numberOfChecked(ids) !== ids.length && numberOfChecked(ids) !== 0}
+              disabled={ids.length === 0}
               inputProps={{
                 'aria-label': 'all items selected'
               }}
             />
           }
           title={title}
-          subheader={`${numberOfChecked(ids)}/${items.length} selected`}
+          subheader={`${numberOfChecked(ids)}/${ids.length} selected`}
         />
         <Divider />
         <List
@@ -161,7 +161,22 @@ export default function AddContributor({ users, value, onChange }) {
           {items.map((item, key) => {
             const labelId = `transfer-list-all-item-${item.email}-label`;
 
-            return (
+            return !mine && exist.includes(item.email) ? (
+              <ListItem key={key} role="listitem">
+                <ListItemIcon>
+                  <Checkbox
+                    disabled
+                    checked={false}
+                    tabIndex={-1}
+                    disableRipple
+                    inputProps={{
+                      'aria-labelledby': labelId
+                    }}
+                  />
+                </ListItemIcon>
+                <ListItemText id={labelId} primary={<ListCell user={item} dbClick={() => {}} dir={title === 'Choices'} />} />
+              </ListItem>
+            ) : (
               <ListItem key={key} role="listitem" onClick={handleToggle(item.email)} button>
                 <ListItemIcon>
                   <Checkbox
@@ -173,7 +188,7 @@ export default function AddContributor({ users, value, onChange }) {
                     }}
                   />
                 </ListItemIcon>
-                <ListItemText id={labelId} primary={<ListCell user={item} dbClick={dbClick} dir={title === 'Choices'} />} />
+                <ListItemText id={labelId} primary={<ListCell user={item} dbClick={handleDbClick} dir={title === 'Choices'} />} />
               </ListItem>
             );
           })}
@@ -191,8 +206,7 @@ export default function AddContributor({ users, value, onChange }) {
             'Choices',
             users
               .filter((item) => !value.includes(item.email) && item.email.includes(search))
-              .sort((a, b) => (a.status > b.status ? 1 : a.status < b.status ? -1 : 0)),
-            handleDbClick
+              .sort((a, b) => (a.status > b.status ? 1 : a.status < b.status ? -1 : 0))
           )}
         </Grid>
         <Grid item>
@@ -224,8 +238,7 @@ export default function AddContributor({ users, value, onChange }) {
             'Chosen',
             users
               .filter((item) => value.includes(item.email) && item.email.includes(search))
-              .sort((a, b) => (a.status > b.status ? 1 : a.status < b.status ? -1 : 0)),
-            handleDbClick
+              .sort((a, b) => (a.status > b.status ? 1 : a.status < b.status ? -1 : 0))
           )}
         </Grid>
       </Grid>
@@ -238,6 +251,8 @@ export default function AddContributor({ users, value, onChange }) {
 AddContributor.propTypes = {
   users: PropTypes.any,
   value: PropTypes.any,
+  exist: PropTypes.any,
+  mine: PropTypes.bool,
   onChange: PropTypes.func
 };
 

@@ -1,13 +1,10 @@
 import PropTypes from 'prop-types';
 import { format } from 'date-fns';
 // material-ui
-import { useTheme } from '@mui/material/styles';
 import {
-  useMediaQuery,
   Grid,
   Chip,
   Divider,
-  Link,
   List,
   ListItem,
   ListItemIcon,
@@ -19,20 +16,13 @@ import {
 } from '@mui/material';
 
 // third-party
-import { PatternFormat } from 'react-number-format';
 
 // project import
 import MainCard from 'components/MainCard';
-import Avatar from 'components/@extended/Avatar';
 import Transitions from 'components/@extended/Transitions';
 
 // assets
-import { EnvironmentOutlined, LinkOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
 import { Person2Outlined } from '@mui/icons-material';
-
-const avatarImage = require.context('assets/images/users', true);
-
-// ==============================|| CUSTOMER - VIEW ||============================== //
 
 const CustomerView = ({ data, user = false }) => {
   return (
@@ -123,7 +113,8 @@ const CustomerView = ({ data, user = false }) => {
 };
 
 CustomerView.propTypes = {
-  data: PropTypes.object
+  data: PropTypes.object,
+  user: PropTypes.any
 };
 
 export default CustomerView;

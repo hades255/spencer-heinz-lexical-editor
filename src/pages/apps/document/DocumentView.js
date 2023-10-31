@@ -18,6 +18,7 @@ import { useSelector } from 'store';
 import BackgroundLetterAvatar from 'components/@extended/BackgroundLetterAvatar';
 import AddContributorsFromContributor from './AddContributorsFromContributor';
 import axiosServices from 'utils/axios';
+import { openSnackbar } from 'store/reducers/snackbar';
 
 const DocumentView = () => {
   const theme = useTheme();
@@ -35,6 +36,17 @@ const DocumentView = () => {
           try {
             await axiosServices.post('/document/' + uniqueId + '/invite', { contributors: params });
             dispatch(getDocumentSingleList(uniqueId));
+            dispatch(
+              openSnackbar({
+                open: true,
+                message: 'Invitation sended successfully.',
+                variant: 'alert',
+                alert: {
+                  color: 'success'
+                },
+                close: false
+              })
+            );
           } catch (error) {
             console.log(error);
           }
@@ -96,7 +108,6 @@ const DocumentView = () => {
                               name: document.creator.name,
                               email: document.creator.email
                             }}
-                            status
                           />
                         )}
                         <Typography variant="h4">{document?.name}</Typography>
@@ -110,7 +121,7 @@ const DocumentView = () => {
                               <UserAvatar
                                 key={key}
                                 user={{
-                                  online_status: item.online_status ?? 'none',
+                                  online_status: 'none',
                                   avatar: item.avatar,
                                   name: item.name,
                                   email: item.email
@@ -151,7 +162,7 @@ const DocumentView = () => {
                     borderBottom: `1px solid ${theme.palette.divider}`
                   }}
                 >
-                  <Typography variant="h5">About Document</Typography>
+                  {/* <Typography variant="h5">About Document</Typography> */}
                   <Typography variant="subtitle1" color="textSecondary">
                     {document?.description}
                   </Typography>

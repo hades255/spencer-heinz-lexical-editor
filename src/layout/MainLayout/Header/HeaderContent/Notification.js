@@ -8,14 +8,14 @@ import { Badge, Box, ClickAwayListener, List, ListItemButton, ListItemText, Pape
 // project import
 import MainCard from 'components/MainCard';
 import IconButton from 'components/@extended/IconButton';
-import Transitions, { PopupTransition } from 'components/@extended/Transitions';
+import Transitions from 'components/@extended/Transitions';
 import { ThemeMode } from 'config';
 
 // assets
-import { BellOutlined, CheckCircleOutlined, GiftOutlined, MessageOutlined, SettingOutlined } from '@ant-design/icons';
+import { BellOutlined } from '@ant-design/icons';
 import { useSelector } from 'store';
 import { dispatch } from 'store';
-import { setLists, setNotificationsRead } from 'store/reducers/notification';
+import { addLists, getReadNotifications, setRead } from 'store/reducers/notification';
 import { setLists as setMessageLists } from 'store/reducers/message';
 import NotificationItem from './NotificationItem';
 import AuthContext from 'contexts/JWTContext';
@@ -56,7 +56,7 @@ const Notification = () => {
 
   const handleToggle = useCallback(() => {
     if (open && notifications.length) {
-      dispatch(setNotificationsRead());
+      dispatch(setRead());
     }
     setOpen((prevOpen) => !prevOpen);
   }, [open, notifications]);
@@ -82,6 +82,10 @@ const Notification = () => {
   const [socket, setSocket] = useState({ ws: null, opened: false });
 
   useEffect(() => {
+    dispatch(getReadNotifications());
+  }, []);
+
+  useEffect(() => {
     const ws = new WebSocket(process.env.REACT_APP_NOTIFICATION_WEBSOCKET_URL || 'ws://localhost:8000/notification/socket');
     ws.onopen = () => {
       setSocket({ ws, opened: true });
@@ -90,7 +94,7 @@ const Notification = () => {
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data) {
-        dispatch(setLists(data.notifications));
+        dispatch(addLists(data.notifications));
         dispatch(setMessageLists(data.messages));
       }
     };
@@ -113,7 +117,7 @@ const Notification = () => {
       if (anchorRef.current && anchorRef.current.contains(event.target)) {
         return;
       }
-      if (notifications.length) dispatch(setNotificationsRead());
+      if (notifications.length) dispatch(setRead());
       setOpen(false);
     },
     [notifications, anchorRef]

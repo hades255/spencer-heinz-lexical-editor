@@ -14,10 +14,8 @@ import { PopupTransition } from 'components/@extended/Transitions';
 import AddContributor from 'sections/apps/document/AddContributor1';
 
 export default function AddContributorsFromContributor({ open: openThis, onClose, user, exist, creator }) {
-  const users = useSelector((state) => state.user.lists).filter(
-    (item) => item._id !== user._id && item._id !== creator._id && (user._id === creator._id ? true : !exist.includes(item.email))
-  );
-  const [value, setValue] = useState(user._id === creator._id ? exist : []);
+  const users = useSelector((state) => state.user.lists).filter((item) => item._id !== user._id && item._id !== creator._id);
+  const [value, setValue] = useState(exist);
 
   useEffect(() => {
     dispatch(getUserLists());
@@ -63,7 +61,7 @@ export default function AddContributorsFromContributor({ open: openThis, onClose
               </Stack>
             </Stack>
           </Box>
-          <AddContributor users={users} value={value} onChange={setValue} />
+          <AddContributor users={users} value={value} onChange={setValue} exist={exist} mine={user._id === creator._id} />
         </MainCard>
       </DialogContent>
     </Dialog>

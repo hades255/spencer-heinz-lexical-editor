@@ -19,31 +19,37 @@ const notification = createSlice({
     setLists(state, action) {
       state.list = action.payload;
     },
+    addLists(state, action) {
+      state.list = [...action.payload.map((item) => ({ ...item, status: 'unread' })), ...state.list];
+    },
     setAll(state, action) {
       state.all = action.payload;
+    },
+    setRead(state) {
+      state.list = state.list.map((item) => ({ ...item, status: 'read' }));
     }
   }
 });
 
 export default notification.reducer;
 
-export const { setLists, hasError, setAll } = notification.actions;
+export const { setLists, hasError, setAll, addLists, setRead } = notification.actions;
 
-export function getNotifications() {
+export function getReadNotifications() {
   return async () => {
     try {
-      const response = await axiosServices.get(`/notification`);
-      dispatch(setAll(response.data.data.notifications));
+      const response = await axiosServices.get(`/notification/read`);
+      dispatch(setLists(response.data.data.notifications));
     } catch (error) {
       dispatch(hasError(error));
     }
   };
 }
-export function setNotificationsRead() {
+export function getNotifications() {
   return async () => {
     try {
-      await axiosServices.put(`/notification`);
-      dispatch(setLists([]));
+      const response = await axiosServices.get(`/notification`);
+      dispatch(setAll(response.data.data.notifications));
     } catch (error) {
       dispatch(hasError(error));
     }

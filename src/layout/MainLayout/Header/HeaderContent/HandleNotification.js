@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DialogContent, DialogTitle, Divider, Stack, Button, Grid, Typography, Dialog } from '@mui/material';
 
 import PropTypes from 'prop-types';
@@ -11,7 +12,7 @@ import { dispatch } from 'store';
 import { setInvitationStatus } from 'store/reducers/notification';
 import { NOTIFICATION_TYPES } from 'config/constants';
 
-export const HandleNotificationDlg = ({ user, notification, open, handleClose }) => {
+export const HandleNotificationDlg = ({ notification, open, handleClose }) => {
   const handleClickClose = useCallback(() => {
     handleClose();
   }, [handleClose]);
@@ -36,10 +37,17 @@ export const HandleNotificationDlg = ({ user, notification, open, handleClose })
 };
 
 const ReceiveInvitation = ({ notification, onCancel, send = false }) => {
+  const navigate = useNavigate();
   const handleAccept = useCallback(() => {
     onCancel();
     dispatch(setInvitationStatus(notification, 'accept'));
-  }, [onCancel, notification]);
+    navigate(
+      '/document/' +
+        (notification.redirect.indexOf('/') === -1
+          ? notification.redirect
+          : notification.redirect.substr(notification.redirect.lastIndexOf('/') + 1))
+    );
+  }, [onCancel, notification, navigate]);
 
   const handleReject = useCallback(() => {
     onCancel();

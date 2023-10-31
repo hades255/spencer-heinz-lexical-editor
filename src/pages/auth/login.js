@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 // material-ui
 import { Grid, Stack, Typography } from '@mui/material';
@@ -12,6 +12,9 @@ import AuthLogin from 'sections/auth/auth-forms/AuthLogin';
 
 const Login = () => {
   const { isLoggedIn } = useAuth();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const email = searchParams.get('email') || '';
 
   return (
     <AuthWrapper>
@@ -31,7 +34,7 @@ const Login = () => {
           </Stack>
         </Grid>
         <Grid item xs={12}>
-          <AuthLogin />
+          <AuthLogin email={email} />
         </Grid>
       </Grid>
     </AuthWrapper>

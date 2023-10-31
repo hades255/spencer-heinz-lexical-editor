@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
 // material-ui
 import {
@@ -31,7 +32,7 @@ import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 
 // ============================|| JWT - LOGIN ||============================ //
 
-const AuthLogin = () => {
+const AuthLogin = ({ email }) => {
   const [checked, setChecked] = React.useState(false);
 
   const { login } = useAuth();
@@ -50,7 +51,7 @@ const AuthLogin = () => {
     <>
       <Formik
         initialValues={{
-          email: '',
+          email: email,
           password: '',
           submit: null
         }}
@@ -174,3 +175,7 @@ const AuthLogin = () => {
 };
 
 export default AuthLogin;
+
+AuthLogin.propTypes = {
+  email: PropTypes.any
+};

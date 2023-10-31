@@ -17,6 +17,8 @@ import DocumentManagementPage from 'pages/apps/customer/list-document-management
 import MessageList from 'pages/extra-pages/MessageList';
 import MessageView from 'pages/extra-pages/MessageView';
 import DocumentCreate from 'pages/apps/document/DocumentCreate';
+import AdminGuard from 'utils/route-guard/AdminGuard';
+import ContributorGuard from 'utils/route-guard/ContributorGuard';
 
 // render - dashboard
 const DashboardDefault = Loadable(lazy(() => import('pages/dashboard/default')));
@@ -149,11 +151,19 @@ const MainRoutes = {
           children: [
             {
               path: 'document-management',
-              element: <DocumentManagementPage />
+              element: (
+                <AdminGuard>
+                  <DocumentManagementPage />
+                </AdminGuard>
+              )
             },
             {
               path: 'user-management',
-              element: <UserManagementPage />
+              element: (
+                <AdminGuard>
+                  <UserManagementPage />
+                </AdminGuard>
+              )
             }
           ]
         }
@@ -169,7 +179,11 @@ const MainRoutes = {
         },
         {
           path: 'create',
-          element: <DocumentCreate />
+          element: (
+            <ContributorGuard>
+              <DocumentCreate />
+            </ContributorGuard>
+          )
         },
         {
           path: 'edit/:uniqueId',

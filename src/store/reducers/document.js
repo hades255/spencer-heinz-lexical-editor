@@ -143,6 +143,17 @@ export function documentDelete(uniqueId) {
     try {
       await axiosServices.delete('/document/' + uniqueId);
       dispatch(deleteDocument({ uniqueId }));
+      dispatch(
+        openSnackbar({
+          open: true,
+          message: 'Document has been deleted successfully.',
+          variant: 'alert',
+          alert: {
+            color: 'success'
+          },
+          close: false
+        })
+      );
     } catch (error) {
       dispatch(hasError(error));
     }

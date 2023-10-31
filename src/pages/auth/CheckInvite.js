@@ -27,11 +27,11 @@ const CheckInvite = () => {
     (async () => {
       try {
         const response = await axiosServices.get('/invite/' + token);
+        setC(response.data.code);
         const { user, document, creator: creator_ } = response.data.data;
         setU(user);
         setD(document);
         setCreator(creator_);
-        setC(response.data.code);
       } catch (error) {
         console.log(error);
       }
@@ -45,7 +45,7 @@ const CheckInvite = () => {
         navigate('/document/' + d._id);
       }
       if (c === 'error') {
-        navigate('/login');
+        navigate('/login?email=' + u.email);
       }
     },
     [c, u, d, navigate, setUser]
@@ -71,20 +71,22 @@ const CheckInvite = () => {
         <Grid item xs={12}>
           {c === 'success' && <NewPassword GO={GO} token={token} document={d} creator={creator} />}
           {c === 'error' && (
-            <Stack direction="row" alignItems="center">
-              <Stack>
-                <Grid item xs={12}>
-                  You have already an account.
-                </Grid>
-                <Grid item xs={12}>
-                  <AnimateButton>
-                    <Button disableElevation onClick={GO} fullWidth size="large" variant="contained" color="primary">
-                      Go
-                    </Button>
-                  </AnimateButton>
-                </Grid>
-              </Stack>
-            </Stack>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <Stack>
+                  <Grid item xs={12}>
+                    You have already an account.
+                  </Grid>
+                  <Grid item xs={12}>
+                    <AnimateButton>
+                      <Button disableElevation onClick={GO} fullWidth size="large" variant="contained" color="primary">
+                        Go Login
+                      </Button>
+                    </AnimateButton>
+                  </Grid>
+                </Stack>
+              </Grid>
+            </Grid>
           )}
         </Grid>
       </Grid>

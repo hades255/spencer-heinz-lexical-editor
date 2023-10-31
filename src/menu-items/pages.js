@@ -46,14 +46,14 @@ const pages = {
       icon: icons.FileWordOutlined,
       children: [
         {
-          id: 'login',
+          id: 'documentslist',
           title: <FormattedMessage id="document-list" />,
           icon: icons.FileAddTwoTone,
           type: 'item',
           url: '/document/list'
         },
         {
-          id: 'register',
+          id: 'documentscreate',
           title: <FormattedMessage id="document-create" />,
           icon: icons.EditOutlined,
           type: 'item',
