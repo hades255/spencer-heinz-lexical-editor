@@ -77,31 +77,58 @@ const AddNewInviteDlg = ({ open, email, onClose }) => {
                 })}
                 onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
                   try {
-                    const newUser = await register({ ...values, status: 'invited', email });
+                    const response = await register({ ...values, status: 'invited', email });
                     if (scriptedRef.current) {
-                      dispatch(addNewUser(newUser));
-                      setStatus({ success: true });
                       setSubmitting(false);
-                      dispatch(
-                        openSnackbar({
-                          open: true,
-                          message: 'Your registration has been successfully completed.',
-                          variant: 'alert',
-                          alert: {
-                            color: 'success'
-                          },
-                          close: false
-                        })
-                      );
-                      setTimeout(() => {
-                        onClose(email);
-                      }, 100);
+                      if (response.code === 'error') {
+                        setStatus({ success: false });
+                        setErrors({ submit: response.message });
+                        dispatch(
+                          openSnackbar({
+                            open: true,
+                            message: 'Your registration has not been successfully completed.',
+                            variant: 'alert',
+                            alert: {
+                              color: 'error'
+                            },
+                            close: false
+                          })
+                        );
+                      } else {
+                        dispatch(addNewUser(response));
+                        setStatus({ success: true });
+                        dispatch(
+                          openSnackbar({
+                            open: true,
+                            message: 'Your registration has been successfully completed.',
+                            variant: 'alert',
+                            alert: {
+                              color: 'success'
+                            },
+                            close: false
+                          })
+                        );
+                        setTimeout(() => {
+                          onClose(email);
+                        }, 100);
+                      }
                     }
                   } catch (err) {
                     if (scriptedRef.current) {
                       setStatus({ success: false });
                       setErrors({ submit: err.message });
                       setSubmitting(false);
+                      dispatch(
+                        openSnackbar({
+                          open: true,
+                          message: 'Your registration has not been successfully completed.',
+                          variant: 'alert',
+                          alert: {
+                            color: 'error'
+                          },
+                          close: false
+                        })
+                      );
                     }
                   }
                 }}

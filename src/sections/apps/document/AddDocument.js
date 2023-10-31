@@ -25,11 +25,11 @@ import AddContributor from './AddContributor1';
 
 const steps = ['Title', 'Descriptions', 'Contributors'];
 
-const AddDocument = ({ user, onCancel }) => {
+const AddDocument = ({ user }) => {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [contributors, setContributors] = useState([]);
-  const users = useSelector((state) => state.user.lists).filter((item) => item._id !== user._id);
+  const users = useSelector((state) => state.user.lists).filter((item) => item?._id !== user?._id);
   const nextBtn = useRef(null);
 
   const handleAutocompleteChange = (value) => {
@@ -103,7 +103,7 @@ const AddDocument = ({ user, onCancel }) => {
               );
               setStatus({ success: true });
               setSubmitting(false); //  post document
-              onCancel();
+              // onCancel();
             }}
           >
             {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
@@ -114,7 +114,17 @@ const AddDocument = ({ user, onCancel }) => {
                       <Typography sx={{ mt: 2, mb: 1 }} variant="h4">
                         {values.name}
                       </Typography>
+                      {touched.name && errors.name && (
+                        <FormHelperText error id="helper-text-name-doc">
+                          {errors.name}
+                        </FormHelperText>
+                      )}
                       <Typography sx={{ mt: 2, mb: 1 }}>{values.description}</Typography>
+                      {touched.description && errors.description && (
+                        <FormHelperText error id="helper-text-description-doc">
+                          {errors.description}
+                        </FormHelperText>
+                      )}
                       {users.filter((item) => contributors.includes(item.email) && item.status !== 'active' && item.status !== 'invited')
                         .length !== 0 && (
                         <Typography sx={{ mt: 2, mb: 1, color: 'red' }} variant="subtitle1">

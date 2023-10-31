@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
 // material-ui
 import {
@@ -90,28 +91,44 @@ const AuthRegister = ({ redirect = true, onCancel = null, customer = null }) => 
         })}
         onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
           try {
-            await register(values);
+            const response = await register(values);
             if (scriptedRef.current) {
-              setStatus({ success: true });
               setSubmitting(false);
-              dispatch(
-                openSnackbar({
-                  open: true,
-                  message: 'Your registration has been successfully completed.',
-                  variant: 'alert',
-                  alert: {
-                    color: 'success'
-                  },
-                  close: false
-                })
-              );
-              if (redirect)
-                setTimeout(() => {
-                  navigate('/login', { replace: true });
-                }, 1500);
-              else {
-                onCancel()
-                dispatch(getUserLists());
+              if (response.code === 'error') {
+                setStatus({ success: false });
+                setErrors({ submit: response.message });
+                dispatch(
+                  openSnackbar({
+                    open: true,
+                    message: 'Your registration has not been successfully completed.',
+                    variant: 'alert',
+                    alert: {
+                      color: 'error'
+                    },
+                    close: false
+                  })
+                );
+              } else {
+                setStatus({ success: true });
+                dispatch(
+                  openSnackbar({
+                    open: true,
+                    message: 'Your registration has been successfully completed.',
+                    variant: 'alert',
+                    alert: {
+                      color: 'success'
+                    },
+                    close: false
+                  })
+                );
+                if (redirect)
+                  setTimeout(() => {
+                    navigate('/login', { replace: true });
+                  }, 1500);
+                else {
+                  onCancel();
+                  dispatch(getUserLists());
+                }
               }
             }
           } catch (err) {
@@ -394,6 +411,12 @@ const AuthRegister = ({ redirect = true, onCancel = null, customer = null }) => 
       </Formik>
     </>
   );
+};
+
+AuthRegister.propTypes = {
+  redirect: PropTypes.any,
+  onCancel: PropTypes.any,
+  customer: PropTypes.any
 };
 
 export default AuthRegister;

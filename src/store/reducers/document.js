@@ -94,10 +94,6 @@ export function postDocumentCreate(newDocument, navigate) {
   return async () => {
     try {
       const response = await axiosServices.post(`/document`, newDocument);
-      dispatch(createDocument(response.data.data.document));
-      if (navigate) {
-        navigate('/document/' + response.data.data.document._id);
-      }
       dispatch(
         openSnackbar({
           open: true,
@@ -109,6 +105,12 @@ export function postDocumentCreate(newDocument, navigate) {
           close: false
         })
       );
+      if (response.data.data.document) {
+        dispatch(createDocument(response.data.data.document));
+        if (navigate) {
+          navigate('/document/' + response.data.data.document._id);
+        }
+      }
     } catch (error) {
       dispatch(hasError(error));
       dispatch(

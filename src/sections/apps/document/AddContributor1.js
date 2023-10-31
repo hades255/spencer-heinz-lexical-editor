@@ -261,23 +261,23 @@ const SearchInput = ({ searchVal, toggleOpenCDlg, users, setSearchVal, onSearch 
     <Grid container spacing={2} justifyContent="center" alignItems="center">
       <Autocomplete
         value={searchVal}
-        onChange={() => {
-          if (users.map((item) => item.email).includes(searchVal) || !searchVal || !searchVal.includes('@') || !searchVal.includes('.'))
+        onChange={(event, newValue, reason) => {
+          if (
+            (event.type === 'keydown' && event.key === 'Backspace' && reason === 'removeOption') ||
+            (event.type === 'change' && reason === 'clear')
+          )
             return;
+          // if (users.map((item) => item.email).includes(searchVal) || !searchVal || !searchVal.includes('@') || !searchVal.includes('.'))
+          //   return;
           toggleOpenCDlg(true);
         }}
         filterOptions={(options, params) => {
           const filtered = filter(options, params);
-          if (
-            users.map((item) => item.email).includes(params.inputValue) ||
-            !params.inputValue ||
-            !params.inputValue.includes('@') ||
-            !params.inputValue.includes('.')
-          )
+          if (users.map((item) => item.email).includes(searchVal) || !searchVal || !searchVal.includes('@') || !searchVal.includes('.'))
             return filtered;
           filtered.push({
-            inputValue: params.inputValue,
-            title: `Add "${params.inputValue}"`
+            inputValue: searchVal,
+            title: `Add "${searchVal}"`
           });
           return filtered;
         }}
@@ -295,9 +295,7 @@ const SearchInput = ({ searchVal, toggleOpenCDlg, users, setSearchVal, onSearch 
           }
           return option.title;
         }}
-        selectOnFocus
         clearOnBlur
-        handleHomeEndKeys
         renderOption={(props, option) => <li {...props}>{option.title}</li>}
         freeSolo
         renderInput={(params) => (

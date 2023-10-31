@@ -171,10 +171,9 @@ export const JWTProvider = ({ children }) => {
         status
       });
       console.log(response.data);
-      let { user } = response.data.data;
-      return user;
+      return response.data;
     } catch (error) {
-      console.log(error);
+      return error;
     }
   };
 
