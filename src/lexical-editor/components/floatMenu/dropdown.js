@@ -131,7 +131,7 @@ export default function DropDownMenu({
           marginLeft: '15ch'
         }}
       >
-        <MenuList onMouseEnter={handleTaskEnter}>
+        <MenuList onMouseEnter={handleTaskEnter} sx={{ maxHeight: '50vh', overflowY: 'scroll' }}>
           {/* ! @topbot 2023/09/12 #set task only "Permission Request" */}
           {(isEqual(users, [ACTION_REQUEST_USER]) ? PERMISSION_TASK : USER_TASKS).map((option) => (
             <MenuItem

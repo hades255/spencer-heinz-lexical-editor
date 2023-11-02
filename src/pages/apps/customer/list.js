@@ -248,6 +248,10 @@ export const StatusCell = ({ value }) => {
   }
 };
 
+StatusCell.propTypes = {
+  value: PropTypes.string
+};
+
 const getFlag = (value) => (value ? value[0].toUpperCase() + value.substr(1) : 'Person');
 
 const FlagCell = ({ value }) => (
@@ -416,10 +420,6 @@ const ActionCell = (
       </Tooltip>
     </Stack>
   );
-};
-
-StatusCell.propTypes = {
-  value: PropTypes.string
 };
 
 FlagCell.propTypes = {

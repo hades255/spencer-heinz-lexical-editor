@@ -36,7 +36,7 @@ export const HandleNotificationDlg = ({ notification, open, handleClose }) => {
   );
 };
 
-const ReceiveInvitation = ({ notification, onCancel, send = false }) => {
+export const ReceiveInvitation = ({ notification, onCancel, send = false }) => {
   const navigate = useNavigate();
   const handleAccept = useCallback(() => {
     onCancel();

@@ -85,8 +85,8 @@ export function setInvitationStatus(notification, status) {
         notification.redirect.indexOf('/') === -1
           ? notification.redirect
           : notification.redirect.substr(notification.redirect.lastIndexOf('/') + 1);
+      dispatch(setNotificationRead(notification));
       await axiosServices.put(`/document/invitation`, { id: docid, status });
-      setNotificationRead(notification);
       dispatch(getMyDocumentLists());
     } catch (error) {
       dispatch(hasError(error));

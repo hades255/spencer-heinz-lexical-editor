@@ -200,6 +200,7 @@ const AddDocument = ({ user }) => {
                           avatar,
                           status
                         }))}
+                        user={user}
                         onChange={handleAutocompleteChange}
                         value={contributors}
                       />

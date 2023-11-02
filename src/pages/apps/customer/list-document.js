@@ -3,8 +3,8 @@ import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 // material-ui
 import { useTheme } from '@mui/material/styles';
-import { Dialog } from '@mui/material';
-import AuthContext from 'contexts/JWTContext';
+import { Dialog, IconButton, useMediaQuery } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 import { getMyDocumentLists } from 'store/reducers/document';
 import { dispatch } from 'store';
@@ -19,6 +19,7 @@ import { PopupTransition } from 'components/@extended/Transitions';
 import DocumentCell from 'components/documents/DocumentCell';
 import CustomCell from 'components/customers/CustomCell';
 import ContributorsCell from 'components/documents/ContributorsCell';
+import AuthContext from 'contexts/JWTContext';
 
 const CreatorCell = ({ value }) => {
   return <CustomCell user={value} />;
@@ -30,6 +31,7 @@ CreatorCell.propTypes = {
 
 const DocumentListPage = () => {
   const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   const user = useContext(AuthContext).user;
 
   const data = useSelector((state) => state.document.lists);
@@ -112,14 +114,29 @@ const DocumentListPage = () => {
         />
       </ScrollX>
       <Dialog
-        maxWidth="sm"
+        maxWidth="md"
         TransitionComponent={PopupTransition}
         fullWidth
-        onClose={handleAdd}
+        fullScreen={fullScreen}
+        onClose={(e, r) => {
+          if (r === 'escapeKeyDown') handleAdd();
+        }}
         open={add}
         sx={{ '& .MuiDialog-paper': { p: 0 }, transition: 'transform 225ms' }}
         aria-describedby="alert-dialog-slide-description"
       >
+        <IconButton
+          aria-label="close"
+          onClick={handleAdd}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500]
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
         <AddDocument user={user} onCancel={handleAdd} />
       </Dialog>
       <Dialog

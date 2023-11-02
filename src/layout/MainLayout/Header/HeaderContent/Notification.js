@@ -70,6 +70,7 @@ const Notification = () => {
 
   const handleToggle = useCallback(() => {
     setOpen((prevOpen) => !prevOpen);
+    setFirst(false);
   }, []);
 
   const handleSetRead = useCallback(() => {
@@ -247,6 +248,7 @@ const Notification = () => {
         notifications={notifications?.filter((item) => item.status === 'unread')}
         open={first && notifications?.filter((item) => item.status === 'unread').length !== 0}
         handleClose={setFirst}
+        redirect={handleRedirect}
       />
     </>
   );

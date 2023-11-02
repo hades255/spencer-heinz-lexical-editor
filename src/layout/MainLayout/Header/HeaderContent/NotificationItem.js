@@ -9,12 +9,9 @@ import { setNotificationRead } from 'store/reducers/notification';
 
 const NotificationItem = ({ notification, setOpen, redirect }) => {
   const handleRedirect = useCallback(() => {
-    dispatch(setNotificationRead(notification));
-    if (setOpen && redirect)
-      if (notification.redirect) {
-        redirect(notification);
-      }
-    setOpen(false);
+    if (redirect && notification.redirect) redirect(notification);
+    else dispatch(setNotificationRead(notification));
+    if (setOpen) setOpen(false);
   }, [notification, setOpen, redirect]);
 
   return (

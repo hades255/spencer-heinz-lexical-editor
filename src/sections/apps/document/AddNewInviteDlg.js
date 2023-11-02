@@ -44,7 +44,9 @@ const AddNewInviteDlg = ({ open, email, onClose }) => {
         TransitionComponent={PopupTransition}
         keepMounted
         fullWidth
-        onClose={onClose}
+        onClose={(e, r) => {
+          if (r === 'escapeKeyDown') onClose();
+        }}
         open={open}
         sx={{ '& .MuiDialog-paper': { p: 0 }, transition: 'transform 225ms' }}
         aria-describedby="alert-dialog-slide-description"

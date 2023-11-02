@@ -11,7 +11,7 @@ import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import CustomCell from 'components/customers/CustomCell';
-import { Stack, TextField } from '@mui/material';
+import { Chip, Stack, TextField } from '@mui/material';
 import { StatusCell } from 'pages/apps/customer/list';
 import { useAsyncDebounce } from 'react-table';
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
@@ -31,6 +31,23 @@ function union(a, b) {
   return [...a, ...not(b, a)];
 }
 
+export const ReplyCell = ({ value }) => {
+  switch (value) {
+    case 'pending':
+      return <Chip color="info" label="Pending" size="small" variant="light" />;
+    case 'accept':
+      return <Chip color="success" label="Accepted" size="small" variant="light" />;
+    case 'reject':
+      return <Chip color="warning" label="Rejected" size="small" variant="light" />;
+    default:
+      return <></>;
+  }
+};
+
+ReplyCell.propTypes = {
+  value: PropTypes.string
+};
+
 const ListCell = ({ user, dbClick, dir }) => {
   return (
     <Stack
@@ -41,7 +58,10 @@ const ListCell = ({ user, dbClick, dir }) => {
       }}
     >
       <CustomCell user={user} />
-      <StatusCell value={user.status} />
+      <Stack>
+        <StatusCell value={user.status} />
+        <ReplyCell value={user.reply} />
+      </Stack>
     </Stack>
   );
 };
@@ -52,7 +72,7 @@ ListCell.propTypes = {
   dir: PropTypes.bool
 };
 
-export default function AddContributor({ users, value, onChange, exist = [], mine = false }) {
+export default function AddContributor({ users, value, onChange, exist = [], mine = false, user }) {
   const [checked, setChecked] = useState([]);
   const [searchVal, setSearchVal] = useState('');
   const [search, setSearch] = useState('');
@@ -126,7 +146,7 @@ export default function AddContributor({ users, value, onChange, exist = [], min
   };
 
   const customList = (title, items) => {
-    const ids = items.map((item) => item.email).filter((item) => mine || !exist.includes(item));
+    const ids = items.map((item) => item.email).filter((item) => mine || !exist.find((x) => x.email === item));
     return (
       <Card>
         <CardHeader
@@ -148,7 +168,7 @@ export default function AddContributor({ users, value, onChange, exist = [], min
         <Divider />
         <List
           sx={{
-            width: 280,
+            width: 380,
             height: '40vh',
             minHeight: 250,
             bgcolor: 'background.paper',
@@ -161,7 +181,7 @@ export default function AddContributor({ users, value, onChange, exist = [], min
           {items.map((item, key) => {
             const labelId = `transfer-list-all-item-${item.email}-label`;
 
-            return !mine && exist.includes(item.email) ? (
+            return (!mine && exist.find((x) => x.email === item.email)) || (mine && user.email === item.email) ? (
               <ListItem key={key} role="listitem">
                 <ListItemIcon>
                   <Checkbox
@@ -174,7 +194,10 @@ export default function AddContributor({ users, value, onChange, exist = [], min
                     }}
                   />
                 </ListItemIcon>
-                <ListItemText id={labelId} primary={<ListCell user={item} dbClick={() => {}} dir={title === 'Choices'} />} />
+                <ListItemText
+                  id={labelId}
+                  primary={<ListCell user={exist.find((x) => x.email === item.email)} dbClick={() => {}} dir={title === 'Choices'} />}
+                />
               </ListItem>
             ) : (
               <ListItem key={key} role="listitem" onClick={handleToggle(item.email)} button>
@@ -188,7 +211,12 @@ export default function AddContributor({ users, value, onChange, exist = [], min
                     }}
                   />
                 </ListItemIcon>
-                <ListItemText id={labelId} primary={<ListCell user={item} dbClick={handleDbClick} dir={title === 'Choices'} />} />
+                <ListItemText
+                  id={labelId}
+                  primary={
+                    <ListCell user={exist.find((x) => x.email === item.email) || item} dbClick={handleDbClick} dir={title === 'Choices'} />
+                  }
+                />
               </ListItem>
             );
           })}
@@ -250,6 +278,7 @@ export default function AddContributor({ users, value, onChange, exist = [], min
 
 AddContributor.propTypes = {
   users: PropTypes.any,
+  user: PropTypes.any,
   value: PropTypes.any,
   exist: PropTypes.any,
   mine: PropTypes.bool,
@@ -285,6 +314,7 @@ const SearchInput = ({ searchVal, toggleOpenCDlg, users, setSearchVal, onSearch 
           setSearchVal(v);
           onSearch(v);
         }}
+        disableClearable
         options={[]}
         getOptionLabel={(option) => {
           if (typeof option === 'string') {
@@ -296,7 +326,11 @@ const SearchInput = ({ searchVal, toggleOpenCDlg, users, setSearchVal, onSearch 
           return option.title;
         }}
         clearOnBlur
-        renderOption={(props, option) => <li {...props}>{option.title}</li>}
+        renderOption={(props, option) => (
+          <li {...props} style={{ background: '#1677FF', color: 'white' }}>
+            {option.title}
+          </li>
+        )}
         freeSolo
         renderInput={(params) => (
           <TextField

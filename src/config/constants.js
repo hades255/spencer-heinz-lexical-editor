@@ -14,6 +14,7 @@ export const NOTIFICATION_TYPES = {
   DOCUMENT_INVITE_RECEIVE: '@document/invite/receive',
   DOCUMENT_INVITE_ACCEPT: '@document/invite/accept',
   DOCUMENT_INVITE_REJECT: '@document/invite/reject',
+  DOCUMENT_INVITE_DELETE: '@document/invite/delete',
   USER_SETTING_ROLE: '@user/setting/role',
   USER_SETTING_STATUS: '@user/setting/status',
   USER_RESET_PASSWORD: '@user/reset/password'
@@ -41,6 +42,12 @@ export const NOTIFICATION_ITEM = {
   [NOTIFICATION_TYPES.DOCUMENT_INVITE_REJECT]: {
     color: 'error',
     bgcolor: 'error',
+    avatar: (data) => data.data[0].text[0],
+    title: 'Invitation'
+  },
+  [NOTIFICATION_TYPES.DOCUMENT_INVITE_DELETE]: {
+    color: 'warning',
+    bgcolor: 'warning',
     avatar: (data) => data.data[0].text[0],
     title: 'Invitation'
   },

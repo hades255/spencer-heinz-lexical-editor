@@ -15,7 +15,6 @@ import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 import { $getRoot, $createParagraphNode, $createTextNode, $getNodeByKey, TextNode } from 'lexical';
 import PropTypes from 'prop-types';
-import useAuth from 'hooks/useAuth';
 import { HistoryPlugin } from './plugins/lexicalHistoryPlugin';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
@@ -42,14 +41,15 @@ import { LinearProgress } from '@mui/material';
 import { $createCustomTextNode, CustomTextNode } from './nodes/customTextNode';
 import { JumpNode } from './nodes/jumpNode';
 import { JumpPlugin } from './plugins/jumpPlugin';
+import { dispatch } from 'store';
+import { getUserLists } from 'store/reducers/user';
 
 // set excluded properties for collab
 const excludedProperties = new Map();
 excludedProperties.set(CommentNode, new Set(['__suppressed', '__currentUser']));
 excludedProperties.set(LockNode, new Set(['__currentUser']));
 
-const LexicalEditor = ({ uniqueId, user }) => {
-  const allUsers = useSelector((state) => state.user.lists);
+const LexicalEditor = ({ uniqueId, user, allUsers }) => {
   const { historyState } = useEditorHistoryState();
 
   const [isLoading, setIsLoading] = useState(true);
@@ -57,6 +57,10 @@ const LexicalEditor = ({ uniqueId, user }) => {
   useEffect(() => {
     CustomTextNode.setCurrentUser(user._id);
   }, [user]);
+
+  useEffect(() => {
+    dispatch(getUserLists());
+  }, []);
 
   const EDITOR_NAMESPACE = uniqueId;
   const EDITOR_NODES = [
@@ -103,7 +107,9 @@ const LexicalEditor = ({ uniqueId, user }) => {
       <ToolbarPlugin user={user._id} users={allUsers} />
       {!isLoading ? (
         <RichTextPlugin
-          contentEditable={<ContentEditable className="editor-input" rows={40} spellCheck={true} />}
+          contentEditable={
+            <ContentEditable className="editor-input" rows={40} spellCheck={true} style={{ height: '70vh', overflowY: 'scroll' }} />
+          }
           ErrorBoundary={LexicalErrorBoundary}
         />
       ) : (
@@ -127,14 +133,14 @@ const LexicalEditor = ({ uniqueId, user }) => {
               setIsLoading(false);
             }
           });
-          // provider.awareness.on('change', ({ added, removed, updated }) => {
-          //   console.log('state updated:', updated);
-          //   console.log('These users connected:', added);
-          //   console.log('These users disconnected:', removed);
+          provider.awareness.on('change', ({ added, removed, updated }) => {
+            // console.log('state updated:', updated);
+            // console.log('These users connected:', added);
+            // console.log('These users disconnected:', removed);
 
-          //   console.log('All user states:', provider.awareness.getStates());
-          //   console.log(provider._updateHandler);
-          // });
+            // console.log('All user states:', provider.awareness.getStates());
+            // console.log(provider._updateHandler());
+          });
           return provider;
         }}
         key={uuidv4()}

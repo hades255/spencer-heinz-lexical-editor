@@ -17,6 +17,7 @@ export default function UserFloatMenu({
   setSelectedUsers,
   selectedUsers
 }) {
+  console.log("B")
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
 

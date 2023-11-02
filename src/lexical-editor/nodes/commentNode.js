@@ -152,8 +152,10 @@ export class CommentNode extends ElementNode {
       // set selection of first child node so that comment box appears
       let range = new Range();
 
-      range.setStart(e.target.nextElementSibling, 0);
-      range.setEnd(e.target.nextElementSibling, 0);
+      if (e.target.nextElementSibling) {
+        range.setStart(e.target.nextElementSibling, 0);
+        range.setEnd(e.target.nextElementSibling, 0);
+      }
 
       // apply the selection, explained later below
       document.getSelection().removeAllRanges();
