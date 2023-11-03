@@ -48,7 +48,7 @@ const pages = {
         {
           id: 'documentslist',
           title: <FormattedMessage id="document-list" />,
-          icon: icons.FileAddTwoTone,
+          icon: icons.FileWordOutlined,
           type: 'item',
           url: '/document/list'
         },

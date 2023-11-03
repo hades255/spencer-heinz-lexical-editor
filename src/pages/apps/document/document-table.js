@@ -54,7 +54,7 @@ function DocumentTable({ columns, data, getHeaderProps, renderRowSubComponent, h
       initialState: {
         pageIndex: Number(searchParams.get('page') || '1') - 1,
         pageSize: Number(searchParams.get('perpage') || '10'),
-        hiddenColumns: ['description', '_id', 'createdAt', 'updatedAt'],
+        hiddenColumns: ['description', '_id', 'createdAt', 'updatedAt', 'invites'],
         sortBy: [sortBy]
       }
     },
@@ -67,9 +67,9 @@ function DocumentTable({ columns, data, getHeaderProps, renderRowSubComponent, h
 
   useEffect(() => {
     if (matchDownSM) {
-      setHiddenColumns(['description', '_id', 'createdAt', 'updatedAt']);
+      setHiddenColumns(['description', '_id', 'createdAt', 'updatedAt', 'invites']);
     } else {
-      setHiddenColumns(['description', '_id', 'createdAt', 'updatedAt']);
+      setHiddenColumns(['description', '_id', 'createdAt', 'updatedAt', 'invites']);
     }
     // eslint-disable-next-line
   }, [matchDownSM]);
@@ -104,7 +104,7 @@ function DocumentTable({ columns, data, getHeaderProps, renderRowSubComponent, h
               <TableRow
                 key={i}
                 {...headerGroup.getHeaderGroupProps()}
-                sx={{ '& > th:first-of-type': { width: '58px' }, '& > th:last-of-type': { width: '200px' } }}
+                sx={{ '& > th:first-of-type': { width: '58px' }, '& > th:last-of-type': { width: '150px' } }}
               >
                 {headerGroup.headers.map((column, index) => (
                   <TableCell key={index} {...column.getHeaderProps([{ className: column.className }, getHeaderProps(column)])}>

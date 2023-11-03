@@ -3,7 +3,8 @@ import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 // material-ui
 import { useTheme } from '@mui/material/styles';
-import { Chip, Dialog, Stack, Tooltip } from '@mui/material';
+import { Chip, Dialog, Stack, Tooltip, useMediaQuery } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 // project import
 import MainCard from 'components/MainCard';
@@ -22,9 +23,10 @@ import DocumentTable from '../document/document-table';
 import DocumentCell from 'components/documents/DocumentCell';
 import CustomCell from 'components/customers/CustomCell';
 import ContributorsCell from 'components/documents/ContributorsCell';
-import AddDocument from 'sections/apps/document/AddDocument';
 import AuthContext from 'contexts/JWTContext';
 import DocumentDetail from '../document/DocumentDetail';
+import EditDocument from 'sections/apps/document/EditDocument';
+import AddDocument from 'sections/apps/document/AddDocument';
 
 const CreatorCell = ({ value }) => {
   return <CustomCell user={value} />;
@@ -51,7 +53,7 @@ StatusCell.propTypes = {
   value: PropTypes.string
 };
 
-const ActionCell = ({ row, setDocument, handleAdd, handleClose, handleDeleteDocument, theme }) => {
+const ActionCell = ({ row, setDocument, handleClose, handleDeleteDocument, theme }) => {
   const navigate = useNavigate();
   const collapseIcon = row.isExpanded ? (
     <CloseOutlined style={{ color: theme.palette.error.main }} />
@@ -77,30 +79,31 @@ const ActionCell = ({ row, setDocument, handleAdd, handleClose, handleDeleteDocu
           onClick={(e) => {
             e.stopPropagation();
             setDocument(row.values);
-            handleAdd();
+            setTimeout(() => {
+              handleClose();
+            }, 300);
           }}
         >
           <EditTwoTone twoToneColor={theme.palette.primary.main} />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Join">
+      {/* <Tooltip title="Join">
         <IconButton
           color="error"
           onClick={(e) => {
             e.stopPropagation();
-            navigate(`/document/edit/${row.original._id}`, { replace: true });
+            navigate(`/document/${row.original._id}`, { replace: true });
           }}
         >
           <MessageOutlined twoToneColor={theme.palette.primary.main} />
         </IconButton>
-      </Tooltip>
+      </Tooltip> */}
       <Tooltip title={'Delete'}>
         <IconButton
           color={row.values.status === 'deleted' ? 'secodnary' : 'error'}
           onClick={(e) => {
             e.stopPropagation();
             if (row.values.status === 'deleted') return;
-            handleClose();
             handleDeleteDocument(row.original._id);
           }}
         >
@@ -114,7 +117,6 @@ const ActionCell = ({ row, setDocument, handleAdd, handleClose, handleDeleteDocu
 ActionCell.propTypes = {
   row: PropTypes.any,
   setDocument: PropTypes.any,
-  handleAdd: PropTypes.any,
   handleClose: PropTypes.any,
   handleDeleteDocument: PropTypes.any,
   theme: PropTypes.any
@@ -122,27 +124,26 @@ ActionCell.propTypes = {
 
 const DocumentManagementPage = () => {
   const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   const user = useContext(AuthContext).user;
-
-  // const data = useMemo(() => makeData(5), []);
   const data = useSelector((state) => state.document.lists);
 
   const [add, setAdd] = useState(false);
   const [open, setOpen] = useState(false);
-  const [document, setDocument] = useState();
+  const [document, setDocument] = useState(null);
 
   useEffect(() => {
     dispatch(getDocumentLists());
   }, []);
 
-  const handleAdd = () => {
+  const handleAdd = useCallback(() => {
     setAdd(!add);
     if (document && !add) setDocument(null);
-  };
+  }, [add, document]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setOpen(!open);
-  };
+  }, [open]);
 
   const handleDeleteDocument = useCallback((id) => {
     dispatch(documentDelete(id));
@@ -170,7 +171,7 @@ const DocumentManagementPage = () => {
         disableSortBy: true
       },
       {
-        Header: 'Document Name',
+        Header: 'Document',
         accessor: 'name',
         Cell: DocumentCell,
         disableSortBy: true
@@ -178,6 +179,11 @@ const DocumentManagementPage = () => {
       {
         Header: 'description',
         accessor: 'description',
+        disableSortBy: true
+      },
+      {
+        Header: 'invites',
+        accessor: 'invites',
         disableSortBy: true
       },
       {
@@ -195,7 +201,7 @@ const DocumentManagementPage = () => {
         Header: 'Actions',
         className: 'cell-center',
         disableSortBy: true,
-        Cell: ({ row }) => ActionCell({ row, setDocument, handleAdd, handleClose, handleDeleteDocument, theme })
+        Cell: ({ row }) => ActionCell({ row, setDocument, handleClose, handleDeleteDocument, theme })
       }
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -217,15 +223,56 @@ const DocumentManagementPage = () => {
       </ScrollX>
       {/* add user dialog */}
       <Dialog
-        maxWidth="sm"
+        maxWidth="md"
         TransitionComponent={PopupTransition}
         fullWidth
-        onClose={handleAdd}
+        fullScreen={fullScreen}
+        onClose={(e, r) => {
+          if (r === 'escapeKeyDown') handleAdd();
+        }}
         open={add}
         sx={{ '& .MuiDialog-paper': { p: 0 }, transition: 'transform 225ms' }}
         aria-describedby="alert-dialog-slide-description"
       >
-        <AddDocument user={user} onCancel={handleAdd} />
+        <IconButton
+          aria-label="close"
+          onClick={handleAdd}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500]
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+        <AddDocument user={user} />
+      </Dialog>
+      <Dialog
+        maxWidth="md"
+        TransitionComponent={PopupTransition}
+        fullWidth
+        fullScreen={fullScreen}
+        onClose={(e, r) => {
+          if (r === 'escapeKeyDown') handleClose();
+        }}
+        open={open}
+        sx={{ '& .MuiDialog-paper': { p: 0 }, transition: 'transform 225ms' }}
+        aria-describedby="alert-dialog-slide-description"
+      >
+        <IconButton
+          aria-label="close"
+          onClick={handleClose}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500]
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+        {document && user && <EditDocument user={user} onCancel={handleClose} document={document} />}
       </Dialog>
     </MainCard>
   );

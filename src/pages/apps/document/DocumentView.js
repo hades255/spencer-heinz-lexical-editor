@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AvatarGroup, Box, Grid, Stack, Typography } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
 
+import { Avatar, AvatarGroup, Box, Grid, Stack, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { UserSwitchOutlined } from '@ant-design/icons';
 import MainCard from 'components/MainCard';
 import UserAvatar from 'sections/apps/user/UserAvatar';
 
@@ -92,7 +93,16 @@ const DocumentView = () => {
                           <Grid item xs={12} sm={4}>
                             <Stack direction="row" alignItems="center" justifyContent={'space-between'} spacing={1}>
                               <Stack direction="row">
-                                <AvatarGroup max={6}>
+                                <AvatarGroup>
+                                  <Avatar
+                                    onClick={() => {
+                                      setAddContributorDlg(true);
+                                    }}
+                                  >
+                                    <UserSwitchOutlined style={{ fontSize: '30px', color: '#08c', cursor: 'pointer' }} />
+                                  </Avatar>
+                                </AvatarGroup>
+                                <AvatarGroup max={5}>
                                   {document?.contributors.map((item, key) => (
                                     <UserAvatar
                                       key={key}
@@ -104,12 +114,6 @@ const DocumentView = () => {
                                       }}
                                     />
                                   ))}
-                                  <BackgroundLetterAvatar
-                                    name={'+'}
-                                    onClick={() => {
-                                      setAddContributorDlg(true);
-                                    }}
-                                  />
                                 </AvatarGroup>
                               </Stack>
                               {user && (

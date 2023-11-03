@@ -9,7 +9,7 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { DialogContent, DialogTitle, Divider, FormHelperText, Stack } from '@mui/material';
 
-import { postDocumentCreate } from 'store/reducers/document';
+import { postDocumentCreate, putDocumentUpdate } from 'store/reducers/document';
 
 // third party
 import * as Yup from 'yup';
@@ -25,14 +25,12 @@ import AddContributor from './AddContributor1';
 
 const steps = ['Title', 'Descriptions', 'Contributors'];
 
-const AddDocument = ({ user }) => {
+const EditDocument = ({ user, onCancel, document }) => {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
-  const [contributors, setContributors] = useState([]);
+  const [contributors, setContributors] = useState([document.creator.email, ...document.invites.map((item) => item.email)]);
   const users = useSelector((state) => state.user.lists);
   const nextBtn = useRef(null);
-  const firstinput = useRef(null);
-  const secondinput = useRef(null);
 
   const handleAutocompleteChange = (value) => {
     setContributors(value);
@@ -53,39 +51,21 @@ const AddDocument = ({ user }) => {
     dispatch(getUserLists());
   }, []);
 
-  useEffect(() => {
-    if (user) setContributors([user.email]);
-    firstinput.current.focus();
-  }, [user]);
-
-  useEffect(() => {
-    switch (activeStep) {
-      case 0:
-        firstinput.current.focus();
-        break;
-      case 1:
-        secondinput.current.focus();
-        break;
-      default:
-        break;
-    }
-  }, [activeStep]);
-
-  const handleNext = useCallback(() => {
+  const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
-  }, []);
+  };
 
-  const handleBack = useCallback(() => {
+  const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  }, []);
+  };
 
-  const handleReset = useCallback(() => {
+  const handleReset = () => {
     setActiveStep(0);
-  }, []);
+  };
 
   return (
     <>
-      <DialogTitle>New Document</DialogTitle>
+      <DialogTitle>Edit Document</DialogTitle>
       <Divider />
       <DialogContent sx={{ p: 2.5 }}>
         <Box sx={{ width: '100%' }}>
@@ -102,8 +82,8 @@ const AddDocument = ({ user }) => {
           </Stepper>
           <Formik
             initialValues={{
-              name: '',
-              description: ``
+              name: document.name,
+              description: document.description
             }}
             validationSchema={Yup.object().shape({
               name: Yup.string().max(255).required('Document title is required'),
@@ -111,8 +91,9 @@ const AddDocument = ({ user }) => {
             })}
             onSubmit={async (values, { setStatus, setSubmitting }) => {
               dispatch(
-                postDocumentCreate(
+                putDocumentUpdate(
                   {
+                    _id: document._id,
                     ...values,
                     contributors: users
                       .filter((item) => contributors.includes(item.email))
@@ -166,7 +147,7 @@ const AddDocument = ({ user }) => {
                       <Box sx={{ flex: '1 1 auto' }} />
                       <Button onClick={handleReset}>Reset</Button>
                       <Button type="submit" disabled={isSubmitting}>
-                        Create
+                        Update
                       </Button>
                     </Box>
                   </>
@@ -183,7 +164,6 @@ const AddDocument = ({ user }) => {
                           placeholder="Document Title"
                           maxRows={30}
                           minRows={15}
-                          ref={firstinput}
                         />
                         {touched.name && errors.name && (
                           <FormHelperText error id="helper-text-name-doc">
@@ -204,7 +184,6 @@ const AddDocument = ({ user }) => {
                           placeholder="Document Description"
                           maxRows={30}
                           minRows={15}
-                          ref={secondinput}
                         />
                         {touched.description && errors.description && (
                           <FormHelperText error id="helper-text-description-doc">
@@ -225,7 +204,8 @@ const AddDocument = ({ user }) => {
                         user={user}
                         onChange={handleAutocompleteChange}
                         value={contributors}
-                        exist={[user]}
+                        exist={[document.creator, ...document.invites]}
+                        mine={document.creator}
                       />
                     )}
                   </StepWrapper>
@@ -239,9 +219,10 @@ const AddDocument = ({ user }) => {
   );
 };
 
-AddDocument.propTypes = {
+EditDocument.propTypes = {
   user: PropTypes.any,
-  onCancel: PropTypes.func
+  onCancel: PropTypes.func,
+  document: PropTypes.any
 };
 
 export const StepWrapper = ({ children, activeStep, handleBack, handleNext, nextBtn }) => {
@@ -272,4 +253,4 @@ StepWrapper.propTypes = {
   nextBtn: PropTypes.any
 };
 
-export default AddDocument;
+export default EditDocument;

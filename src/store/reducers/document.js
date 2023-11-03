@@ -47,7 +47,7 @@ const document = createSlice({
     updateDocument(state, action) {
       const { document } = action.payload;
       const DocumentUpdate = state.lists.map((item) => {
-        if (item.uniqueId === document.uniqueId) {
+        if (item._id === document._id) {
           return document;
         }
         return item;
@@ -57,8 +57,8 @@ const document = createSlice({
 
     // delete invoice
     deleteDocument(state, action) {
-      const { uniqueId } = action.payload;
-      const documents = state.lists.filter((list) => list._id !== uniqueId);
+      const { _id } = action.payload;
+      const documents = state.lists.filter((list) => list._id !== _id);
       state.lists = documents;
     }
   }
@@ -128,23 +128,49 @@ export function postDocumentCreate(newDocument, navigate) {
   };
 }
 
-export function getDocumentUpdate(uniqueId, updatedDocument) {
-  const { name, description, initialText } = updatedDocument;
+export function putDocumentUpdate(newDocument, navigate) {
   return async () => {
     try {
-      const response = await axiosServices.post(`/document/update/${uniqueId}`, { name, description, initialText });
-      dispatch(updateDocument(response.data.data));
+      const response = await axiosServices.put(`/document/${newDocument._id}`, newDocument);
+      dispatch(
+        openSnackbar({
+          open: true,
+          message: 'Document has been updated successfully.',
+          variant: 'alert',
+          alert: {
+            color: 'success'
+          },
+          close: true
+        })
+      );
+      if (response.data.data.document) {
+        dispatch(updateDocument(response.data.data));
+        // if (navigate) {
+        //   navigate('/document/' + response.data.data.document._id);
+        // }
+      }
     } catch (error) {
       dispatch(hasError(error));
+      dispatch(
+        openSnackbar({
+          open: true,
+          message: 'Something wents wrong. Check again.',
+          variant: 'alert',
+          alert: {
+            color: 'error'
+          },
+          close: true
+        })
+      );
     }
   };
 }
 
-export function documentDelete(uniqueId) {
+export function documentDelete(_id) {
   return async () => {
     try {
-      await axiosServices.delete('/document/' + uniqueId);
-      dispatch(deleteDocument({ uniqueId }));
+      await axiosServices.delete('/document/' + _id);
+      dispatch(deleteDocument({ _id }));
       dispatch(
         openSnackbar({
           open: true,
