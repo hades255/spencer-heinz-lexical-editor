@@ -121,12 +121,12 @@ export default function AddContributorsFromContributor({ open: openThis = false,
                     handleAddContributors();
                   }}
                 >
-                  {user._id === creator._id ? 'Save' : 'Send Invitation'}
+                  Save
                 </Button>
               </Stack>
             </Stack>
           </Box>
-          <AddContributor users={users} value={value} onChange={setValue} exist={exist} mine={user._id === creator._id} user={user} />
+          <AddContributor users={users} value={value} onChange={setValue} exist={exist} mine={creator} user={user} />
         </MainCard>
       </DialogContent>
     </Dialog>

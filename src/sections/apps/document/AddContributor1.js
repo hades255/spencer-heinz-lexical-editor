@@ -34,13 +34,19 @@ function union(a, b) {
 export const ReplyCell = ({ value }) => {
   switch (value) {
     case 'pending':
-      return <Chip color="info" label="Pending" size="small" variant="light" />;
+      return <Chip color="info" label="Pending" size="small" variant="light" sx={{ p: 0, m: 0, fontSize: 11 }} />;
     case 'accept':
-      return <Chip color="success" label="Accepted" size="small" variant="light" />;
+      return <Chip color="success" label="Accepted" size="small" variant="light" sx={{ p: 0, m: 0, fontSize: 11 }} />;
     case 'reject':
-      return <Chip color="warning" label="Rejected" size="small" variant="light" />;
+      return <Chip color="warning" label="Rejected" size="small" variant="light" sx={{ p: 0, m: 0, fontSize: 11 }} />;
+    case 'You':
+      return <Chip color="primary" label="You" size="small" variant="light" sx={{ p: 0, m: 0, fontSize: 11 }} />;
+    case 'Creator':
+      return <Chip color="error" label="Creator" size="small" variant="light" sx={{ p: 0, m: 0, fontSize: 11 }} />;
+    case 'Creator/You':
+      return <Chip color="error" label="Crea/You" size="small" variant="light" sx={{ p: 0, m: 0, fontSize: 11 }} />;
     default:
-      return <></>;
+      return <Chip color="info" label="Pending" size="small" variant="light" sx={{ p: 0, m: 0, fontSize: 11 }} />;
   }
 };
 
@@ -48,8 +54,8 @@ ReplyCell.propTypes = {
   value: PropTypes.string
 };
 
-const ListCell = ({ user, dbClick, dir }) => {
-  return (
+const ListCell = ({ user, dbClick, dir, reply }) => {
+  return user ? (
     <Stack
       direction={'row'}
       justifyContent={'space-between'}
@@ -60,19 +66,22 @@ const ListCell = ({ user, dbClick, dir }) => {
       <CustomCell user={user} />
       <Stack>
         <StatusCell value={user.status} />
-        <ReplyCell value={user.reply} />
+        {!dir && <ReplyCell value={reply || user.reply} />}
       </Stack>
     </Stack>
+  ) : (
+    <></>
   );
 };
 
 ListCell.propTypes = {
   user: PropTypes.object,
   dbClick: PropTypes.func,
-  dir: PropTypes.bool
+  dir: PropTypes.bool,
+  reply: PropTypes.string
 };
 
-export default function AddContributor({ users, value, onChange, exist = [], mine = false, user }) {
+export default function AddContributor({ users, value, onChange, exist = [], mine = null, user }) {
   const [checked, setChecked] = useState([]);
   const [searchVal, setSearchVal] = useState('');
   const [search, setSearch] = useState('');
@@ -146,7 +155,7 @@ export default function AddContributor({ users, value, onChange, exist = [], min
   };
 
   const customList = (title, items) => {
-    const ids = items.map((item) => item.email).filter((item) => mine || !exist.find((x) => x.email === item));
+    const ids = items.filter((item) => user.email !== item.email && (mine ? mine.email !== item.email : true)).map((item) => item.email);
     return (
       <Card>
         <CardHeader
@@ -181,7 +190,7 @@ export default function AddContributor({ users, value, onChange, exist = [], min
           {items.map((item, key) => {
             const labelId = `transfer-list-all-item-${item.email}-label`;
 
-            return (!mine && exist.find((x) => x.email === item.email)) || (mine && user.email === item.email) ? (
+            return user.email === item.email || mine?.email === item.email ? (
               <ListItem key={key} role="listitem">
                 <ListItemIcon>
                   <Checkbox
@@ -196,7 +205,22 @@ export default function AddContributor({ users, value, onChange, exist = [], min
                 </ListItemIcon>
                 <ListItemText
                   id={labelId}
-                  primary={<ListCell user={exist.find((x) => x.email === item.email)} dbClick={() => {}} dir={title === 'Choices'} />}
+                  primary={
+                    <ListCell
+                      user={exist.find((x) => x.email === item.email)}
+                      dbClick={() => {}}
+                      dir={title === 'Choices'}
+                      reply={
+                        user.email === item.email
+                          ? mine?.email === item.email
+                            ? 'Creator/You'
+                            : 'You'
+                          : mine?.email === item.email
+                          ? 'Creator'
+                          : ''
+                      }
+                    />
+                  }
                 />
               </ListItem>
             ) : (
@@ -281,7 +305,7 @@ AddContributor.propTypes = {
   user: PropTypes.any,
   value: PropTypes.any,
   exist: PropTypes.any,
-  mine: PropTypes.bool,
+  mine: PropTypes.any,
   onChange: PropTypes.func
 };
 

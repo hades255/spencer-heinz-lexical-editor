@@ -24,7 +24,9 @@ const Check = ({ document, user }) => {
   }, [document, user]);
 
   const handleAction = useCallback(() => {
-    dispatch(getDocumentSingleList(document._id));
+    setTimeout(() => {
+      dispatch(getDocumentSingleList(document._id));
+    }, 500);
   }, [document]);
 
   return (

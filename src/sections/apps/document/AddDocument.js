@@ -29,7 +29,7 @@ const AddDocument = ({ user }) => {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [contributors, setContributors] = useState([]);
-  const users = useSelector((state) => state.user.lists).filter((item) => item?._id !== user?._id);
+  const users = useSelector((state) => state.user.lists);
   const nextBtn = useRef(null);
 
   const handleAutocompleteChange = (value) => {
@@ -50,6 +50,10 @@ const AddDocument = ({ user }) => {
   useEffect(() => {
     dispatch(getUserLists());
   }, []);
+
+  useEffect(() => {
+    if (user) setContributors([user.email]);
+  }, [user]);
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -203,6 +207,7 @@ const AddDocument = ({ user }) => {
                         user={user}
                         onChange={handleAutocompleteChange}
                         value={contributors}
+                        exist={[user]}
                       />
                     )}
                   </StepWrapper>
