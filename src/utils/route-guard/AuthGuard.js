@@ -20,7 +20,7 @@ const AuthGuard = ({ children }) => {
         },
         replace: true
       });
-      navigate('login', { replace: true });
+      // navigate('login', { replace: true });
     }
   }, [isLoggedIn, navigate, location]);
 

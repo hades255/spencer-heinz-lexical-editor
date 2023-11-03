@@ -13,6 +13,7 @@ const GuestGuard = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  console.log(location?.state?.from);
   useEffect(() => {
     if (isLoggedIn) {
       navigate(location?.state?.from ? location?.state?.from : APP_DEFAULT_PATH, {
