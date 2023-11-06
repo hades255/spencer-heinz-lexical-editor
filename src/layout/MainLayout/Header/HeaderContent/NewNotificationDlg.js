@@ -46,11 +46,11 @@ export const NewNotificationDlg = ({ notifications, open, handleClose, redirect 
       >
         <CloseIcon />
       </IconButton>
-      <Tooltip title="Mark as all read" sx={{ position: 'absolute', top: 11, right: 40 }}>
+      {/* <Tooltip title="Mark as all read" sx={{ position: 'absolute', top: 11, right: 40 }}>
         <IconButton color="success" size="small" onClick={handleSetRead}>
           <CheckCircleOutlined style={{ fontSize: '1.15rem' }} />
         </IconButton>
-      </Tooltip>
+      </Tooltip> */}
       <DialogTitle>You have new notifications</DialogTitle>
       <Divider />
       <DialogContent sx={{ p: 2.5 }}>

@@ -14,7 +14,7 @@ const AuthGuard = ({ children }) => {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      navigate('login', {
+      navigate('login' + location.search, {
         state: {
           from: location.pathname
         },

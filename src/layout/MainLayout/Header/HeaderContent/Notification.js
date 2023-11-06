@@ -104,15 +104,20 @@ const Notification = () => {
     dispatch(setMessageLists([]));
   }, []);
 
-  const [socket, setSocket] = useState({ ws: null, opened: false });
+  // const [socket, setSocket] = useState({ ws: null, opened: false });
 
   useEffect(() => {
+    if (!user) return;
     const ws = new WebSocket(process.env.REACT_APP_NOTIFICATION_WEBSOCKET_URL || 'ws://localhost:8000/notification/socket');
+    console.log('opening');
     ws.onopen = () => {
-      setSocket({ ws, opened: true });
+      console.log('opened');
+      ws.send(JSON.stringify({ _id: user._id, role: user.role }));
+      // setSocket({ ws, opened: true });
     };
 
     ws.onmessage = (event) => {
+      console.log('received');
       const data = JSON.parse(event.data);
       if (data) {
         dispatch(addLists(data.notifications));
@@ -121,17 +126,15 @@ const Notification = () => {
     };
 
     ws.onclose = () => {
-      setSocket({ ws: null, opened: false });
+      // setSocket({ ws: null, opened: false });
+      console.log('closed');
     };
 
     return () => {
+      console.log('closing');
       ws.close();
     };
-  }, []);
-
-  useEffect(() => {
-    if (socket.opened && user) socket.ws.send(JSON.stringify({ _id: user._id, role: user.role }));
-  }, [socket, user]);
+  }, [user]);
 
   const handleClose = useCallback(
     (event) => {
