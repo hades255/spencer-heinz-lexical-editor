@@ -92,8 +92,8 @@ export default function AddContributorsFromContributor({ open: openThis = false,
       TransitionComponent={PopupTransition}
       keepMounted
       fullWidth
-      onClose={() => {
-        onClose(false);
+      onClose={(r) => {
+        if (r === 'escapeKeyDown') onClose(false);
       }}
       open={openThis}
       sx={{ '& .MuiDialog-paper': { p: 0 }, transition: 'transform 225ms' }}
@@ -113,16 +113,28 @@ export default function AddContributorsFromContributor({ open: openThis = false,
                 )}
               </Stack>
               <Stack alignItems="center">
-                <Button
-                  size="large"
-                  variant="contained"
-                  color="primary"
-                  onClick={() => {
-                    handleAddContributors();
-                  }}
-                >
-                  Save
-                </Button>
+                <Stack direction={'row'} justifyContent={'space-between'}>
+                  <Button
+                    size="large"
+                    variant="contained"
+                    color="info"
+                    onClick={() => {
+                      onClose(false);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="large"
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {
+                      handleAddContributors();
+                    }}
+                  >
+                    Save
+                  </Button>
+                </Stack>
               </Stack>
             </Stack>
           </Box>

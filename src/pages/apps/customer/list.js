@@ -104,7 +104,7 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent, hand
       filterTypes,
       initialState: {
         pageIndex: Number(searchParams.get('page') || '1') - 1,
-        pageSize: Number(searchParams.get('perpage') || '10'),
+        pageSize: Number(searchParams.get('perpage') || '100'),
         hiddenColumns: ['avatar', 'email', 'workPhone'],
         sortBy: [sortBy]
       }

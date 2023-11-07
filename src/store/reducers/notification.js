@@ -68,10 +68,10 @@ export function setNotificationsRead() {
     }
   };
 }
-export function setNotificationRead({ _id }) {
+export function setNotificationRead({ _id }, clearRedirect = false) {
   return async () => {
     try {
-      await axiosServices.put(`/notification/` + _id);
+      await axiosServices.put(`/notification/` + _id, { clearRedirect });
       dispatch(setRead({ _id }));
     } catch (error) {
       dispatch(hasError(error));
@@ -81,12 +81,8 @@ export function setNotificationRead({ _id }) {
 export function setInvitationStatus(notification, status) {
   return async () => {
     try {
-      const docid =
-        notification.redirect.indexOf('/') === -1
-          ? notification.redirect
-          : notification.redirect.substr(notification.redirect.lastIndexOf('/') + 1);
-      dispatch(setNotificationRead(notification));
-      await axiosServices.put(`/document/invitation`, { id: docid, status });
+      dispatch(setNotificationRead(notification, status === 'reject'));
+      await axiosServices.put(`/document/invitation`, { id: notification.redirect, status });
       dispatch(getMyDocumentLists());
     } catch (error) {
       dispatch(hasError(error));

@@ -29,9 +29,13 @@ export const HandleNotificationDlg = ({ notification, open, handleClose }) => {
       {notification && notification.type === NOTIFICATION_TYPES.DOCUMENT_INVITE_RECEIVE && (
         <ReceiveInvitation notification={notification} onCancel={handleClickClose} />
       )}
-      {notification && notification.type === NOTIFICATION_TYPES.DOCUMENT_INVITE_ACCEPT && (
-        <ReceiveInvitation notification={notification} onCancel={handleClickClose} send />
-      )}
+      {notification &&
+        (notification.type === NOTIFICATION_TYPES.DOCUMENT_INVITE_SEND ||
+          notification.type === NOTIFICATION_TYPES.DOCUMENT_INVITE_ACCEPT ||
+          notification.type === NOTIFICATION_TYPES.DOCUMENT_INVITE_REJECT ||
+          notification.type === NOTIFICATION_TYPES.DOCUMENT_INVITE_DELETE) && (
+          <ReceiveInvitation notification={notification} onCancel={handleClickClose} send />
+        )}
     </Dialog>
   );
 };
@@ -41,18 +45,18 @@ export const ReceiveInvitation = ({ notification, onCancel, send = false }) => {
   const handleAccept = useCallback(() => {
     onCancel();
     dispatch(setInvitationStatus(notification, 'accept'));
-    navigate(
-      '/document/' +
-        (notification.redirect.indexOf('/') === -1
-          ? notification.redirect
-          : notification.redirect.substr(notification.redirect.lastIndexOf('/') + 1))
-    );
+    navigate('/document/' + notification.redirect);
   }, [onCancel, notification, navigate]);
 
   const handleReject = useCallback(() => {
     onCancel();
     dispatch(setInvitationStatus(notification, 'reject'));
   }, [onCancel, notification]);
+
+  const handleRedirect = useCallback(() => {
+    onCancel();
+    navigate('/document/' + notification.redirect);
+  }, [onCancel, notification, navigate]);
 
   return (
     <>
@@ -84,8 +88,8 @@ export const ReceiveInvitation = ({ notification, onCancel, send = false }) => {
               <Stack direction="row" spacing={2} alignItems="center">
                 <Grid item xs={12}>
                   <AnimateButton>
-                    <Button disableElevation onClick={onCancel} fullWidth size="large" variant="contained" color="secondary">
-                      Close
+                    <Button disableElevation onClick={handleRedirect} fullWidth size="large" variant="contained" color="secondary">
+                      View Document
                     </Button>
                   </AnimateButton>
                 </Grid>
@@ -114,8 +118,8 @@ export const ReceiveInvitation = ({ notification, onCancel, send = false }) => {
                     <Grid item xs={12}>
                       <Typography variant="h6">You{"'"}ve handled this request.</Typography>
                       <AnimateButton>
-                        <Button disableElevation onClick={onCancel} fullWidth size="large" variant="contained" color="secondary">
-                          Close
+                        <Button disableElevation onClick={handleRedirect} fullWidth size="large" variant="contained" color="secondary">
+                          View Document
                         </Button>
                       </AnimateButton>
                     </Grid>

@@ -34,6 +34,8 @@ const DocumentCreate = () => {
   const [contributors, setContributors] = useState([]);
   const users = useSelector((state) => state.user.lists);
   const nextBtn = useRef(null);
+  const firstinput = useRef(null);
+  const secondinput = useRef(null);
 
   const handleKeyDown = useCallback(
     (e) => {
@@ -55,8 +57,24 @@ const DocumentCreate = () => {
   }, []);
 
   useEffect(() => {
-    if (user) setContributors([user.email]);
+    if (user) {
+      setContributors([user.email]);
+      firstinput.current.focus();
+    }
   }, [user]);
+
+  useEffect(() => {
+    switch (activeStep) {
+      case 0:
+        firstinput.current.focus();
+        break;
+      case 1:
+        secondinput.current.focus();
+        break;
+      default:
+        break;
+    }
+  }, [activeStep]);
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -157,6 +175,7 @@ const DocumentCreate = () => {
                           placeholder="Document Title"
                           maxRows={30}
                           minRows={15}
+                          ref={firstinput}
                         />
                         {touched.name && errors.name && (
                           <FormHelperText error id="helper-text-name-doc">
@@ -177,6 +196,7 @@ const DocumentCreate = () => {
                           placeholder="Document Description"
                           maxRows={30}
                           minRows={15}
+                          ref={secondinput}
                         />
                         {touched.description && errors.description && (
                           <FormHelperText error id="helper-text-description-doc">

@@ -33,6 +33,7 @@ import NotificationItem from './NotificationItem';
 import AuthContext from 'contexts/JWTContext';
 import { HandleNotificationDlg } from './HandleNotification';
 import { NewNotificationDlg } from './NewNotificationDlg';
+import { getDocumentSingleList } from 'store/reducers/document';
 
 // sx styles
 export const avatarSX = {
@@ -63,14 +64,13 @@ const Notification = () => {
 
   const anchorRef = useRef(null);
   const [open, setOpen] = useState(false);
-  const [first, setFirst] = useState(true);
+  const [firstShow, setFirstShow] = useState(true);
 
   const [notiHandle, setNotiHandle] = useState(null);
   const [openHandle, setOpenHandle] = useState(false);
 
   const handleToggle = useCallback(() => {
     setOpen((prevOpen) => !prevOpen);
-    setFirst(false);
   }, []);
 
   const handleSetRead = useCallback(() => {
@@ -120,6 +120,16 @@ const Notification = () => {
       console.log('received');
       const data = JSON.parse(event.data);
       if (data) {
+        let refreshDoc = null;
+        for (let item of data.notifications) {
+          if (item.redirect && window.location.pathname === '/document/' + item.redirect) {
+            refreshDoc = item.redirect;
+          }
+        }
+        if (refreshDoc) {
+          console.log('refresh');
+          dispatch(getDocumentSingleList(refreshDoc));
+        }
         dispatch(addLists(data.notifications));
         dispatch(addMessageLists(data.messages));
       }
@@ -249,8 +259,8 @@ const Notification = () => {
       <HandleNotificationDlg user={user} notification={notiHandle} open={openHandle} handleClose={handleCloseRedirect} />
       <NewNotificationDlg
         notifications={notifications?.filter((item) => item.status === 'unread')}
-        open={first && notifications?.filter((item) => item.status === 'unread').length !== 0}
-        handleClose={setFirst}
+        open={firstShow && notifications?.filter((item) => item.status === 'unread').length !== 0}
+        handleClose={setFirstShow}
         redirect={handleRedirect}
       />
     </>

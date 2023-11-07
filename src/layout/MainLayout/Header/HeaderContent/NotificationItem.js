@@ -1,18 +1,26 @@
 import { useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 // import { BellOutlined, CheckCircleOutlined, GiftOutlined, MessageOutlined, SettingOutlined } from '@ant-design/icons';
 import { Avatar, Divider, ListItemButton, ListItemAvatar, ListItemText, ListItemSecondaryAction, Typography } from '@mui/material';
 import { NOTIFICATION_ITEM } from 'config/constants';
-import { dispatch } from 'store';
-import { setNotificationRead } from 'store/reducers/notification';
+// import { dispatch } from 'store';
+// import { setNotificationRead } from 'store/reducers/notification';
 
 const NotificationItem = ({ notification, setOpen, redirect }) => {
+  const navigate = useNavigate();
+
   const handleRedirect = useCallback(() => {
-    if (redirect && notification.redirect) redirect(notification);
-    else dispatch(setNotificationRead(notification));
-    if (setOpen) setOpen(false);
-  }, [notification, setOpen, redirect]);
+    if (redirect && notification.redirect) {
+      // redirect(notification);
+      if (notification.type.indexOf('@document') !== -1) {
+        navigate('/document/' + notification.redirect);
+      }
+      if (setOpen) setOpen(false);
+    }
+    // else dispatch(setNotificationRead(notification));
+  }, [notification, setOpen, redirect, navigate]);
 
   return (
     <>

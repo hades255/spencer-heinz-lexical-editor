@@ -21,7 +21,7 @@ import StyledTextarea from 'components/form/StyledTextarea';
 import { useSelector } from 'store';
 import { getUserLists } from 'store/reducers/user';
 import CustomCell from 'components/customers/CustomCell';
-import AddContributor from './AddContributor1';
+import AddContributor, { intersection, not } from './AddContributor1';
 
 const steps = ['Title', 'Descriptions', 'Contributors'];
 
@@ -31,25 +31,37 @@ const EditDocument = ({ user, onCancel, document }) => {
   const [contributors, setContributors] = useState([document.creator.email, ...document.invites.map((item) => item.email)]);
   const users = useSelector((state) => state.user.lists);
   const nextBtn = useRef(null);
+  const firstinput = useRef(null);
+  const secondinput = useRef(null);
 
   const handleAutocompleteChange = (value) => {
     setContributors(value);
   };
 
-  const handleKeyDown = useCallback(
-    (e) => {
-      if (e.keyCode === 9) {
-        e.preventDefault();
-        nextBtn.current.focus();
-        return;
-      }
-    },
-    [nextBtn]
-  );
+  const handleKeyDown = useCallback((e) => {
+    if (e.keyCode === 9) {
+      e.preventDefault();
+      nextBtn.current.focus();
+      return;
+    }
+  }, []);
 
   useEffect(() => {
     dispatch(getUserLists());
   }, []);
+
+  useEffect(() => {
+    switch (activeStep) {
+      case 0:
+        firstinput.current.focus();
+        break;
+      case 1:
+        secondinput.current.focus();
+        break;
+      default:
+        break;
+    }
+  }, [activeStep]);
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -90,13 +102,31 @@ const EditDocument = ({ user, onCancel, document }) => {
               description: Yup.string().max(1024).required('Document description is required')
             })}
             onSubmit={async (values, { setStatus, setSubmitting }) => {
+              const a = not(
+                contributors.filter((item) => item !== document.creator.email),
+                document.invites.map((item) => item.email)
+              );
+              const r = not(
+                document.invites.map((item) => item.email),
+                contributors.filter((item) => item !== document.creator.email)
+              );
               dispatch(
                 putDocumentUpdate(
                   {
                     _id: document._id,
                     ...values,
-                    contributors: users
-                      .filter((item) => contributors.includes(item.email))
+                    contributors: document.contributors.filter((item) => !r.includes(item.email)),
+                    invites: [
+                      ...document.invites.filter((item) => !r.includes(item.email)),
+                      ...users
+                        .filter((item) => a.includes(item.email))
+                        .map(({ _id, name, email, avatar, status, role }) => ({ _id, name, email, avatar, status, role }))
+                    ],
+                    a: users
+                      .filter((item) => a.includes(item.email))
+                      .map(({ _id, name, email, avatar, status, role }) => ({ _id, name, email, avatar, status, role })),
+                    r: users
+                      .filter((item) => r.includes(item.email))
                       .map(({ _id, name, email, avatar, status, role }) => ({ _id, name, email, avatar, status, role }))
                   },
                   navigate
@@ -104,7 +134,7 @@ const EditDocument = ({ user, onCancel, document }) => {
               );
               setStatus({ success: true });
               setSubmitting(false); //  post document
-              // onCancel();
+              onCancel();
             }}
           >
             {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
@@ -164,6 +194,7 @@ const EditDocument = ({ user, onCancel, document }) => {
                           placeholder="Document Title"
                           maxRows={30}
                           minRows={15}
+                          ref={firstinput}
                         />
                         {touched.name && errors.name && (
                           <FormHelperText error id="helper-text-name-doc">
@@ -184,6 +215,7 @@ const EditDocument = ({ user, onCancel, document }) => {
                           placeholder="Document Description"
                           maxRows={30}
                           minRows={15}
+                          ref={secondinput}
                         />
                         {touched.description && errors.description && (
                           <FormHelperText error id="helper-text-description-doc">

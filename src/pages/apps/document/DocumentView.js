@@ -138,7 +138,8 @@ const DocumentView = () => {
                         sx={{
                           bgcolor: theme.palette.background.paper,
                           pr: 2,
-                          pb: 2,
+                          pb: 1,
+                          mb: 2,
                           borderBottom: `1px solid ${theme.palette.divider}`
                         }}
                       >

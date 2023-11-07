@@ -53,7 +53,7 @@ function DocumentTable({ columns, data, getHeaderProps, renderRowSubComponent, h
       filterTypes,
       initialState: {
         pageIndex: Number(searchParams.get('page') || '1') - 1,
-        pageSize: Number(searchParams.get('perpage') || '10'),
+        pageSize: Number(searchParams.get('perpage') || '100'),
         hiddenColumns: ['description', '_id', 'createdAt', 'updatedAt', 'invites'],
         sortBy: [sortBy]
       }
