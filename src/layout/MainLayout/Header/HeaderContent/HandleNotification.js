@@ -69,7 +69,9 @@ export const ReceiveInvitation = ({ notification, onCancel, send = false }) => {
               <Typography variant="h6">
                 {notification.data.map((text, key) => (
                   <span key={key}>
-                    {text.variant ? (
+                    {text.text === '<br/>' ? (
+                      <br />
+                    ) : text.variant ? (
                       <Typography component="span" variant={text.variant}>
                         {text.text}
                       </Typography>
@@ -96,35 +98,22 @@ export const ReceiveInvitation = ({ notification, onCancel, send = false }) => {
               </Stack>
             ) : (
               <Stack direction="row" spacing={2} alignItems="center">
-                {notification.status === 'unread' ? (
-                  <>
-                    <Grid item xs={6}>
-                      <AnimateButton>
-                        <Button disableElevation onClick={handleReject} fullWidth size="large" variant="contained" color="secondary">
-                          Reject
-                        </Button>
-                      </AnimateButton>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <AnimateButton>
-                        <Button disableElevation onClick={handleAccept} fullWidth size="large" variant="contained" color="primary">
-                          Accept
-                        </Button>
-                      </AnimateButton>
-                    </Grid>
-                  </>
-                ) : (
-                  <>
-                    <Grid item xs={12}>
-                      <Typography variant="h6">You{"'"}ve handled this request.</Typography>
-                      <AnimateButton>
-                        <Button disableElevation onClick={handleRedirect} fullWidth size="large" variant="contained" color="secondary">
-                          View Document
-                        </Button>
-                      </AnimateButton>
-                    </Grid>
-                  </>
-                )}
+                <>
+                  <Grid item xs={6}>
+                    <AnimateButton>
+                      <Button disableElevation onClick={handleReject} fullWidth size="large" variant="contained" color="secondary">
+                        Reject
+                      </Button>
+                    </AnimateButton>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <AnimateButton>
+                      <Button disableElevation onClick={handleAccept} fullWidth size="large" variant="contained" color="primary">
+                        Accept
+                      </Button>
+                    </AnimateButton>
+                  </Grid>
+                </>
               </Stack>
             )}
           </Grid>
@@ -146,3 +135,18 @@ HandleNotificationDlg.propTypes = {
   handleClose: PropTypes.func,
   open: PropTypes.bool
 };
+
+/**
+                {notification.status === 'unread' ? (
+                ) : (
+                  <>
+                    <Grid item xs={12}>
+                      <Typography variant="h6">You{"'"}ve handled this request.</Typography>
+                      <AnimateButton>
+                        <Button disableElevation onClick={handleRedirect} fullWidth size="large" variant="contained" color="secondary">
+                          View Document
+                        </Button>
+                      </AnimateButton>
+                    </Grid>
+                  </>
+                )} */

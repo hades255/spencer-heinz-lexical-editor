@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { Avatar, AvatarGroup, Box, Grid, Stack, Typography } from '@mui/material';
+import { Avatar, AvatarGroup, Box, Grid, IconButton, Stack, Typography } from '@mui/material';
 import { useTheme, styled } from '@mui/material/styles';
-import { UserSwitchOutlined } from '@ant-design/icons';
+import { MenuFoldOutlined, MenuUnfoldOutlined, UserSwitchOutlined } from '@ant-design/icons';
 import MainCard from 'components/MainCard';
 import UserAvatar from 'sections/apps/user/UserAvatar';
 
@@ -38,6 +38,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.shorter
     }),
+    width: `0px`,
     marginLeft: 0
   })
 }));
@@ -55,6 +56,11 @@ const DocumentView = () => {
     dispatch(getDocumentSingleList(uniqueId));
   }, [uniqueId]);
 
+  const [openDrawer, setOpenDrawer] = useState(true);
+  const handleDrawerOpen = () => {
+    setOpenDrawer((prevState) => !prevState);
+  };
+
   return (
     <>
       {document &&
@@ -62,8 +68,14 @@ const DocumentView = () => {
         (document.creator.email === user.email || document.contributors.some((item) => item.email === user.email) ? (
           <>
             <Box sx={{ display: 'flex' }}>
-              <UsersList user={user} document={document} setAddContributorDlg={setAddContributorDlg} />
-              <Main theme={theme} open={true}>
+              <UsersList
+                user={user}
+                document={document}
+                setAddContributorDlg={setAddContributorDlg}
+                handleDrawerOpen={handleDrawerOpen}
+                openDrawer={openDrawer}
+              />
+              <Main theme={theme} open={openDrawer}>
                 <Grid container>
                   <Grid
                     item
@@ -101,6 +113,9 @@ const DocumentView = () => {
                           <Grid container justifyContent="space-between">
                             <Grid item xs={12} sm={8}>
                               <Stack direction="row" alignItems="center" spacing={1}>
+                                <IconButton onClick={handleDrawerOpen} color="secondary" size="large">
+                                  {openDrawer ? <MenuFoldOutlined /> : <MenuUnfoldOutlined />}
+                                </IconButton>
                                 {document && (
                                   <CustomCell
                                     user={{
@@ -191,11 +206,11 @@ const DocumentView = () => {
                                   minHeight: 420
                                 }}
                               >
-                                <EditorHistoryStateContext>
+                                {/* <EditorHistoryStateContext>
                                   {user && document && (
                                     <LexicalEditor uniqueId={uniqueId} user={user} allUsers={[document.creator, ...document.invites]} />
                                   )}
-                                </EditorHistoryStateContext>
+                                </EditorHistoryStateContext> */}
                               </SimpleBar>
                             </Grid>
                           </Grid>
@@ -216,7 +231,7 @@ const DocumentView = () => {
             />
           </>
         ) : document.invites.some((item) => item.email === user.email && item.reply === 'pending') ? (
-          <Check document={document} user={user} />
+          <Check document={document} />
         ) : (
           <Redirect />
         ))}

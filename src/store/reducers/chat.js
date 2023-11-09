@@ -87,7 +87,7 @@ export function getUsers(uniqueId) {
   return async () => {
     try {
       const response = await axios.get(`/document/users/${uniqueId}`);
-      console.log(response)
+      console.log(response);
       dispatch(chat.actions.getUsersSuccess(response.data.data.room.users ?? []));
     } catch (error) {
       dispatch(chat.actions.hasError(error));

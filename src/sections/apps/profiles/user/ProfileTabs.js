@@ -45,7 +45,7 @@ const ProfileTabs = ({ focusInput }) => {
     setAnchorEl(null);
   };
 
-  const { logout, user } = useAuth();
+  const { user } = useAuth();
 
   return (
     <MainCard>

@@ -8,21 +8,21 @@ import MainCard from 'components/MainCard';
 import SimpleBar from 'components/third-party/SimpleBar';
 
 // assets
-import Flag1 from 'assets/images/widget/AUSTRALIA.jpg';
-import Flag2 from 'assets/images/widget/BRAZIL.jpg';
-import Flag3 from 'assets/images/widget/GERMANY.jpg';
-import Flag4 from 'assets/images/widget/UK.jpg';
-import Flag5 from 'assets/images/widget/USA.jpg';
-import Dashboard2 from 'assets/images/widget/dashborad-3.jpg';
+// import Flag1 from 'assets/images/widget/AUSTRALIA.jpg';
+// import Flag2 from 'assets/images/widget/BRAZIL.jpg';
+// import Flag3 from 'assets/images/widget/GERMANY.jpg';
+// import Flag4 from 'assets/images/widget/UK.jpg';
+// import Flag5 from 'assets/images/widget/USA.jpg';
+// import Dashboard2 from 'assets/images/widget/dashborad-3.jpg';
 import avatar from 'assets/images/users/avatar-group.png';
 
 // antd
-import { CloseOutlined, PlusOutlined, EyeTwoTone, EditTwoTone, DeleteTwoTone, MessageOutlined } from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 
 // table data
-function createData(image, subject, dept, date) {
-  return { image, subject, dept, date };
-}
+// function createData(image, subject, dept, date) {
+//   return { image, subject, dept, date };
+// }
 
 const mediaSX = {
   width: 90,
@@ -59,17 +59,20 @@ const LatestCustomers = () => (
       </Button>
     }
   >
-
     <SimpleBar
       sx={{
         height: 354
       }}
     >
       {isEmpty ? (
-        <Grid container alignItems="center" justifyContent="center" direction="column" style={{ height: "354px" }}>
-          <Typography variant='h5' style={{ marginBottom: '15px' }}>Pending Documents</Typography>
+        <Grid container alignItems="center" justifyContent="center" direction="column" style={{ height: '354px' }}>
+          <Typography variant="h5" style={{ marginBottom: '15px' }}>
+            Pending Documents
+          </Typography>
           <CardMedia component="img" image={avatar} title="image" sx={mediaSX} style={{ marginBottom: '15px' }} />
-          <Typography variant='h6' style={{ marginBottom: '15px' }}>You don&apos;t have any documents yet</Typography>
+          <Typography variant="h6" style={{ marginBottom: '15px' }}>
+            You don&apos;t have any documents yet
+          </Typography>
           <Link component={RouterLink} to="#" color="primary">
             + Create one
           </Link>
@@ -104,10 +107,7 @@ const LatestCustomers = () => (
           </Table>
         </TableContainer>
       )}
-
-
     </SimpleBar>
-
   </MainCard>
 );
 

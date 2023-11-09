@@ -5,6 +5,8 @@ import moment from 'moment';
 // import { BellOutlined, CheckCircleOutlined, GiftOutlined, MessageOutlined, SettingOutlined } from '@ant-design/icons';
 import { Avatar, Divider, ListItemButton, ListItemAvatar, ListItemText, ListItemSecondaryAction, Typography } from '@mui/material';
 import { NOTIFICATION_ITEM } from 'config/constants';
+import { dispatch } from 'store';
+import { setNotificationRead } from 'store/reducers/notification';
 // import { dispatch } from 'store';
 // import { setNotificationRead } from 'store/reducers/notification';
 
@@ -15,11 +17,11 @@ const NotificationItem = ({ notification, setOpen, redirect }) => {
     if (redirect && notification.redirect) {
       // redirect(notification);
       if (notification.type.indexOf('@document') !== -1) {
-        navigate('/document/' + notification.redirect);
+        navigate('/document/' + notification.redirect + '?notification=' + notification._id);
       }
       if (setOpen) setOpen(false);
     }
-    // else dispatch(setNotificationRead(notification));
+    dispatch(setNotificationRead(notification));
   }, [notification, setOpen, redirect, navigate]);
 
   return (
@@ -40,7 +42,9 @@ const NotificationItem = ({ notification, setOpen, redirect }) => {
             <Typography variant="h6">
               {notification.data.map((text, key) => (
                 <span key={key}>
-                  {text.variant ? (
+                  {text.text === '<br/>' ? (
+                    <br />
+                  ) : text.variant ? (
                     <Typography component="span" variant={text.variant}>
                       {text.text}
                     </Typography>
@@ -54,13 +58,13 @@ const NotificationItem = ({ notification, setOpen, redirect }) => {
           }
           secondary={moment(notification.createdAt).fromNow()}
         />
-        {notification.createdAt !== notification.updatedAt && (
+        {/* {notification.createdAt !== notification.updatedAt && (
           <ListItemSecondaryAction>
             <Typography variant="caption" noWrap>
               {moment(notification.createdAt).format('h:mm A')}
             </Typography>
           </ListItemSecondaryAction>
-        )}
+        )} */}
       </ListItemButton>
       <Divider />
     </>

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import axiosServices from 'utils/axios';
 import { ReceiveInvitation } from 'layout/MainLayout/Header/HeaderContent/HandleNotification';
@@ -9,19 +10,22 @@ import UserAvatar from 'sections/apps/user/UserAvatar';
 import { dispatch } from 'store';
 import { getDocumentSingleList } from 'store/reducers/document';
 
-const Check = ({ document, user }) => {
+const Check = ({ document }) => {
   const [noti, setNoti] = useState(null);
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
 
   useEffect(() => {
+    if (!searchParams.get('notification')) return;
     (async () => {
       try {
-        const response = await axiosServices.get('/notification/document?document=' + document._id + '&user=' + user._id);
+        const response = await axiosServices.get('/notification/' + searchParams.get('notification'));
         setNoti(response.data.data.notification);
       } catch (error) {
         console.log(error);
       }
     })();
-  }, [document, user]);
+  }, []);
 
   const handleAction = useCallback(() => {
     setTimeout(() => {
@@ -106,7 +110,14 @@ const Check = ({ document, user }) => {
         </MainCard>
       </Grid>
       <Stack direction={'row'} justifyContent={'center'}>
-        <Box>{noti && <ReceiveInvitation notification={noti} onCancel={handleAction} />}</Box>
+        <Box
+          sx={{
+            width: '50vw',
+            minWidth: '300px'
+          }}
+        >
+          {noti && <ReceiveInvitation notification={noti} onCancel={handleAction} />}
+        </Box>
       </Stack>
     </>
   );
@@ -115,6 +126,5 @@ const Check = ({ document, user }) => {
 export default Check;
 
 Check.propTypes = {
-  document: PropTypes.any,
-  user: PropTypes.any
+  document: PropTypes.any
 };

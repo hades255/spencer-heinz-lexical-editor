@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 // material-ui
@@ -36,6 +37,13 @@ import { addNewUser } from 'store/reducers/user';
 const AddNewInviteDlg = ({ open, email, onClose }) => {
   const { register } = useAuth();
   const scriptedRef = useScriptRef();
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    setTimeout(() => {
+      inputRef.current.focus();
+    }, 100);
+  }, []);
 
   return (
     <>
@@ -150,6 +158,7 @@ const AddNewInviteDlg = ({ open, email, onClose }) => {
                             onChange={handleChange}
                             placeholder="John"
                             fullWidth
+                            inputRef={inputRef}
                             error={Boolean(touched.firstname && errors.firstname)}
                           />
                           {touched.firstname && errors.firstname && (

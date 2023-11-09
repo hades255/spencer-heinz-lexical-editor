@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
@@ -87,6 +87,7 @@ export default function AddContributor({ users, value, onChange, exist = [], min
   const [search, setSearch] = useState('');
   const [openDlg, toggleOpenDlg] = useState(false);
   const [openCDlg, toggleOpenCDlg] = useState(false);
+  const inputRef = useRef(null);
 
   const leftChecked = intersection(
     checked,
@@ -251,7 +252,14 @@ export default function AddContributor({ users, value, onChange, exist = [], min
 
   return (
     <Stack sx={{ m: 1 }}>
-      <SearchInput searchVal={searchVal} toggleOpenCDlg={toggleOpenCDlg} users={users} setSearchVal={setSearchVal} onSearch={onSearch} />
+      <SearchInput
+        searchVal={searchVal}
+        toggleOpenCDlg={toggleOpenCDlg}
+        users={users}
+        setSearchVal={setSearchVal}
+        onSearch={onSearch}
+        inputRef={inputRef}
+      />
       <Grid container spacing={2} justifyContent="center" alignItems="center">
         <Grid item>
           {customList(
@@ -295,7 +303,7 @@ export default function AddContributor({ users, value, onChange, exist = [], min
         </Grid>
       </Grid>
       {openCDlg && <AddNewInviteConfirmDlg open={openCDlg} onClose={handleCloseCDlg} />}
-      <AddNewInviteDlg open={openDlg} email={searchVal} onClose={handleCloseDlg} />
+      {openDlg && <AddNewInviteDlg open={openDlg} email={searchVal} onClose={handleCloseDlg} />}
     </Stack>
   );
 }
@@ -309,7 +317,13 @@ AddContributor.propTypes = {
   onChange: PropTypes.func
 };
 
-const SearchInput = ({ searchVal, toggleOpenCDlg, users, setSearchVal, onSearch }) => {
+const SearchInput = ({ searchVal, toggleOpenCDlg, users, setSearchVal, onSearch, inputRef }) => {
+  useEffect(() => {
+    setTimeout(() => {
+      inputRef.current.focus();
+    }, 100);
+  }, []);
+
   return (
     <Grid container spacing={2} justifyContent="center" alignItems="center">
       <Autocomplete
@@ -364,6 +378,7 @@ const SearchInput = ({ searchVal, toggleOpenCDlg, users, setSearchVal, onSearch 
             onKeyDown={(e) => {
               if (e.key === 'Enter') e.preventDefault();
             }}
+            inputRef={inputRef}
           />
         )}
         sx={{ width: 300 }}
@@ -377,5 +392,6 @@ SearchInput.propTypes = {
   toggleOpenCDlg: PropTypes.any,
   users: PropTypes.any,
   setSearchVal: PropTypes.any,
-  onSearch: PropTypes.any
+  onSearch: PropTypes.any,
+  inputRef: PropTypes.any
 };

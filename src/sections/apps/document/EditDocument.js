@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
@@ -9,7 +8,7 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { DialogContent, DialogTitle, Divider, FormHelperText, Stack } from '@mui/material';
 
-import { postDocumentCreate, putDocumentUpdate } from 'store/reducers/document';
+import { putDocumentUpdate } from 'store/reducers/document';
 
 // third party
 import * as Yup from 'yup';
@@ -21,12 +20,11 @@ import StyledTextarea from 'components/form/StyledTextarea';
 import { useSelector } from 'store';
 import { getUserLists } from 'store/reducers/user';
 import CustomCell from 'components/customers/CustomCell';
-import AddContributor, { intersection, not } from './AddContributor1';
+import AddContributor, { not } from './AddContributor1';
 
 const steps = ['Title', 'Descriptions', 'Contributors'];
 
 const EditDocument = ({ user, onCancel, document }) => {
-  const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [contributors, setContributors] = useState([document.creator.email, ...document.invites.map((item) => item.email)]);
   const users = useSelector((state) => state.user.lists);
@@ -111,26 +109,23 @@ const EditDocument = ({ user, onCancel, document }) => {
                 contributors.filter((item) => item !== document.creator.email)
               );
               dispatch(
-                putDocumentUpdate(
-                  {
-                    _id: document._id,
-                    ...values,
-                    contributors: document.contributors.filter((item) => !r.includes(item.email)),
-                    invites: [
-                      ...document.invites.filter((item) => !r.includes(item.email)),
-                      ...users
-                        .filter((item) => a.includes(item.email))
-                        .map(({ _id, name, email, avatar, status, role }) => ({ _id, name, email, avatar, status, role }))
-                    ],
-                    a: users
+                putDocumentUpdate({
+                  _id: document._id,
+                  ...values,
+                  contributors: document.contributors.filter((item) => !r.includes(item.email)),
+                  invites: [
+                    ...document.invites.filter((item) => !r.includes(item.email)),
+                    ...users
                       .filter((item) => a.includes(item.email))
-                      .map(({ _id, name, email, avatar, status, role }) => ({ _id, name, email, avatar, status, role })),
-                    r: users
-                      .filter((item) => r.includes(item.email))
                       .map(({ _id, name, email, avatar, status, role }) => ({ _id, name, email, avatar, status, role }))
-                  },
-                  navigate
-                )
+                  ],
+                  a: users
+                    .filter((item) => a.includes(item.email))
+                    .map(({ _id, name, email, avatar, status, role }) => ({ _id, name, email, avatar, status, role })),
+                  r: users
+                    .filter((item) => r.includes(item.email))
+                    .map(({ _id, name, email, avatar, status, role }) => ({ _id, name, email, avatar, status, role }))
+                })
               );
               setStatus({ success: true });
               setSubmitting(false); //  post document

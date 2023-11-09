@@ -13,7 +13,7 @@ import { dispatch, useSelector } from 'store';
 import { getNotifications } from 'store/reducers/notification';
 import moment from 'moment';
 import { NOTIFICATION_ITEM } from 'config/constants';
-import { Grid, Stack } from '@mui/material';
+import { Avatar, Grid, Stack } from '@mui/material';
 
 const NotificationList = () => {
   const notifications = useSelector((state) => state.notification.all);
@@ -42,7 +42,14 @@ const NotificationList = () => {
                     <TimelineSeparator>
                       <TimelineConnector />
                       <TimelineDot color={NOTIFICATION_ITEM[notification.type].color}>
-                        <FastfoodIcon />
+                        <Avatar
+                          sx={{
+                            color: NOTIFICATION_ITEM[notification.type].color + '.main',
+                            bgcolor: NOTIFICATION_ITEM[notification.type].bgcolor + '.lighter'
+                          }}
+                        >
+                          {NOTIFICATION_ITEM[notification.type].avatar(notification)}
+                        </Avatar>
                       </TimelineDot>
                       <TimelineConnector />
                     </TimelineSeparator>
@@ -53,7 +60,9 @@ const NotificationList = () => {
                       <Typography variant="h6">
                         {notification.data.map((text, key) => (
                           <span key={key}>
-                            {text.variant ? (
+                            {text.text === '<br/>' ? (
+                              <br />
+                            ) : text.variant ? (
                               <Typography component="span" variant={text.variant}>
                                 {text.text}
                               </Typography>

@@ -22,11 +22,12 @@ import { useNavigate } from 'react-router';
 import DocumentTable from '../document/document-table';
 import DocumentCell from 'components/documents/DocumentCell';
 import CustomCell from 'components/customers/CustomCell';
-import ContributorsCell from 'components/documents/ContributorsCell';
+import ContributorsCell, { InvitesCell } from 'components/documents/ContributorsCell';
 import AuthContext from 'contexts/JWTContext';
 import DocumentDetail from '../document/DocumentDetail';
 import EditDocument from 'sections/apps/document/EditDocument';
 import AddDocument from 'sections/apps/document/AddDocument';
+import ConfirmDelete from 'sections/apps/document/ConfirmDelete';
 
 const CreatorCell = ({ value }) => {
   return <CustomCell user={value} />;
@@ -131,6 +132,8 @@ const DocumentManagementPage = () => {
   const [add, setAdd] = useState(false);
   const [open, setOpen] = useState(false);
   const [document, setDocument] = useState(null);
+  const [openConfirmDelete, setOpenConfirmDelete] = useState(false);
+  const [controlDoc, setControlDoc] = useState(null);
 
   useEffect(() => {
     dispatch(getDocumentLists());
@@ -146,7 +149,14 @@ const DocumentManagementPage = () => {
   }, [open]);
 
   const handleDeleteDocument = useCallback((id) => {
-    dispatch(documentDelete(id));
+    setControlDoc(id);
+    setOpenConfirmDelete(true);
+  }, []);
+
+  const handleConfirmDeleteDocument = useCallback((id) => {
+    if (id) dispatch(documentDelete(id));
+    setControlDoc(null);
+    setOpenConfirmDelete(false);
   }, []);
 
   const columns = useMemo(
@@ -182,14 +192,14 @@ const DocumentManagementPage = () => {
         disableSortBy: true
       },
       {
-        Header: 'invites',
+        Header: 'Contributors',
         accessor: 'invites',
+        Cell: InvitesCell,
         disableSortBy: true
       },
       {
-        Header: 'Contributors',
+        Header: 'contributors',
         accessor: 'contributors',
-        Cell: ContributorsCell,
         disableSortBy: true
       },
       {
@@ -274,6 +284,11 @@ const DocumentManagementPage = () => {
         </IconButton>
         {document && user && <EditDocument user={user} onCancel={handleClose} document={document} />}
       </Dialog>
+      <ConfirmDelete
+        document={data.find((item) => item._id === controlDoc)}
+        open={openConfirmDelete}
+        handleClose={handleConfirmDeleteDocument}
+      />
     </MainCard>
   );
 };

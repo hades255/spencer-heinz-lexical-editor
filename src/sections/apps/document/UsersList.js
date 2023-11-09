@@ -22,16 +22,7 @@ import {
   Typography,
   useMediaQuery
 } from '@mui/material';
-import {
-  CheckCircleFilled,
-  ClockCircleFilled,
-  LogoutOutlined,
-  MinusCircleFilled,
-  RightOutlined,
-  SearchOutlined,
-  SettingOutlined,
-  UserSwitchOutlined
-} from '@ant-design/icons';
+import { CheckCircleFilled, ClockCircleFilled, MinusCircleFilled, RightOutlined, SearchOutlined, SettingOutlined } from '@ant-design/icons';
 
 // project imports
 import MainCard from 'components/MainCard';
@@ -44,7 +35,7 @@ import { ThemeMode } from 'config';
 
 // ==============================|| CHAT DRAWER ||============================== //
 
-function UsersList({ user, document, setAddContributorDlg }) {
+function UsersList({ user, document, setAddContributorDlg, openDrawer, handleDrawerOpen }) {
   const theme = useTheme();
 
   const matchDownLG = useMediaQuery(theme.breakpoints.down('lg'));
@@ -91,9 +82,9 @@ function UsersList({ user, document, setAddContributorDlg }) {
       }}
       variant={matchDownLG ? 'temporary' : 'persistent'}
       anchor="left"
-      open={true}
+      open={openDrawer}
       ModalProps={{ keepMounted: true }}
-      onClose={() => {}}
+      onClose={handleDrawerOpen}
     >
       <MainCard
         sx={{
@@ -270,7 +261,9 @@ function UsersList({ user, document, setAddContributorDlg }) {
 UsersList.propTypes = {
   user: PropTypes.any,
   document: PropTypes.any,
-  setAddContributorDlg: PropTypes.func
+  setAddContributorDlg: PropTypes.func,
+  handleDrawerOpen: PropTypes.func,
+  openDrawer: PropTypes.bool
 };
 
 export default UsersList;

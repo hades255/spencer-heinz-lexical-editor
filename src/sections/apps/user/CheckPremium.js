@@ -1,4 +1,4 @@
-import { DialogContent, DialogTitle, Divider, Stack, Button, Grid, Typography } from '@mui/material';
+import { DialogContent, DialogTitle, Divider, Stack, Button, Grid } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 
 import PropTypes from 'prop-types';

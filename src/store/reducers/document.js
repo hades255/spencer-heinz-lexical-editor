@@ -128,7 +128,7 @@ export function postDocumentCreate(newDocument, navigate) {
   };
 }
 
-export function putDocumentUpdate(newDocument, navigate) {
+export function putDocumentUpdate(newDocument) {
   return async () => {
     try {
       const response = await axiosServices.put(`/document/${newDocument._id}`, newDocument);

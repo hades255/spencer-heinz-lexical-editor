@@ -138,7 +138,7 @@ export default function AddContributorsFromContributor({ open: openThis = false,
               </Stack>
             </Stack>
           </Box>
-          <AddContributor users={users} value={value} onChange={setValue} exist={exist} mine={creator} user={user} />
+          {openThis && <AddContributor users={users} value={value} onChange={setValue} exist={exist} mine={creator} user={user} />}
         </MainCard>
       </DialogContent>
     </Dialog>

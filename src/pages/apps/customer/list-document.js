@@ -18,7 +18,7 @@ import ScrollX from 'components/ScrollX';
 import { PopupTransition } from 'components/@extended/Transitions';
 import DocumentCell from 'components/documents/DocumentCell';
 import CustomCell from 'components/customers/CustomCell';
-import ContributorsCell from 'components/documents/ContributorsCell';
+import ContributorsCell, { InvitesCell } from 'components/documents/ContributorsCell';
 import AuthContext from 'contexts/JWTContext';
 
 const CreatorCell = ({ value }) => {
@@ -91,10 +91,10 @@ const DocumentListPage = () => {
       },
       {
         Header: 'Contributors',
-        accessor: 'contributors',
-        Cell: ContributorsCell,
+        accessor: 'invites',
+        Cell: InvitesCell,
         disableSortBy: true
-      }
+      },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [theme]

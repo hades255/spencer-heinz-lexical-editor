@@ -54,7 +54,7 @@ function DocumentTable({ columns, data, getHeaderProps, renderRowSubComponent, h
       initialState: {
         pageIndex: Number(searchParams.get('page') || '1') - 1,
         pageSize: Number(searchParams.get('perpage') || '100'),
-        hiddenColumns: ['description', '_id', 'createdAt', 'updatedAt', 'invites'],
+        hiddenColumns: ['description', '_id', 'createdAt', 'updatedAt', 'contributors'],
         sortBy: [sortBy]
       }
     },
@@ -67,9 +67,9 @@ function DocumentTable({ columns, data, getHeaderProps, renderRowSubComponent, h
 
   useEffect(() => {
     if (matchDownSM) {
-      setHiddenColumns(['description', '_id', 'createdAt', 'updatedAt', 'invites']);
+      setHiddenColumns(['description', '_id', 'createdAt', 'updatedAt', 'contributors']);
     } else {
-      setHiddenColumns(['description', '_id', 'createdAt', 'updatedAt', 'invites']);
+      setHiddenColumns(['description', '_id', 'createdAt', 'updatedAt', 'contributors']);
     }
     // eslint-disable-next-line
   }, [matchDownSM]);
