@@ -294,7 +294,7 @@ export default function AddContributor({ users, value, onChange, exist = [], min
           )}
         </Grid>
       </Grid>
-      <AddNewInviteConfirmDlg open={openCDlg} onClose={handleCloseCDlg} />
+      {openCDlg && <AddNewInviteConfirmDlg open={openCDlg} onClose={handleCloseCDlg} />}
       <AddNewInviteDlg open={openDlg} email={searchVal} onClose={handleCloseDlg} />
     </Stack>
   );

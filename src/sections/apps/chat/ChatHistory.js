@@ -69,7 +69,7 @@ const ChatHistory = ({ data, theme, user }) => {
                   </Typography>
                 </Grid>
               </Grid>
-              <UserAvatar user={{ online_status: 'available', avatar: 'avatar-1.png', name: 'User 1' }} />
+              <UserAvatar user={{ online_status: 'available', avatar: '', name: 'User 1' }} />
             </Stack>
           ) : (
             <Stack direction="row" spacing={1.25} alignItems="flext-start">

@@ -58,9 +58,9 @@ const LexicalEditor = ({ uniqueId, user, allUsers }) => {
     CustomTextNode.setCurrentUser(user._id);
   }, [user]);
 
-  useEffect(() => {
-    dispatch(getUserLists());
-  }, []);
+  // useEffect(() => {
+  //   dispatch(getUserLists());
+  // }, []);
 
   const EDITOR_NAMESPACE = uniqueId;
   const EDITOR_NODES = [
@@ -121,14 +121,14 @@ const LexicalEditor = ({ uniqueId, user, allUsers }) => {
         providerFactory={(id, yjsDocMap) => {
           const doc = new Y.Doc();
           const permanentUserData = new Y.PermanentUserData(doc);
-          permanentUserData.setUserMapping(doc, doc.clientID, user?._id);
+          permanentUserData.setUserMapping(doc, doc.clientID, user._id);
           yjsDocMap.set(id, doc);
           const serviceToken = window.localStorage.getItem('serviceToken');
           const provider = new WebsocketProvider(process.env.REACT_APP_YSOCKET_URL || 'ws://localhost:8000/document/connect', id, doc, {
             params: { token: serviceToken }
           });
           provider.on('status', (event) => {
-            console.log(event.status);
+            console.log('event.status: ', event.status);
             if (event.status === EVENT_STATUS.CONNECTED) {
               setIsLoading(false);
             }
@@ -137,7 +137,6 @@ const LexicalEditor = ({ uniqueId, user, allUsers }) => {
             // console.log('state updated:', updated);
             // console.log('These users connected:', added);
             // console.log('These users disconnected:', removed);
-
             // console.log('All user states:', provider.awareness.getStates());
             // console.log(provider._updateHandler());
           });

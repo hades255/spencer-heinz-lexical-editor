@@ -32,7 +32,7 @@ function createData(name, avatar, email, role, status) {
 const avatarImage = require.context('assets/images/users', true);
 
 const rows = [
-  createData('Frozen Tek', 'avatar-1.png', 'owner@company.com', 1, true),
+  createData('Frozen Tek', 'S M', 'owner@company.com', 1, true),
   createData('Eclair Dues', 'avatar-3.png', 'manager@company.com', 2, true),
   createData('Schem Lein', 'avatar-2.png', 'sl@company.com', 3, false),
   createData('Jhon Doe', 'avatar-4.png', 'jd@company.com', 3, true),

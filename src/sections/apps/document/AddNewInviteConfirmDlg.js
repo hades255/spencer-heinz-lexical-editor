@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 // material-ui
@@ -8,6 +9,19 @@ import { Button, Grid, Dialog, DialogTitle, DialogContent, Stack } from '@mui/ma
 import { PopupTransition } from 'components/@extended/Transitions';
 
 const AddNewInviteConfirmDlg = ({ open, onClose }) => {
+  const confirmBtn = useRef(null);
+
+  const handleFocus = useCallback(() => {
+    console.log(confirmBtn);
+    confirmBtn?.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    setTimeout(() => {
+      handleFocus();
+    }, 300);
+  }, [handleFocus]);
+
   return (
     <>
       <Dialog
@@ -25,7 +39,15 @@ const AddNewInviteConfirmDlg = ({ open, onClose }) => {
             <Grid item xs={12}>
               <Stack direction="row" spacing={2} alignItems="center" sx={{ p: 1 }}>
                 <Grid item xs={6}>
-                  <Button disableElevation onClick={() => onClose(true)} fullWidth size="large" variant="contained" color="primary">
+                  <Button
+                    ref={confirmBtn}
+                    disableElevation
+                    onClick={() => onClose(true)}
+                    fullWidth
+                    size="large"
+                    variant="contained"
+                    color="primary"
+                  >
                     Yes
                   </Button>
                 </Grid>

@@ -1,40 +1,23 @@
 import PropTypes from 'prop-types';
-import { Fragment, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // material-ui
-import { useTheme } from '@mui/material/styles';
-import { Divider, List, ListItemAvatar, ListItemButton, ListItemText, Stack, Typography } from '@mui/material';
-
-// third-party
-import { Chance } from 'chance';
+import { List, ListItemButton } from '@mui/material';
 
 // project imports
-import UserAvatar from './UserAvatar';
-import Dot from 'components/@extended/Dot';
-import { useDispatch, useSelector } from 'store';
-import { getUsers } from 'store/reducers/chat';
-import { v4 as uuidv4 } from 'uuid';
+import { useDispatch } from 'store';
 
 // assets
-import { CheckOutlined } from '@ant-design/icons';
+import CustomCell from 'components/customers/CustomCell';
 
-const chance = new Chance();
-
-function UserList({ setUser, search, uniqueId }) {
-  const theme = useTheme();
+function UserList({ search, uniqueId, users }) {
   const dispatch = useDispatch();
-  const [data, setData] = useState([]);
-  const { users } = useSelector((state) => state.chat);
+  const [data, setData] = useState(users);
 
-  useEffect(() => {
-    dispatch(getUsers(uniqueId));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    console.log(users);
-    setData(users);
-  }, [users]);
+  // useEffect(() => {
+  //   dispatch(getUsers(uniqueId));
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   useEffect(() => {
     if (search) {
@@ -65,66 +48,18 @@ function UserList({ setUser, search, uniqueId }) {
 
   return (
     <List component="nav">
-      {data.map((user) => (
-        <Fragment key={uuidv4()}>
-          <ListItemButton
-            sx={{ pl: 1 }}
-            onClick={() => {
-              setUser(user);
-            }}
-          >
-            <ListItemAvatar>
-              <UserAvatar user={user} />
-            </ListItemAvatar>
-            <ListItemText
-              primary={
-                <Stack component="span" direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
-                  <Typography
-                    variant="h5"
-                    color="inherit"
-                    sx={{
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    {user.name}
-                  </Typography>
-                </Stack>
-              }
-            // secondary={
-            //   <Stack component="span" direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
-            //     <Typography
-            //       variant="caption"
-            //       color="textSecondary"
-            //       sx={{
-            //         overflow: 'hidden',
-            //         textOverflow: 'ellipsis',
-            //         whiteSpace: 'nowrap'
-            //       }}
-            //     >
-            //       {user.status}
-            //     </Typography>
-            //     {user.unReadChatCount ? (
-            //       <Dot color="primary" />
-            //     ) : (
-            //       // chance.bool() - use for last send msg was read or unread
-            //       <CheckOutlined style={{ color: chance.bool() ? theme.palette.grey[400] : theme.palette.primary.main }} />
-            //     )}
-            //   </Stack>
-            // }
-            />
-          </ListItemButton>
-          <Divider />
-        </Fragment>
+      {data.map((user, key) => (
+        <ListItemButton sx={{ pl: 1 }} key={key}>
+          <CustomCell user={user} />
+        </ListItemButton>
       ))}
     </List>
   );
 }
 
 UserList.propTypes = {
-  setUser: PropTypes.func,
-  search: PropTypes.string
+  search: PropTypes.string,
+  users: PropTypes.any
 };
 
 export default UserList;

@@ -180,7 +180,7 @@ function ChatDrawer({ handleDrawerOpen, openChatDrawer }) {
             <Grid item xs={12}>
               <Grid container spacing={1} alignItems="center" sx={{ flexWrap: 'nowrap' }}>
                 <Grid item>
-                  <UserAvatar user={{ online_status: status, avatar: 'avatar-1.png', name: 'User 1' }} />
+                  <UserAvatar user={{ online_status: status, avatar: '', name: 'User 1' }} />
                 </Grid>
                 <Grid item xs zeroMinWidth>
                   <Stack sx={{ cursor: 'pointer', textDecoration: 'none' }} component={Link} to="/apps/profiles/user/personal">

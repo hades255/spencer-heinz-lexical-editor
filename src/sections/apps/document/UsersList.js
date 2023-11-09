@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 // material-ui
 import { useTheme } from '@mui/material/styles';
 import {
+  Avatar,
   Box,
   Chip,
   Drawer,
@@ -21,17 +22,6 @@ import {
   Typography,
   useMediaQuery
 } from '@mui/material';
-
-// project imports
-import UserAvatar from '../user/UserAvatar';
-import MainCard from 'components/MainCard';
-import IconButton from 'components/@extended/IconButton';
-import SimpleBar from 'components/third-party/SimpleBar';
-
-import { ThemeMode } from 'config';
-import useAuth from 'hooks/useAuth';
-
-// assets
 import {
   CheckCircleFilled,
   ClockCircleFilled,
@@ -39,15 +29,23 @@ import {
   MinusCircleFilled,
   RightOutlined,
   SearchOutlined,
-  SettingOutlined
+  SettingOutlined,
+  UserSwitchOutlined
 } from '@ant-design/icons';
-import JumpList from '../chat/JumpList';
+
+// project imports
+import MainCard from 'components/MainCard';
+import IconButton from 'components/@extended/IconButton';
+import SimpleBar from 'components/third-party/SimpleBar';
+import BackgroundLetterAvatar from 'components/@extended/BackgroundLetterAvatar';
+import UserList from '../user/UserList';
+import UserAvatar from '../user/UserAvatar';
+import { ThemeMode } from 'config';
 
 // ==============================|| CHAT DRAWER ||============================== //
 
-function UsersList({ handleDrawerOpen, openUsersList, setUser }) {
+function UsersList({ user, document, setAddContributorDlg }) {
   const theme = useTheme();
-  const { user } = useAuth();
 
   const matchDownLG = useMediaQuery(theme.breakpoints.down('lg'));
   const drawerBG = theme.palette.mode === ThemeMode.DARK ? 'dark.main' : 'white';
@@ -75,6 +73,8 @@ function UsersList({ handleDrawerOpen, openUsersList, setUser }) {
     setSearch(newString);
   };
 
+  const users = [document.creator, ...document.invites];
+
   return (
     <Drawer
       sx={{
@@ -91,9 +91,9 @@ function UsersList({ handleDrawerOpen, openUsersList, setUser }) {
       }}
       variant={matchDownLG ? 'temporary' : 'persistent'}
       anchor="left"
-      open={openUsersList}
+      open={true}
       ModalProps={{ keepMounted: true }}
-      onClose={handleDrawerOpen}
+      onClose={() => {}}
     >
       <MainCard
         sx={{
@@ -111,9 +111,9 @@ function UsersList({ handleDrawerOpen, openUsersList, setUser }) {
                 Users
               </Typography>
               <Chip
-                label="9"
+                label={users.length}
                 component="span"
-                color="secondary"
+                color="success"
                 sx={{
                   width: 20,
                   height: 20,
@@ -123,6 +123,14 @@ function UsersList({ handleDrawerOpen, openUsersList, setUser }) {
                   }
                 }}
               />
+
+              <Avatar
+                onClick={() => {
+                  setAddContributorDlg(true);
+                }}
+              >
+                <BackgroundLetterAvatar name="+" style={{ fontSize: '30px', color: '#08c', cursor: 'pointer' }} />
+              </Avatar>
             </Stack>
 
             <OutlinedInput
@@ -153,19 +161,11 @@ function UsersList({ handleDrawerOpen, openUsersList, setUser }) {
           }}
         >
           <Box sx={{ p: 3, pt: 0 }}>
-            <JumpList search={search} />
-            {/* <UserList setUser={setUser} search={search} uniqueId={uniqueId} /> */}
+            <UserList search={search} uniqueId={document._id} users={users} />
           </Box>
         </SimpleBar>
         <Box sx={{ p: 3, pb: 0 }}>
           <List component="nav">
-            <ListItemButton divider>
-              <ListItemIcon>
-                <LogoutOutlined />
-              </ListItemIcon>
-
-              <ListItemText primary="Get Out" />
-            </ListItemButton>
             <ListItemButton divider>
               <ListItemIcon>
                 <SettingOutlined />
@@ -180,15 +180,15 @@ function UsersList({ handleDrawerOpen, openUsersList, setUser }) {
             <Grid item xs={12}>
               <Grid container spacing={1} alignItems="center" sx={{ flexWrap: 'nowrap' }}>
                 <Grid item>
-                  <UserAvatar user={{ online_status: status, avatar: 'avatar-1.png', name: 'User 1' }} />
+                  <UserAvatar user={{ online_status: status, ...user }} />
                 </Grid>
                 <Grid item xs zeroMinWidth>
-                  <Stack sx={{ cursor: 'pointer', textDecoration: 'none' }} component={Link} to="/apps/profiles/user/personal">
+                  <Stack sx={{ cursor: 'pointer', textDecoration: 'none' }} component={Link} to="/profiles/view">
                     <Typography align="left" variant="h5" color="textPrimary">
-                      {user?.name}
+                      {user.name}
                     </Typography>
                     <Typography align="left" variant="caption" color="textSecondary">
-                      {user?.role}
+                      {user.role}
                     </Typography>
                   </Stack>
                 </Grid>
@@ -268,8 +268,9 @@ function UsersList({ handleDrawerOpen, openUsersList, setUser }) {
 }
 
 UsersList.propTypes = {
-  handleDrawerOpen: PropTypes.func,
-  openUsersList: PropTypes.bool
+  user: PropTypes.any,
+  document: PropTypes.any,
+  setAddContributorDlg: PropTypes.func
 };
 
 export default UsersList;

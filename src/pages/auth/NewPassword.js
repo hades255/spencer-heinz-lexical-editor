@@ -87,10 +87,11 @@ const NewPassword = ({ GO, token, creator }) => {
             <Grid container spacing={3}>
               <Grid item xs={12}>
                 <Typography variant="h6">
-                  <b>{creator.name}</b> invited you to edit document.
+                  <b>{creator.name}</b> invited you to edit document. An account for your email has been created automatically for
+                  collaborating document.
                 </Typography>
                 <Stack spacing={1}>
-                  <InputLabel htmlFor="password-signup">Enter New Password</InputLabel>
+                  <InputLabel htmlFor="password-signup">Please create a new password.</InputLabel>
                   <OutlinedInput
                     fullWidth
                     error={Boolean(touched.password && errors.password)}
