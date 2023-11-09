@@ -18,7 +18,7 @@ import ScrollX from 'components/ScrollX';
 import { PopupTransition } from 'components/@extended/Transitions';
 import DocumentCell from 'components/documents/DocumentCell';
 import CustomCell from 'components/customers/CustomCell';
-import ContributorsCell, { InvitesCell } from 'components/documents/ContributorsCell';
+import { InvitesCell } from 'components/documents/InvitesCell';
 import AuthContext from 'contexts/JWTContext';
 
 const CreatorCell = ({ value }) => {
@@ -94,7 +94,7 @@ const DocumentListPage = () => {
         accessor: 'invites',
         Cell: InvitesCell,
         disableSortBy: true
-      },
+      }
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [theme]

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 // material-ui
@@ -71,6 +71,7 @@ function UsersList({ user, document, setAddContributorDlg, openDrawer, handleDra
       sx={{
         width: 320,
         flexShrink: 0,
+        top: { xs: 50, lg: 0 },
         zIndex: { xs: 1100, lg: 0 },
         '& .MuiDrawer-paper': {
           height: matchDownLG ? '100%' : 'auto',
@@ -102,13 +103,13 @@ function UsersList({ user, document, setAddContributorDlg, openDrawer, handleDra
                 Users
               </Typography>
               <Chip
-                label={users.length}
+                label={users.length+120}
                 component="span"
                 color="success"
                 sx={{
-                  width: 20,
+                  minWidth: 20,
                   height: 20,
-                  borderRadius: '50%',
+                  borderRadius: 10,
                   '& .MuiChip-label': {
                     px: 0.5
                   }

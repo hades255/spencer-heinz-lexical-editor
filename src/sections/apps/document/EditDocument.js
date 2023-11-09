@@ -112,19 +112,18 @@ const EditDocument = ({ user, onCancel, document }) => {
                 putDocumentUpdate({
                   _id: document._id,
                   ...values,
-                  contributors: document.contributors.filter((item) => !r.includes(item.email)),
                   invites: [
                     ...document.invites.filter((item) => !r.includes(item.email)),
                     ...users
                       .filter((item) => a.includes(item.email))
-                      .map(({ _id, name, email, avatar, status, role }) => ({ _id, name, email, avatar, status, role }))
+                      .map(({ _id, name, email, avatar, status }) => ({ _id, name, email, avatar, status, reply: 'pending' }))
                   ],
                   a: users
                     .filter((item) => a.includes(item.email))
-                    .map(({ _id, name, email, avatar, status, role }) => ({ _id, name, email, avatar, status, role })),
+                    .map(({ _id, name, email, avatar, status }) => ({ _id, name, email, avatar, status })),
                   r: users
                     .filter((item) => r.includes(item.email))
-                    .map(({ _id, name, email, avatar, status, role }) => ({ _id, name, email, avatar, status, role }))
+                    .map(({ _id, name, email, avatar, status }) => ({ _id, name, email, avatar, status }))
                 })
               );
               setStatus({ success: true });

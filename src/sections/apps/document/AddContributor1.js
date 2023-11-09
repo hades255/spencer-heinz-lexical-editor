@@ -322,7 +322,7 @@ const SearchInput = ({ searchVal, toggleOpenCDlg, users, setSearchVal, onSearch,
     setTimeout(() => {
       inputRef.current.focus();
     }, 100);
-  }, []);
+  }, [inputRef]);
 
   return (
     <Grid container spacing={2} justifyContent="center" alignItems="center">

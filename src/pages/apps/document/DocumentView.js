@@ -65,7 +65,7 @@ const DocumentView = () => {
     <>
       {document &&
         user &&
-        (document.creator.email === user.email || document.contributors.some((item) => item.email === user.email) ? (
+        (document.creator.email === user.email || document.invites.some((item) => item.email === user.email && item.reply === 'accept') ? (
           <>
             <Box sx={{ display: 'flex' }}>
               <UsersList
@@ -129,7 +129,7 @@ const DocumentView = () => {
                                 <Typography variant="h4">{document?.name}</Typography>
                               </Stack>
                             </Grid>
-                            <Grid item xs={12} sm={4}>
+                            {/* <Grid item xs={12} sm={4}>
                               <Stack direction="row" alignItems="center" justifyContent={'space-between'} spacing={1}>
                                 <Stack direction="row">
                                   <AvatarGroup>
@@ -142,7 +142,7 @@ const DocumentView = () => {
                                     </Avatar>
                                   </AvatarGroup>
                                   <AvatarGroup max={5}>
-                                    {document?.contributors.map((item, key) => (
+                                    {document?.invites.map((item, key) => (
                                       <UserAvatar
                                         key={key}
                                         user={{
@@ -166,7 +166,7 @@ const DocumentView = () => {
                                   />
                                 )}
                               </Stack>
-                            </Grid>
+                            </Grid> */}
                           </Grid>
                         </Grid>
                       </Grid>
@@ -206,11 +206,11 @@ const DocumentView = () => {
                                   minHeight: 420
                                 }}
                               >
-                                {/* <EditorHistoryStateContext>
+                                <EditorHistoryStateContext>
                                   {user && document && (
                                     <LexicalEditor uniqueId={uniqueId} user={user} allUsers={[document.creator, ...document.invites]} />
                                   )}
-                                </EditorHistoryStateContext> */}
+                                </EditorHistoryStateContext>
                               </SimpleBar>
                             </Grid>
                           </Grid>

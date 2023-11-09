@@ -22,7 +22,7 @@ import { useNavigate } from 'react-router';
 import DocumentTable from '../document/document-table';
 import DocumentCell from 'components/documents/DocumentCell';
 import CustomCell from 'components/customers/CustomCell';
-import ContributorsCell, { InvitesCell } from 'components/documents/ContributorsCell';
+import { InvitesCell } from 'components/documents/InvitesCell';
 import AuthContext from 'contexts/JWTContext';
 import DocumentDetail from '../document/DocumentDetail';
 import EditDocument from 'sections/apps/document/EditDocument';
@@ -195,11 +195,6 @@ const DocumentManagementPage = () => {
         Header: 'Contributors',
         accessor: 'invites',
         Cell: InvitesCell,
-        disableSortBy: true
-      },
-      {
-        Header: 'contributors',
-        accessor: 'contributors',
         disableSortBy: true
       },
       {

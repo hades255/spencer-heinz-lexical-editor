@@ -81,7 +81,7 @@ export function setNotificationRead({ _id }, clearRedirect = false) {
 export function setInvitationStatus(notification, status) {
   return async () => {
     try {
-      if (status === 'reject') dispatch(setNotificationRead(notification, true));
+      if (status === 'reject' && notification._id) dispatch(setNotificationRead(notification, true));
       await axiosServices.put(`/document/invitation`, { id: notification.redirect, status });
       dispatch(getMyDocumentLists());
     } catch (error) {

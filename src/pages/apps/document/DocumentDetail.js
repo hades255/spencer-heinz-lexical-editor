@@ -59,7 +59,7 @@ const DocumentDetail = ({ data }) => {
                       Contributors
                     </Typography>
                     <Stack direction="row" flexWrap="wrap" alignItems="center">
-                      {data.contributors.map((item, key) => (
+                      {data.invites.map((item, key) => (
                         <CustomCell key={key} user={item} />
                       ))}
                     </Stack>

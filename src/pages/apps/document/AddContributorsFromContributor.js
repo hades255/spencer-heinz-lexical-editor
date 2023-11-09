@@ -35,7 +35,7 @@ export default function AddContributorsFromContributor({ open: openThis = false,
       try {
         if (changes.A.length !== 0) {
           await axiosServices.post('/document/' + uniqueId + '/clearinvite', {
-            contributors: changes.A
+            invites: changes.A
           });
           dispatch(
             openSnackbar({
@@ -51,7 +51,7 @@ export default function AddContributorsFromContributor({ open: openThis = false,
         }
         if (changes.B.length !== 0) {
           await axiosServices.post('/document/' + uniqueId + '/invite', {
-            contributors: changes.B
+            invites: changes.B
           });
           dispatch(
             openSnackbar({

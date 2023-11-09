@@ -117,7 +117,7 @@ const DocumentCreate = () => {
                 postDocumentCreate(
                   {
                     ...values,
-                    contributors: users
+                    invites: users
                       .filter((item) => contributors.includes(item.email))
                       .map(({ _id, name, email, avatar, status, role }) => ({ _id, name, email, avatar, status, role }))
                   },

@@ -12,7 +12,11 @@ import CustomCell from 'components/customers/CustomCell';
 
 function UserList({ search, uniqueId, users }) {
   const dispatch = useDispatch();
-  const [data, setData] = useState(users);
+  const [data, setData] = useState([]);
+
+  // useEffect(() => {
+  //   setData(users);
+  // }, []);
 
   // useEffect(() => {
   //   dispatch(getUsers(uniqueId));
@@ -44,7 +48,7 @@ function UserList({ search, uniqueId, users }) {
       setData(users);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search]);
+  }, [search, users]);
 
   return (
     <List component="nav">

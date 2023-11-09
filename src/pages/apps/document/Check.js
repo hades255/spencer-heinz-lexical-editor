@@ -16,15 +16,18 @@ const Check = ({ document }) => {
   const searchParams = new URLSearchParams(location.search);
 
   useEffect(() => {
-    if (!searchParams.get('notification')) return;
-    (async () => {
-      try {
-        const response = await axiosServices.get('/notification/' + searchParams.get('notification'));
-        setNoti(response.data.data.notification);
-      } catch (error) {
-        console.log(error);
-      }
-    })();
+    if (searchParams.get('notification')) {
+      (async () => {
+        try {
+          const response = await axiosServices.get('/notification/' + searchParams.get('notification'));
+          setNoti(response.data.data.notification);
+        } catch (error) {
+          setNoti({ redirect: document._id });
+        }
+      })();
+    } else {
+      setNoti({ redirect: document._id });
+    }
   }, []);
 
   const handleAction = useCallback(() => {
@@ -76,7 +79,7 @@ const Check = ({ document }) => {
                       Contributors:{' '}
                     </Typography>
                     <AvatarGroup max={6}>
-                      {document?.contributors.map((item, key) => (
+                      {document?.invites.map((item, key) => (
                         <UserAvatar
                           key={key}
                           user={{

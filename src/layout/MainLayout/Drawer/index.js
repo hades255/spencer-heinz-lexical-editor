@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -30,14 +30,16 @@ const MainDrawer = ({ window }) => {
   const drawerContent = useMemo(() => <DrawerContent />, []);
   const drawerHeader = useMemo(() => <DrawerHeader open={drawerOpen} />, [drawerOpen]);
 
+  // useEffect(() => {
+  //   if (matchDownMD) {
+  //     console.log('xs');
+  //     dispatch(openDrawer(true));
+  //   }
+  // }, [matchDownMD]);
+
   return (
-    <Box component="nav" sx={{ flexShrink: { md: 0 }, zIndex: 1200 }} aria-label="mailbox folders">
-      {!matchDownMD ? (
-        <MiniDrawerStyled variant="permanent" open={drawerOpen}>
-          {drawerHeader}
-          {drawerContent}
-        </MiniDrawerStyled>
-      ) : (
+    <Box component="nav" sx={{ flexShrink: { md: 0 }, zIndex: 1200 }}>
+      {matchDownMD ? (
         <Drawer
           container={container}
           variant="temporary"
@@ -45,7 +47,7 @@ const MainDrawer = ({ window }) => {
           onClose={() => dispatch(openDrawer(!drawerOpen))}
           ModalProps={{ keepMounted: true }}
           sx={{
-            display: { xs: 'block', lg: 'none' },
+            display: { xs: drawerOpen ? 'block' : 'none', lg: 'none' },
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
               width: DRAWER_WIDTH,
@@ -58,6 +60,11 @@ const MainDrawer = ({ window }) => {
           {drawerHeader}
           {drawerContent}
         </Drawer>
+      ) : (
+        <MiniDrawerStyled variant="permanent" open={drawerOpen}>
+          {drawerHeader}
+          {drawerContent}
+        </MiniDrawerStyled>
       )}
     </Box>
   );
