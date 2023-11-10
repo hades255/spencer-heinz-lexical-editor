@@ -465,7 +465,11 @@ export default function CommentPlugin({ user, users }) {
             }}
           >
             {comments
-              .filter((comment) => !suppressedComments?.includes(comment.uniqueId))
+              .filter(
+                (comment) =>
+                  !suppressedComments?.includes(comment.uniqueId) &&
+                  (comment.assignee === CommentNode.__currentUser || comment.commentor._id === CommentNode.__currentUser)
+              )
               .map((_comment, _index) => (
                 <Paper
                   key={`comment-list-${_index}`}
@@ -520,7 +524,8 @@ export default function CommentPlugin({ user, users }) {
                             borderBottom: '1px solid #fafafb'
                           }}
                         >
-                          To: {[...users, ACTION_REQUEST_USER].find((user) => user._id === _comment.assignee)?.name}, Action: {_comment.task}
+                          To: {[...users, ACTION_REQUEST_USER].find((user) => user._id === _comment.assignee)?.name}, Action:{' '}
+                          {_comment.task}
                         </h3>
                         <IconButton
                           onClick={() => {

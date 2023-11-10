@@ -33,7 +33,6 @@ import { FloatMenuPlugin } from './plugins/floatMenuPlugin';
 import ToolbarPlugin from './plugins/toolbarPlugin';
 import { LockPlugin } from './plugins/lockPlugin';
 import { LockNode } from './nodes/lockNode';
-import { useSelector } from 'store';
 import { BlackoutNode, isBlackedOutNode } from './nodes/blackoutNode';
 import { BlackoutPlugin } from './plugins/blackoutPlugin';
 import { EVENT_STATUS } from './utils/constants';
@@ -41,8 +40,6 @@ import { LinearProgress } from '@mui/material';
 import { $createCustomTextNode, CustomTextNode } from './nodes/customTextNode';
 import { JumpNode } from './nodes/jumpNode';
 import { JumpPlugin } from './plugins/jumpPlugin';
-import { dispatch } from 'store';
-import { getUserLists } from 'store/reducers/user';
 
 // set excluded properties for collab
 const excludedProperties = new Map();
@@ -57,10 +54,6 @@ const LexicalEditor = ({ uniqueId, user, allUsers }) => {
   useEffect(() => {
     CustomTextNode.setCurrentUser(user._id);
   }, [user]);
-
-  // useEffect(() => {
-  //   dispatch(getUserLists());
-  // }, []);
 
   const EDITOR_NAMESPACE = uniqueId;
   const EDITOR_NODES = [
@@ -156,7 +149,7 @@ const LexicalEditor = ({ uniqueId, user, allUsers }) => {
       {/* custom plugins */}
       <ActionsPlugin user={user._id} />
       <CommentPlugin user={user._id} users={allUsers} />
-      <FloatMenuPlugin users={allUsers} />
+      <FloatMenuPlugin user={user} users={allUsers} />
       <LockPlugin user={user._id} users={allUsers} />
       <BlackoutPlugin user={user._id} users={allUsers} />
       <JumpPlugin />

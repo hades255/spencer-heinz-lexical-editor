@@ -22,6 +22,7 @@ const UserAvatar = ({ user }) => (
       horizontal: 'right'
     }}
     sx={{ '& .MuiBox-root': { width: 6, height: 6 }, padding: 0, minWidth: 12, '& svg': { background: '#fff', borderRadius: '50%' } }}
+    title={user.email || user.name}
   >
     {user.avatar ? (
       <Avatar alt={user.name} size="sm" src={avatarImage(`./avatar-${!user.avatar ? 1 : user.avatar}.png`)} />

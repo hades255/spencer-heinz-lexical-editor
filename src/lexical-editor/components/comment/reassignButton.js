@@ -50,7 +50,7 @@ export const ReassignButton = ({ users }) => {
     if ($isRangeSelected(selection)) {
       const node = getSelectedNode(selection);
       // !check if locked or blacked out and get permitted users of block of text
-      let _permittedUsers = users.map(_user => _user._id);
+      let _permittedUsers = users.map((_user) => _user._id);
       // ! @topbot 2023/9/12 #not showing unblacked users for blacked one
       // node
       //   .getParents()
@@ -61,7 +61,7 @@ export const ReassignButton = ({ users }) => {
       //   .map((_node) => {
       //     _permittedUsers = intersection(_permittedUsers, _node.getUsers());
       //   });
-      setPermittedUsers(users.filter(_user => _permittedUsers.includes(_user._id)));
+      setPermittedUsers(users.filter((_user) => _permittedUsers.includes(_user._id)));
       // ! @topbot 2023/9/12 #set only action request for blacked out user
       if (isBlackedOutNode(node, BlackoutNode.__currentUser)) {
         setPermittedUsers([ACTION_REQUEST_USER]);
@@ -97,6 +97,7 @@ export const ReassignButton = ({ users }) => {
     //   return false;
     // }
     setDialogOpen(false);
+    console.log('B');
     editor.dispatchCommand(SET_COMMENT_COMMAND, { assignee, task, user, commentContent: comment, type: COMMENT_TYPES.REASSIGNED });
   };
 
@@ -131,7 +132,7 @@ export const ReassignButton = ({ users }) => {
       <Box
         sx={{
           top: '250px',
-          left: '50px',
+          left: '50px'
         }}
         zIndex={`10001`}
         // display={!pos?.x || !pos?.y ? `none` : `flex`}
@@ -158,10 +159,21 @@ export const ReassignButton = ({ users }) => {
           pos={{ x: 1, y: 1 }}
         />
       </Box>
-      <FloatDialog isDialogOpen={isDialogOpen} setDialogOpen={setDialogOpen} assignee={assignee} task={task} commentError={commentError} handleSubmitComment={handleSubmitComment} handleCancelComment={handleCancelComment} commentRef={commentRef} handleCommentKeyDown={handleCommentKeyDown} users={users} />
+      <FloatDialog
+        isDialogOpen={isDialogOpen}
+        setDialogOpen={setDialogOpen}
+        assignee={assignee}
+        task={task}
+        commentError={commentError}
+        handleSubmitComment={handleSubmitComment}
+        handleCancelComment={handleCancelComment}
+        commentRef={commentRef}
+        handleCommentKeyDown={handleCommentKeyDown}
+        users={users}
+      />
     </>
   );
-}
+};
 
 ReassignButton.propTypes = {
   users: PropTypes.array

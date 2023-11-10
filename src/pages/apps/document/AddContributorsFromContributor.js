@@ -19,7 +19,11 @@ import { getDocumentSingleList } from 'store/reducers/document';
 
 export default function AddContributorsFromContributor({ open: openThis = false, onClose, user, exist, creator, uniqueId }) {
   const users = useSelector((state) => state.user.lists);
-  const [value, setValue] = useState(exist.map((item) => item.email));
+  const [value, setValue] = useState([]);
+
+  useEffect(() => {
+    setValue(exist.map((item) => item.email));
+  }, [exist]);
 
   const handleAddContributors = useCallback(() => {
     const changes = compareArraysByKey(

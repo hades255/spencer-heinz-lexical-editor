@@ -133,8 +133,13 @@ export class CommentNode extends ElementNode {
       return span;
     }
 
+    const nComments = this.__comments?.filter(
+      (comment) => comment.commentor._id === CommentNode.__currentUser || comment.assignee === CommentNode.__currentUser
+    );
+    if (!nComments || nComments?.length === 0) return span;
+
     span.setAttribute('data-lexical-comment', 'true');
-    span.setAttribute('data-comments', JSON.stringify(this.__comments));
+    span.setAttribute('data-comments', JSON.stringify(nComments));
     span.setAttribute('data-new_or_updated', JSON.stringify(this.__newOrUpdated));
     addClassNamesToElement(span, LexicalTheme.comment);
     const IconImage = document.createElement('img');
@@ -146,7 +151,7 @@ export class CommentNode extends ElementNode {
       let suppressedUniqueIds = storedValue === null ? [] : JSON.parse(storedValue);
       suppressedUniqueIds = not(
         suppressedUniqueIds,
-        this.__comments.map((value) => value.uniqueId)
+        nComments.map((value) => value.uniqueId)
       );
       window.localStorage.setItem('suppressedComments', JSON.stringify(suppressedUniqueIds));
       // set selection of first child node so that comment box appears

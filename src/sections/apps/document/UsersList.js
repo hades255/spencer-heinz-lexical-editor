@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 // material-ui
@@ -35,7 +35,7 @@ import { ThemeMode } from 'config';
 
 // ==============================|| CHAT DRAWER ||============================== //
 
-function UsersList({ user, document, setAddContributorDlg, openDrawer, handleDrawerOpen }) {
+function UsersList({ user, document, setAddContributorDlg, openDrawer, handleDrawerOpen, users }) {
   const theme = useTheme();
 
   const matchDownLG = useMediaQuery(theme.breakpoints.down('lg'));
@@ -63,8 +63,6 @@ function UsersList({ user, document, setAddContributorDlg, openDrawer, handleDra
     const newString = event?.target.value;
     setSearch(newString);
   };
-
-  const users = [document.creator, ...document.invites];
 
   return (
     <Drawer
@@ -103,7 +101,7 @@ function UsersList({ user, document, setAddContributorDlg, openDrawer, handleDra
                 Users
               </Typography>
               <Chip
-                label={users.length+120}
+                label={users.length}
                 component="span"
                 color="success"
                 sx={{
@@ -115,7 +113,6 @@ function UsersList({ user, document, setAddContributorDlg, openDrawer, handleDra
                   }
                 }}
               />
-
               <Avatar
                 onClick={() => {
                   setAddContributorDlg(true);
@@ -264,7 +261,8 @@ UsersList.propTypes = {
   document: PropTypes.any,
   setAddContributorDlg: PropTypes.func,
   handleDrawerOpen: PropTypes.func,
-  openDrawer: PropTypes.bool
+  openDrawer: PropTypes.bool,
+  users: PropTypes.any
 };
 
 export default UsersList;

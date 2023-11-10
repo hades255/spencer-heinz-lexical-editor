@@ -81,7 +81,7 @@ ListCell.propTypes = {
   reply: PropTypes.string
 };
 
-export default function AddContributor({ users, value, onChange, exist = [], mine = null, user }) {
+export default function AddContributor({ users, value, onChange, exist = [], mine = null, user, team = false }) {
   const [checked, setChecked] = useState([]);
   const [searchVal, setSearchVal] = useState('');
   const [search, setSearch] = useState('');
@@ -252,14 +252,16 @@ export default function AddContributor({ users, value, onChange, exist = [], min
 
   return (
     <Stack sx={{ m: 1 }}>
-      <SearchInput
-        searchVal={searchVal}
-        toggleOpenCDlg={toggleOpenCDlg}
-        users={users}
-        setSearchVal={setSearchVal}
-        onSearch={onSearch}
-        inputRef={inputRef}
-      />
+      {!team && (
+        <SearchInput
+          searchVal={searchVal}
+          toggleOpenCDlg={toggleOpenCDlg}
+          users={users}
+          setSearchVal={setSearchVal}
+          onSearch={onSearch}
+          inputRef={inputRef}
+        />
+      )}
       <Grid container spacing={2} justifyContent="center" alignItems="center">
         <Grid item>
           {customList(
@@ -314,6 +316,7 @@ AddContributor.propTypes = {
   value: PropTypes.any,
   exist: PropTypes.any,
   mine: PropTypes.any,
+  team: PropTypes.any,
   onChange: PropTypes.func
 };
 

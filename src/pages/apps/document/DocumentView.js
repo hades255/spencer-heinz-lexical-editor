@@ -1,235 +1,30 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { Avatar, AvatarGroup, Box, Grid, IconButton, Stack, Typography } from '@mui/material';
-import { useTheme, styled } from '@mui/material/styles';
-import { MenuFoldOutlined, MenuUnfoldOutlined, UserSwitchOutlined } from '@ant-design/icons';
-import MainCard from 'components/MainCard';
-import UserAvatar from 'sections/apps/user/UserAvatar';
-
-import { ThemeMode } from 'config';
 import AuthContext from 'contexts/JWTContext';
-import CustomCell from 'components/customers/CustomCell';
-import { EditorHistoryStateContext } from 'contexts/LexicalEditor';
-import LexicalEditor from 'lexical-editor';
-import SimpleBar from 'simplebar-react';
 import { dispatch } from 'store';
 import { getDocumentSingleList, getSingleList } from 'store/reducers/document';
 import { useSelector } from 'store';
-import AddContributorsFromContributor from './AddContributorsFromContributor';
 import Check from './Check';
-import UsersList from 'sections/apps/document/UsersList';
+import Document from './Document';
 
-const drawerWidth = 320;
-
-const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
-  flexGrow: 1,
-  transition: theme.transitions.create('margin', {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.shorter
-  }),
-  marginLeft: `-${drawerWidth}px`,
-  [theme.breakpoints.down('lg')]: {
-    paddingLeft: 0,
-    marginLeft: 0
-  },
-  ...(open && {
-    transition: theme.transitions.create('margin', {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.shorter
-    }),
-    width: `0px`,
-    marginLeft: 0
-  })
-}));
 
 const DocumentView = () => {
-  const theme = useTheme();
   const { uniqueId } = useParams();
   const user = useContext(AuthContext).user;
   const document = useSelector((state) => state.document.document);
 
-  const [addContributorDlg, setAddContributorDlg] = useState(false);
-
   useEffect(() => {
-    dispatch(getSingleList(null));
-    dispatch(getDocumentSingleList(uniqueId));
+    dispatch(getSingleList(null)); //  set init document as null.
+    dispatch(getDocumentSingleList(uniqueId)); //  get document and use getSingleList action to set.
   }, [uniqueId]);
-
-  const [openDrawer, setOpenDrawer] = useState(true);
-  const handleDrawerOpen = () => {
-    setOpenDrawer((prevState) => !prevState);
-  };
 
   return (
     <>
       {document &&
         user &&
         (document.creator.email === user.email || document.invites.some((item) => item.email === user.email && item.reply === 'accept') ? (
-          <>
-            <Box sx={{ display: 'flex' }}>
-              <UsersList
-                user={user}
-                document={document}
-                setAddContributorDlg={setAddContributorDlg}
-                handleDrawerOpen={handleDrawerOpen}
-                openDrawer={openDrawer}
-              />
-              <Main theme={theme} open={openDrawer}>
-                <Grid container>
-                  <Grid
-                    item
-                    xs={12}
-                    sx={{
-                      transition: theme.transitions.create('width', {
-                        easing: theme.transitions.easing.easeOut,
-                        duration: theme.transitions.duration.shorter + 200
-                      })
-                    }}
-                  >
-                    <MainCard
-                      content={false}
-                      sx={{
-                        bgcolor: theme.palette.mode === ThemeMode.DARK ? 'dark.main' : 'grey.50',
-                        pt: 2,
-                        pl: 2,
-                        transition: theme.transitions.create('width', {
-                          easing: theme.transitions.easing.easeOut,
-                          duration: theme.transitions.duration.shorter + 200
-                        })
-                      }}
-                    >
-                      <Grid container spacing={3}>
-                        <Grid
-                          item
-                          xs={12}
-                          sx={{
-                            bgcolor: theme.palette.background.paper,
-                            pr: 2,
-                            pb: 2,
-                            borderBottom: `1px solid ${theme.palette.divider}`
-                          }}
-                        >
-                          <Grid container justifyContent="space-between">
-                            <Grid item xs={12} sm={8}>
-                              <Stack direction="row" alignItems="center" spacing={1}>
-                                <IconButton onClick={handleDrawerOpen} color="secondary" size="large">
-                                  {openDrawer ? <MenuFoldOutlined /> : <MenuUnfoldOutlined />}
-                                </IconButton>
-                                {document && (
-                                  <CustomCell
-                                    user={{
-                                      online_status: 'none',
-                                      avatar: document.creator.avatar,
-                                      name: document.creator.name,
-                                      email: document.creator.email
-                                    }}
-                                  />
-                                )}
-                                <Typography variant="h4">{document?.name}</Typography>
-                              </Stack>
-                            </Grid>
-                            {/* <Grid item xs={12} sm={4}>
-                              <Stack direction="row" alignItems="center" justifyContent={'space-between'} spacing={1}>
-                                <Stack direction="row">
-                                  <AvatarGroup>
-                                    <Avatar
-                                      onClick={() => {
-                                        setAddContributorDlg(true);
-                                      }}
-                                    >
-                                      <UserSwitchOutlined style={{ fontSize: '30px', color: '#08c', cursor: 'pointer' }} />
-                                    </Avatar>
-                                  </AvatarGroup>
-                                  <AvatarGroup max={5}>
-                                    {document?.invites.map((item, key) => (
-                                      <UserAvatar
-                                        key={key}
-                                        user={{
-                                          online_status: 'none',
-                                          avatar: item.avatar,
-                                          name: item.name,
-                                          email: item.email
-                                        }}
-                                      />
-                                    ))}
-                                  </AvatarGroup>
-                                </Stack>
-                                {user && (
-                                  <UserAvatar
-                                    user={{
-                                      online_status: 'none',
-                                      avatar: user.avatar,
-                                      name: user.name,
-                                      email: user.email
-                                    }}
-                                  />
-                                )}
-                              </Stack>
-                            </Grid> */}
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                      <Grid container spacing={3}>
-                        <Grid
-                          item
-                          xs={12}
-                          sx={{
-                            bgcolor: theme.palette.background.paper,
-                            pr: 2,
-                            pb: 1,
-                            mb: 2,
-                            borderBottom: `1px solid ${theme.palette.divider}`
-                          }}
-                        >
-                          <Typography variant="subtitle1" color="textSecondary">
-                            {document?.description}
-                          </Typography>
-                        </Grid>
-                      </Grid>
-                      <Grid container spacing={3}>
-                        <Grid
-                          item
-                          xs={12}
-                          sx={{
-                            bgcolor: theme.palette.background.paper,
-                            pr: 2,
-                            pb: 2
-                          }}
-                        >
-                          <Grid container justifyContent="space-between">
-                            <Grid item xs={12}>
-                              <SimpleBar
-                                sx={{
-                                  overflowX: 'hidden',
-                                  height: 'calc(100vh - 133px)',
-                                  minHeight: 420
-                                }}
-                              >
-                                <EditorHistoryStateContext>
-                                  {user && document && (
-                                    <LexicalEditor uniqueId={uniqueId} user={user} allUsers={[document.creator, ...document.invites]} />
-                                  )}
-                                </EditorHistoryStateContext>
-                              </SimpleBar>
-                            </Grid>
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                    </MainCard>
-                  </Grid>
-                </Grid>
-              </Main>
-            </Box>
-            <AddContributorsFromContributor
-              open={addContributorDlg}
-              onClose={setAddContributorDlg}
-              user={user}
-              exist={[document.creator, ...document.invites]}
-              creator={document.creator}
-              uniqueId={uniqueId}
-            />
-          </>
+          <Document user={user} document={document} />
         ) : document.invites.some((item) => item.email === user.email && item.reply === 'pending') ? (
           <Check document={document} />
         ) : (

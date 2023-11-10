@@ -109,15 +109,15 @@ const Notification = () => {
   useEffect(() => {
     if (!user) return;
     const ws = new WebSocket(process.env.REACT_APP_NOTIFICATION_WEBSOCKET_URL || 'ws://localhost:8000/notification/socket');
-    console.log('opening');
+    // console.log('opening');
     ws.onopen = () => {
-      console.log('opened');
+      // console.log('opened');
       ws.send(JSON.stringify({ _id: user._id, role: user.role }));
       // setSocket({ ws, opened: true });
     };
 
     ws.onmessage = (event) => {
-      console.log('received');
+      // console.log('received');
       const data = JSON.parse(event.data);
       if (data) {
         let refreshDoc = null;
@@ -127,7 +127,7 @@ const Notification = () => {
           }
         }
         if (refreshDoc) {
-          console.log('refresh');
+          // console.log('refresh');
           dispatch(getDocumentSingleList(refreshDoc));
         }
         dispatch(addLists(data.notifications));
@@ -137,11 +137,11 @@ const Notification = () => {
 
     ws.onclose = () => {
       // setSocket({ ws: null, opened: false });
-      console.log('closed');
+      // console.log('closed');
     };
 
     return () => {
-      console.log('closing');
+      // console.log('closing');
       ws.close();
     };
   }, [user]);

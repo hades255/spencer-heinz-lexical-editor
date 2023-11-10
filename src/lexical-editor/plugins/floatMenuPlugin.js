@@ -8,9 +8,8 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import { $isRangeSelected } from '../utils/$isRangeSelected';
 import { useUserInteractions } from '../hooks/useUserInteractions';
 
-import { assign, isFunction } from 'lodash';
+import { isFunction } from 'lodash';
 
-import useAuth from 'hooks/useAuth';
 import { SET_COMMENT_COMMAND } from './commentPlugin';
 import FloatDialog from '../components/floatMenu/floatDialog';
 import { getSelectedNode } from './toolbarPlugin';
@@ -24,8 +23,7 @@ let setPosTimeout = 0;
 
 const LowPriority = 1;
 
-export const FloatMenuPlugin = ({ users }) => {
-  const { user } = useAuth();
+export const FloatMenuPlugin = ({ user, users }) => {
   const [show, setShow] = useState(false);
   const [isDropDownActive, setIsDropDownActive] = useState(false);
   const [isDialogOpen, setDialogOpen] = useState(false);
@@ -55,7 +53,7 @@ export const FloatMenuPlugin = ({ users }) => {
     if ($isRangeSelected(selection)) {
       const node = getSelectedNode(selection);
       // !check if locked or blacked out and get permitted users of block of text
-      let _permittedUsers = users.map(_user => _user._id);
+      let _permittedUsers = users.map((_user) => _user._id);
       // ! @topbot 2023/9/12 #not showing unblacked users for blacked one
       // node
       //   .getParents()
@@ -66,14 +64,14 @@ export const FloatMenuPlugin = ({ users }) => {
       //   .map((_node) => {
       //     _permittedUsers = intersection(_permittedUsers, _node.getUsers());
       //   });
-      setPermittedUsers(users.filter(_user => _permittedUsers.includes(_user._id)));
+      setPermittedUsers(users.filter((_user) => _permittedUsers.includes(_user._id)));
       // ! @topbot 2023/9/12 #set only action request for blacked out user
       if (isBlackedOutNode(node, BlackoutNode.__currentUser)) {
         setPermittedUsers([ACTION_REQUEST_USER]);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editor]);
+  }, [editor, users]);
 
   useEffect(() => {
     return mergeRegister(
@@ -102,6 +100,7 @@ export const FloatMenuPlugin = ({ users }) => {
     //   return false;
     // }
     setDialogOpen(false);
+    console.log('A');
     editor.dispatchCommand(SET_COMMENT_COMMAND, { assignee, task, user, commentContent: comment });
   };
 
@@ -172,8 +171,19 @@ export const FloatMenuPlugin = ({ users }) => {
         currentUser={user?._id}
         users={permittedUsers}
       />
-      <FloatDialog isDialogOpen={isDialogOpen} setDialogOpen={setDialogOpen} assignee={assignee} task={task} commentError={commentError} handleSubmitComment={handleSubmitComment} handleCancelComment={handleCancelComment} commentRef={commentRef} handleCommentKeyDown={handleCommentKeyDown} users={users} />
+      <FloatDialog
+        isDialogOpen={isDialogOpen}
+        setDialogOpen={setDialogOpen}
+        assignee={assignee}
+        task={task}
+        commentError={commentError}
+        handleSubmitComment={handleSubmitComment}
+        handleCancelComment={handleCancelComment}
+        commentRef={commentRef}
+        handleCommentKeyDown={handleCommentKeyDown}
+        users={users}
+      />
     </>,
     ANCHOR_ELEMENT
   );
-}
+};
