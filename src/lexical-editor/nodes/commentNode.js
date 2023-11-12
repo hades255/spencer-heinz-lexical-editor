@@ -3,7 +3,7 @@ import { addClassNamesToElement, removeClassNamesFromElement } from '@lexical/ut
 import LexicalTheme from '../utils/theme';
 import { isUndefined } from 'lodash';
 import CommentIcon from '../styles/comment.svg';
-import { not } from 'lexical-editor/components/lock/lockSelection';
+import { not } from 'utils/array';
 import { isBlackedOutNode } from './blackoutNode';
 
 /**

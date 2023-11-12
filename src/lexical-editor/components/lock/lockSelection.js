@@ -7,14 +7,7 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { getUserIds } from 'lexical-editor/plugins/toolbarPlugin';
-
-export function not(a, b) {
-  return a.filter((value) => b.indexOf(value) === -1).sort();
-}
-
-export function intersection(a, b) {
-  return a.filter((value) => b.indexOf(value) !== -1);
-}
+import { intersection, not } from 'utils/array';
 
 export default function UserLockList({ lockedUsers, setLockedUsers, unlockedUsers, setUnlockedUsers, currentUser, users }) {
   const [checked, setChecked] = React.useState([]);
@@ -88,7 +81,7 @@ export default function UserLockList({ lockedUsers, setLockedUsers, unlockedUser
                   }}
                 />
               </ListItemIcon> */}
-              <ListItemText id={labelId} primary={`${users.find(user => user._id === value)?.name}`} />
+              <ListItemText id={labelId} primary={`${users.find((user) => user._id === value)?.name}`} />
             </ListItem>
           );
         })}

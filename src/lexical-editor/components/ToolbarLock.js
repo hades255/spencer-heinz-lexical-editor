@@ -11,7 +11,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { mergeRegister } from '@lexical/utils';
 import { $isLockNode, isLockedNode } from 'lexical-editor/nodes/lockNode';
 import { $isRangeSelected } from 'lexical-editor/utils/$isRangeSelected';
-import { not } from './lock/lockSelection';
+import { not } from 'utils/array';
 import PropTypes from 'prop-types';
 
 const LowPriority = 1;

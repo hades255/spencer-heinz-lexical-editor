@@ -1,5 +1,6 @@
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { SELECTION_CHANGE_COMMAND, FORMAT_TEXT_COMMAND, $getSelection, $isRangeSelection, createCommand } from 'lexical';
 import { $isLinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
 import { $wrapNodeInElement } from '@lexical/utils';
@@ -26,7 +27,7 @@ import { Button, ClickAwayListener, Grow, IconButton, MenuItem, MenuList, Paper,
 import { CodeOutlined, HideSourceOutlined, LinkOutlined, LockOpenOutlined } from '@mui/icons-material';
 import { CAR_OPTIONS, USER_OPTIONS } from './constants';
 import { isEmpty } from 'lodash';
-import { intersection, not } from './components/lock-user-selection';
+import { intersection, not } from 'utils/array';
 import LockUserDialog from './components/lock-user-dialog';
 import { $isUserTextNode } from './components/user-text-node';
 import { toast } from 'react-hot-toast';
@@ -176,7 +177,7 @@ function FloatingLinkEditor({ editor }) {
               role="button"
               tabIndex={0}
               onMouseDown={(event) => event.preventDefault()}
-              onKeyDown={() => { }}
+              onKeyDown={() => {}}
               onClick={() => {
                 setEditMode(true);
               }}
@@ -188,18 +189,22 @@ function FloatingLinkEditor({ editor }) {
   );
 }
 
-function Select({ onChange, className, options, value }) {
-  return (
-    <select className={className} onChange={onChange} value={value}>
-      <option hidden={true} value="" />
-      {options.map((option) => (
-        <option key={option} value={option}>
-          {option}
-        </option>
-      ))}
-    </select>
-  );
-}
+FloatingLinkEditor.propTypes = {
+  editor: PropTypes.any
+};
+
+// function Select({ onChange, className, options, value }) {
+//   return (
+//     <select className={className} onChange={onChange} value={value}>
+//       <option hidden={true} value="" />
+//       {options.map((option) => (
+//         <option key={option} value={option}>
+//           {option}
+//         </option>
+//       ))}
+//     </select>
+//   );
+// }
 
 function getSelectedNode(selection) {
   const anchor = selection.anchor;
@@ -310,187 +315,209 @@ export default function ToolbarPlugin({ carModel, setCarModel, currentUser, isLo
     }
   }, [editor]);
 
-  const blackout = useCallback(
-    (payload) => {
-      const { unblackedUsers, currentUser } = payload;
-      const selection = $getSelection();
-      const anchorNode = selection.anchor.getNode();
-      const focusNode = selection.focus.getNode();
-      let firstNode = anchorNode;
-      let lastNode = focusNode;
+  const blackout = useCallback((payload) => {
+    const { unblackedUsers, currentUser } = payload;
+    const selection = $getSelection();
+    const anchorNode = selection.anchor.getNode();
+    const focusNode = selection.focus.getNode();
+    let firstNode = anchorNode;
+    let lastNode = focusNode;
 
-      const nodes = selection.extract();
-      const isBackward = selection.isBackward();
-      if (isBackward) {
-        firstNode = focusNode;
-        lastNode = anchorNode;
+    const nodes = selection.extract();
+    const isBackward = selection.isBackward();
+    if (isBackward) {
+      firstNode = focusNode;
+      lastNode = anchorNode;
+    }
+
+    let wrapElement = null;
+
+    nodes.forEach((_node) => {
+      const node = _node.getLatest();
+
+      if (anchorNode.is(focusNode) && nodes?.length === 1) {
+        console.log('single node');
+        // check if one whole node is selected
+        if (anchorNode.isDirty() && node.getNextSibling()) {
+          // check if anchorNode has default comments
+          const writable = node.getNextSibling()?.getLatest().getWritable();
+
+          if (!isEmpty(anchorNode.getComments())) {
+            if (node.getNextSibling() && $isUserTextNode(node.getNextSibling())) {
+              writable.setComments(anchorNode.getComments());
+            } else {
+              // next sibling is not UserTextNode
+            }
+          }
+          writable.setFilterType(anchorNode.getFilterType());
+          writable.setLocked(anchorNode.isLocked());
+          writable.setLockedTime(anchorNode.getLockedTime());
+          writable.setUsers(anchorNode.getUsers());
+          const newUniqueId = uuidv4();
+          writable.setUniqueId(newUniqueId);
+        }
+        if ($isUserTextNode(anchorNode)) {
+          const writable = node.getWritable();
+          writable.setComments(anchorNode.getComments());
+          writable.setLocked(anchorNode.isLocked());
+          writable.setLockedTime(anchorNode.getLockedTime());
+          writable.setUsers(anchorNode.getUsers());
+          const newUniqueId = uuidv4();
+          writable.setUniqueId(newUniqueId);
+
+          // check if anchorNode is locked
+          if (anchorNode.isLocked()) {
+            return false;
+          }
+          // check if already blackedout by someone
+          if (anchorNode.getParent() && $isBlackoutNode(anchorNode.getParent())) {
+            // check if current user is blocked, then users = original users
+            const writable = anchorNode.getParent().getLatest().getWritable();
+            if (anchorNode.getParent().getUsers().indexOf(currentUser) > -1) {
+              writable.setUsers([...not(unblackedUsers, [currentUser]), currentUser]);
+            } else {
+              writable.setUsers(anchorNode.getParent().getUsers());
+            }
+            return false;
+          }
+          $wrapNodeInElement(writable, () => {
+            return $createBlackoutNode('black-out', [...not(unblackedUsers, [currentUser]), currentUser]);
+          });
+        } else {
+          // if this node is not UserTextNode
+        }
+
+        return false;
       }
+      if (node.is(firstNode)) {
+        console.log('first node');
+        if ($isUserTextNode(node)) {
+          if ($isUserTextNode(firstNode)) {
+            const writable = node.getWritable();
+            writable.setComments(firstNode.getComments());
+            writable.setLocked(firstNode.isLocked());
+            writable.setLockedTime(firstNode.getLockedTime());
+            writable.setUsers(firstNode.getUsers());
+            writable.setUniqueId(firstNode.getUniqueId());
 
-      let wrapElement = null;
+            // check if already blackedout by someone
+            if (firstNode.getParent() && $isBlackoutNode(firstNode.getParent())) {
+              // check if current user is blocked, then users = original users
+              const writable = firstNode.getParent().getLatest().getWritable();
+              if (firstNode.getParent().getUsers().indexOf(currentUser) > -1) {
+                writable.setUsers([...not(unblackedUsers, [currentUser]), currentUser]);
+              } else {
+                writable.setUsers(firstNode.getParent().getUsers());
+              }
+              wrapElement = writable;
+              return false;
+            }
+            wrapElement = $wrapNodeInElement(writable, () => {
+              return $createBlackoutNode('black-out', [...not(unblackedUsers, [currentUser]), currentUser]);
+            });
+          } else {
+            // if first node is not UserTextNode
+          }
+        } else {
+          // if this node is not UserTextNode
+        }
+      } else if (node.getPreviousSibling()?.is(firstNode)) {
+        console.log('first');
+        if ($isUserTextNode(firstNode)) {
+          if ($isUserTextNode(node)) {
+            const writable = node.getWritable();
+            writable.setComments(firstNode.getComments());
+            writable.setLocked(firstNode.isLocked());
+            writable.setLockedTime(firstNode.getLockedTime());
+            writable.setUsers(firstNode.getUsers());
+            const newUniqueId = uuidv4();
+            writable.setUniqueId(newUniqueId);
 
-      nodes.forEach((_node) => {
-        const node = _node.getLatest();
-
-        if (anchorNode.is(focusNode) && nodes?.length === 1) {
-          console.log('single node');
-          // check if one whole node is selected
-          if (anchorNode.isDirty() && node.getNextSibling()) {
+            // check if already blackedout by someone
+            if (firstNode.getParent() && $isBlackoutNode(firstNode.getParent())) {
+              // check if current user is blocked, then users = original users
+              const writable = firstNode.getParent().getLatest().getWritable();
+              if (firstNode.getParent().getUsers().indexOf(currentUser) > -1) {
+                writable.setUsers([...not(unblackedUsers, [currentUser]), currentUser]);
+              } else {
+                writable.setUsers(firstNode.getParent().getUsers());
+              }
+              wrapElement = writable;
+              return false;
+            }
+            wrapElement = $wrapNodeInElement(writable, () => {
+              return $createBlackoutNode('black-out', [...not(unblackedUsers, [currentUser]), currentUser]);
+            });
+          } else {
+            // if first node is not UserTextNode
+          }
+        } else {
+          // if this node is not mention or userText
+        }
+      } else if (node.is(lastNode)) {
+        console.log('last');
+        if ($isUserTextNode(lastNode)) {
+          // check if last whole node is selected
+          if (focusNode.isDirty() && node.getNextSibling()) {
             // check if anchorNode has default comments
-            const writable = node.getNextSibling()?.getLatest().getWritable();
-
-            if (!isEmpty(anchorNode.getComments())) {
+            const writable = node.getNextSibling().getLatest().getWritable();
+            if (lastNode.isLocked()) {
               if (node.getNextSibling() && $isUserTextNode(node.getNextSibling())) {
-                writable.setComments(anchorNode.getComments());
+                writable.setLocked(true);
+                writable.setLockedTime(lastNode.getLockedTime());
+                writable.setUsers(lastNode.getUsers());
               } else {
                 // next sibling is not UserTextNode
               }
             }
+            if (!isEmpty(lastNode.getComments())) {
+              if (node.getNextSibling() && $isUserTextNode(node.getNextSibling())) {
+                writable.setComments(lastNode.getComments());
+              } else {
+                // next sibling is not UserTextNode
+              }
+            }
+            const newUniqueId = uuidv4();
             writable.setFilterType(anchorNode.getFilterType());
-            writable.setLocked(anchorNode.isLocked());
-            writable.setLockedTime(anchorNode.getLockedTime());
-            writable.setUsers(anchorNode.getUsers());
-            const newUniqueId = uuidv4();
             writable.setUniqueId(newUniqueId);
           }
-          if ($isUserTextNode(anchorNode)) {
-            const writable = node.getWritable();
-            writable.setComments(anchorNode.getComments());
-            writable.setLocked(anchorNode.isLocked());
-            writable.setLockedTime(anchorNode.getLockedTime());
-            writable.setUsers(anchorNode.getUsers());
-            const newUniqueId = uuidv4();
-            writable.setUniqueId(newUniqueId);
+          const writable = node.getWritable();
+          writable.setComments(lastNode.getComments());
+          writable.setLocked(lastNode.isLocked());
+          writable.setLockedTime(lastNode.getLockedTime());
+          writable.setUsers(lastNode.getUsers());
+          writable.setUniqueId(lastNode.getUniqueId());
 
-            // check if anchorNode is locked
-            if (anchorNode.isLocked()) {
-              return false;
+          if (lastNode.getParent() && $isBlackoutNode(lastNode.getParent())) {
+            // check if current user is blocked, then users = original users
+            const writable = lastNode.getParent().getLatest().getWritable();
+            if (lastNode.getParent().getUsers().indexOf(currentUser) > -1) {
+              writable.setUsers([...not(unblackedUsers, [currentUser]), currentUser]);
+            } else {
+              writable.setUsers(lastNode.getParent().getUsers());
             }
-            // check if already blackedout by someone
-            if (anchorNode.getParent() && $isBlackoutNode(anchorNode.getParent())) {
-              // check if current user is blocked, then users = original users
-              const writable = anchorNode.getParent().getLatest().getWritable();
-              if (anchorNode.getParent().getUsers().indexOf(currentUser) > -1) {
-                writable.setUsers([...not(unblackedUsers, [currentUser]), currentUser]);
-              } else {
-                writable.setUsers(anchorNode.getParent().getUsers());
-              }
-              return false;
-            }
-            $wrapNodeInElement(writable, () => {
-              return $createBlackoutNode('black-out', [...not(unblackedUsers, [currentUser]), currentUser]);
-            });
-          } else {
-            // if this node is not UserTextNode
+            return false;
           }
-
-          return false;
+          wrapElement.append(writable);
+        } else {
+          // if first node is not UserTextNode
         }
-        if (node.is(firstNode)) {
-          console.log('first node');
+      } else {
+        console.log('middle');
+        if ($isUserTextNode(node)) {
           if ($isUserTextNode(node)) {
-            if ($isUserTextNode(firstNode)) {
-              const writable = node.getWritable();
-              writable.setComments(firstNode.getComments());
-              writable.setLocked(firstNode.isLocked());
-              writable.setLockedTime(firstNode.getLockedTime());
-              writable.setUsers(firstNode.getUsers());
-              writable.setUniqueId(firstNode.getUniqueId());
-
-              // check if already blackedout by someone
-              if (firstNode.getParent() && $isBlackoutNode(firstNode.getParent())) {
-                // check if current user is blocked, then users = original users
-                const writable = firstNode.getParent().getLatest().getWritable();
-                if (firstNode.getParent().getUsers().indexOf(currentUser) > -1) {
-                  writable.setUsers([...not(unblackedUsers, [currentUser]), currentUser]);
-                } else {
-                  writable.setUsers(firstNode.getParent().getUsers());
-                }
-                wrapElement = writable;
-                return false;
-              }
-              wrapElement = $wrapNodeInElement(writable, () => {
-                return $createBlackoutNode('black-out', [...not(unblackedUsers, [currentUser]), currentUser]);
-              });
-            } else {
-              // if first node is not UserTextNode
-            }
-          } else {
-            // if this node is not UserTextNode
-          }
-        } else if (node.getPreviousSibling()?.is(firstNode)) {
-          console.log('first');
-          if ($isUserTextNode(firstNode)) {
-            if ($isUserTextNode(node)) {
-              const writable = node.getWritable();
-              writable.setComments(firstNode.getComments());
-              writable.setLocked(firstNode.isLocked());
-              writable.setLockedTime(firstNode.getLockedTime());
-              writable.setUsers(firstNode.getUsers());
-              const newUniqueId = uuidv4();
-              writable.setUniqueId(newUniqueId);
-
-              // check if already blackedout by someone
-              if (firstNode.getParent() && $isBlackoutNode(firstNode.getParent())) {
-                // check if current user is blocked, then users = original users
-                const writable = firstNode.getParent().getLatest().getWritable();
-                if (firstNode.getParent().getUsers().indexOf(currentUser) > -1) {
-                  writable.setUsers([...not(unblackedUsers, [currentUser]), currentUser]);
-                } else {
-                  writable.setUsers(firstNode.getParent().getUsers());
-                }
-                wrapElement = writable;
-                return false;
-              }
-              wrapElement = $wrapNodeInElement(writable, () => {
-                return $createBlackoutNode('black-out', [...not(unblackedUsers, [currentUser]), currentUser]);
-              });
-            } else {
-              // if first node is not UserTextNode
-            }
-          } else {
-            // if this node is not mention or userText
-          }
-        } else if (node.is(lastNode)) {
-          console.log('last');
-          if ($isUserTextNode(lastNode)) {
-            // check if last whole node is selected
-            if (focusNode.isDirty() && node.getNextSibling()) {
-              // check if anchorNode has default comments
-              const writable = node.getNextSibling().getLatest().getWritable();
-              if (lastNode.isLocked()) {
-                if (node.getNextSibling() && $isUserTextNode(node.getNextSibling())) {
-                  writable.setLocked(true);
-                  writable.setLockedTime(lastNode.getLockedTime());
-                  writable.setUsers(lastNode.getUsers());
-                } else {
-                  // next sibling is not UserTextNode
-                }
-              }
-              if (!isEmpty(lastNode.getComments())) {
-                if (node.getNextSibling() && $isUserTextNode(node.getNextSibling())) {
-                  writable.setComments(lastNode.getComments());
-                } else {
-                  // next sibling is not UserTextNode
-                }
-              }
-              const newUniqueId = uuidv4();
-              writable.setFilterType(anchorNode.getFilterType());
-              writable.setUniqueId(newUniqueId);
-            }
             const writable = node.getWritable();
-            writable.setComments(lastNode.getComments());
-            writable.setLocked(lastNode.isLocked());
-            writable.setLockedTime(lastNode.getLockedTime());
-            writable.setUsers(lastNode.getUsers());
-            writable.setUniqueId(lastNode.getUniqueId());
-
-            if (lastNode.getParent() && $isBlackoutNode(lastNode.getParent())) {
+            writable.setComments(node.getComments());
+            writable.setUsers(node.getUsers());
+            if (node.getParent() && $isBlackoutNode(node.getParent())) {
               // check if current user is blocked, then users = original users
-              const writable = lastNode.getParent().getLatest().getWritable();
-              if (lastNode.getParent().getUsers().indexOf(currentUser) > -1) {
+              const writable = node.getParent().getLatest().getWritable();
+              if (node.getParent().getUsers().indexOf(currentUser) > -1) {
                 writable.setUsers([...not(unblackedUsers, [currentUser]), currentUser]);
+                // wrapElement = writable;
+                wrapElement.append(node);
               } else {
-                writable.setUsers(lastNode.getParent().getUsers());
+                writable.setUsers(node.getParent().getUsers());
               }
               return false;
             }
@@ -499,37 +526,12 @@ export default function ToolbarPlugin({ carModel, setCarModel, currentUser, isLo
             // if first node is not UserTextNode
           }
         } else {
-          console.log('middle');
-          if ($isUserTextNode(node)) {
-            if ($isUserTextNode(node)) {
-              const writable = node.getWritable();
-              writable.setComments(node.getComments());
-              writable.setUsers(node.getUsers());
-              if (node.getParent() && $isBlackoutNode(node.getParent())) {
-                // check if current user is blocked, then users = original users
-                const writable = node.getParent().getLatest().getWritable();
-                if (node.getParent().getUsers().indexOf(currentUser) > -1) {
-                  writable.setUsers([...not(unblackedUsers, [currentUser]), currentUser]);
-                  // wrapElement = writable;
-                  wrapElement.append(node);
-                } else {
-                  writable.setUsers(node.getParent().getUsers());
-                }
-                return false;
-              }
-              wrapElement.append(writable);
-            } else {
-              // if first node is not UserTextNode
-            }
-          } else {
-            // if it is natural text node
-          }
+          // if it is natural text node
         }
-      });
-      console.log('wrapElement', wrapElement, unblackedUsers);
-    },
-    [editor, unblackedUsers, blackedUsers]
-  );
+      }
+    });
+    console.log('wrapElement', wrapElement, unblackedUsers);
+  }, []);
 
   useEffect(() => {
     return mergeRegister(
@@ -560,7 +562,7 @@ export default function ToolbarPlugin({ carModel, setCarModel, currentUser, isLo
         LowPriority
       )
     );
-  }, [editor]);
+  }, [editor, blackout]);
 
   const handleClose = (event) => {
     if (anchorRef.current && anchorRef.current.contains(event.target)) {

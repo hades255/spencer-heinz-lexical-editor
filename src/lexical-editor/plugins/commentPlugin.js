@@ -41,7 +41,7 @@ import { useUserInteractions } from 'lexical-editor/hooks/useUserInteractions';
 import { v4 as uuidv4 } from 'uuid';
 import useLocalStorage from 'lexical-editor/hooks/useLocalStorage';
 import { HideSourceRounded } from '@mui/icons-material';
-import { not } from 'lexical-editor/components/lock/lockSelection';
+import { not } from 'utils/array';
 import { $isLockNode } from 'lexical-editor/nodes/lockNode';
 import { $isBlackoutNode, isBlackedOutNode } from 'lexical-editor/nodes/blackoutNode';
 import { ACTION_REQUEST_USER, COMMENT_TYPES } from 'lexical-editor/utils/constants';

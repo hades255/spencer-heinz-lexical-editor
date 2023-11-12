@@ -20,6 +20,7 @@ import AddContributor from 'sections/apps/document/AddContributor1';
 import UserAvatar from 'sections/apps/user/UserAvatar';
 import { PopupTransition } from 'components/@extended/Transitions';
 import MainCard from 'components/MainCard';
+import { not } from 'utils/array';
 
 const TeamManagement = ({ user, allUsers, socket }) => {
   const theme = useTheme();
@@ -46,7 +47,9 @@ const TeamManagement = ({ user, allUsers, socket }) => {
           >
             {(!user.team || user.leader) && (
               <Stack spacing={0}>
-                <Typography variant="subtitle1">{team ? 'Manage' : 'Create'} Team</Typography>
+                <Typography variant="subtitle1" sx={{ textDecorationLine: 'underline', textDecorationColor: 'Highlight' }}>
+                  {team ? `Manage Team ${team}` : 'Create Team'}
+                </Typography>
               </Stack>
             )}
             {team ? (
@@ -105,7 +108,7 @@ const TeamManagement = ({ user, allUsers, socket }) => {
         >
           <CloseIcon />
         </IconButton>
-        {open && <Team exist={team ? members : [user]} user={user} users={allUsers} onClose={setOpen} socket={socket} />}
+        {open && <Team team={team} exist={team ? members : [user]} user={user} users={allUsers} onClose={setOpen} socket={socket} />}
       </Dialog>
     </>
   );
@@ -113,9 +116,9 @@ const TeamManagement = ({ user, allUsers, socket }) => {
 
 export default TeamManagement;
 
-const Team = ({ exist, users, onClose, user, socket }) => {
+const Team = ({ team, exist, users, onClose, user, socket }) => {
   const [value, setValue] = useState(exist.map((item) => item.email));
-  const [name, setName] = useState('');
+  const [name, setName] = useState(team || '');
 
   const handleChange = useCallback(({ target: { value } }) => {
     setName(value);
@@ -123,10 +126,19 @@ const Team = ({ exist, users, onClose, user, socket }) => {
 
   const handleSave = useCallback(() => {
     if (name && value.length) {
-      socket.send(JSON.stringify({ type: 'new-team', name, value }));
+      const v = users.filter((item) => value.includes(item.email)).map((item) => item._id);
+      if (team) {
+        const old = exist.map((item) => item._id);
+        const a = not(v, old);
+        const r = not(old, v);
+        const _v = not(v, a);
+        socket.send(JSON.stringify({ type: 'edit-team', name, team: name !== team, a, r, value: _v }));
+      } else {
+        socket.send(JSON.stringify({ type: 'new-team', name, value: v }));
+      }
       onClose(false);
     }
-  }, [value, name, onClose, socket]);
+  }, [team, exist, value, name, onClose, socket, users]);
 
   return (
     <DialogContent>
@@ -172,5 +184,6 @@ Team.propTypes = {
   users: PropTypes.any,
   onClose: PropTypes.any,
   user: PropTypes.any,
-  socket: PropTypes.any
+  socket: PropTypes.any,
+  team: PropTypes.any
 };

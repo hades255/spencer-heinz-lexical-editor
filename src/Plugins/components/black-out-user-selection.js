@@ -7,14 +7,7 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import { USER_OPTIONS } from 'Plugins/constants';
 import Typography from '@mui/material/Typography';
-
-export function not(a, b) {
-  return a.filter((value) => b.indexOf(value) === -1).sort();
-}
-
-export function intersection(a, b) {
-  return a.filter((value) => b.indexOf(value) !== -1);
-}
+import { intersection, not } from 'utils/array';
 
 export default function UserBlackoutList({
   blackedUsers,

@@ -17,19 +17,8 @@ import { useAsyncDebounce } from 'react-table';
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import AddNewInviteConfirmDlg from './AddNewInviteConfirmDlg';
 import AddNewInviteDlg from './AddNewInviteDlg';
+import { intersection, not, union } from 'utils/array';
 const filter = createFilterOptions();
-
-export function not(a, b) {
-  return a.filter((value) => b.indexOf(value) === -1);
-}
-
-export function intersection(a, b) {
-  return a.filter((value) => b.indexOf(value) !== -1);
-}
-
-export function union(a, b) {
-  return [...a, ...not(b, a)];
-}
 
 export const ReplyCell = ({ value }) => {
   switch (value) {

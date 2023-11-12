@@ -183,7 +183,7 @@ const Document = ({ user, document }) => {
                             <LexicalEditor
                               uniqueId={document._id}
                               user={user}
-                              allUsers={me && me.team ? allUsers.filter((item) => item.team === me.team) : allUsers}
+                              allUsers={me && me.team ? allUsers.filter((item) => item.team === me.team || item.leader) : allUsers}
                             />
                           </EditorHistoryStateContext>
                         </SimpleBar>

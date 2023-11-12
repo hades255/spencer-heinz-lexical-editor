@@ -9,7 +9,7 @@ import LockUserDialog from './blackout/lockDialog';
 import { useCallback, useEffect, useState } from 'react';
 import { mergeRegister } from '@lexical/utils';
 import { $isRangeSelected } from 'lexical-editor/utils/$isRangeSelected';
-import { not } from './lock/lockSelection';
+import { not } from 'utils/array';
 import PropTypes from 'prop-types';
 import { $isBlackoutNode, isBlackedOutNode } from 'lexical-editor/nodes/blackoutNode';
 import { UNBLACK_OUT_COMMAND } from 'lexical-editor/plugins/blackoutPlugin';

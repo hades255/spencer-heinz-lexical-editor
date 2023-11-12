@@ -3,7 +3,7 @@ import { $getSelection, $isParagraphNode, $isRangeSelection, COPY_COMMAND, creat
 import PropTypes from 'prop-types';
 import { useCallback, useEffect } from 'react';
 import { mergeRegister } from '@lexical/utils';
-import { not } from 'lexical-editor/components/lock/lockSelection';
+import { not } from 'utils/array';
 import { $isRangeSelected } from 'lexical-editor/utils/$isRangeSelected';
 import { getSelectedNode, getUserIds } from './toolbarPlugin';
 import { isEqual } from 'lodash';

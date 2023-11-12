@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { useCallback, useEffect } from 'react';
 import { mergeRegister } from '@lexical/utils';
 import { $createLockNode, $isLockNode, LockNode, isLockedNode } from 'lexical-editor/nodes/lockNode';
-import { not } from 'lexical-editor/components/lock/lockSelection';
+import { not } from 'utils/array';
 import { $isRangeSelected } from 'lexical-editor/utils/$isRangeSelected';
 import { getSelectedNode, getUserIds } from './toolbarPlugin';
 import { isEqual } from 'lodash';
