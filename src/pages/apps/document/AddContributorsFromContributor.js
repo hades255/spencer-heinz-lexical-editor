@@ -16,6 +16,7 @@ import { compareArraysByKey } from 'utils/array';
 import { openSnackbar } from 'store/reducers/snackbar';
 import axiosServices from 'utils/axios';
 import { getDocumentSingleList } from 'store/reducers/document';
+import { CloseCircleOutlined, SaveOutlined } from '@ant-design/icons';
 
 export default function AddContributorsFromContributor({ open: openThis = false, onClose, user, exist, creator, uniqueId }) {
   const users = useSelector((state) => state.user.lists);
@@ -119,22 +120,24 @@ export default function AddContributorsFromContributor({ open: openThis = false,
               <Stack alignItems="center">
                 <Stack direction={'row'} justifyContent={'space-between'}>
                   <Button
-                    size="large"
-                    variant="contained"
+                    size="small"
+                    variant="outlined"
                     color="info"
                     onClick={() => {
                       onClose(false);
                     }}
+                    endIcon={<CloseCircleOutlined />}
                   >
                     Cancel
                   </Button>
                   <Button
-                    size="large"
-                    variant="contained"
+                    size="small"
+                    variant="outlined"
                     color="primary"
                     onClick={() => {
                       handleAddContributors();
                     }}
+                    endIcon={<SaveOutlined />}
                   >
                     Save
                   </Button>

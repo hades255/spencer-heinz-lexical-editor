@@ -11,13 +11,16 @@ import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import CustomCell from 'components/customers/CustomCell';
-import { Chip, Stack, TextField } from '@mui/material';
+import { Box, Chip, IconButton, Stack, TextField } from '@mui/material';
 import { StatusCell } from 'pages/apps/customer/list';
 import { useAsyncDebounce } from 'react-table';
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import AddNewInviteConfirmDlg from './AddNewInviteConfirmDlg';
 import AddNewInviteDlg from './AddNewInviteDlg';
 import { intersection, not, union } from 'utils/array';
+import { StarFilled } from '@ant-design/icons';
+import { StarOutline } from '@mui/icons-material';
+import axiosServices from 'utils/axios';
 const filter = createFilterOptions();
 
 export const ReplyCell = ({ value }) => {
@@ -43,20 +46,64 @@ ReplyCell.propTypes = {
   value: PropTypes.string
 };
 
-const ListCell = ({ user, dbClick, dir, reply }) => {
+const ListCell = ({ user, dbClick, dir, reply, favourites, setFavourites }) => {
+  const [show, setShow] = useState(false);
+
+  const handleMouseEnter = useCallback(() => {
+    setShow(true);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setShow(false);
+  }, []);
+
+  const handleClickStar = useCallback(
+    (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      setFavourites(user.email, !favourites.includes(user.email));
+    },
+    [setFavourites, favourites, user]
+  );
+
+  const handleDbClick = useCallback(() => {
+    dbClick(user.email, dir);
+  }, [dbClick, user, dir]);
+
   return user ? (
     <Stack
       direction={'row'}
       justifyContent={'space-between'}
-      onDoubleClick={() => {
-        dbClick(user.email, dir);
-      }}
+      onDoubleClick={handleDbClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <CustomCell user={user} />
       <Stack>
         <StatusCell value={user.status} />
         {!dir && <ReplyCell value={reply || user.reply} />}
       </Stack>
+      {!reply && (
+        <Box
+          sx={{
+            position: 'absolute',
+            right: '20px',
+            top: '10px',
+            visibility: show || favourites.includes(user.email) ? 'visible' : 'hidden',
+            width: 20,
+            height: 20,
+            borderRadius: 10,
+            background: favourites.includes(user.email) ? 'white' : '#1677FF'
+          }}
+          onClick={handleClickStar}
+        >
+          {favourites.includes(user.email) ? (
+            <StarFilled style={{ fontSize: 20, color: 'gold' }} />
+          ) : (
+            <StarOutline style={{ fontSize: 20, color: 'white' }} />
+          )}
+        </Box>
+      )}
     </Stack>
   ) : (
     <></>
@@ -66,7 +113,9 @@ const ListCell = ({ user, dbClick, dir, reply }) => {
 ListCell.propTypes = {
   user: PropTypes.object,
   dbClick: PropTypes.func,
+  setFavourites: PropTypes.func,
   dir: PropTypes.bool,
+  favourites: PropTypes.array,
   reply: PropTypes.string
 };
 
@@ -77,6 +126,39 @@ export default function AddContributor({ users, value, onChange, exist = [], min
   const [openDlg, toggleOpenDlg] = useState(false);
   const [openCDlg, toggleOpenCDlg] = useState(false);
   const inputRef = useRef(null);
+  const [showStars, setShowStars] = useState(false);
+  const [favourites, setFavourites] = useState([]);
+
+  const getFavouriteUsers = useCallback(() => {
+    (async () => {
+      try {
+        const res = await axiosServices.get('/user/favourite');
+        setFavourites(res.data.data);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, []);
+
+  const setFavouriteUser = useCallback(
+    (email, flag) => {
+      (async () => {
+        try {
+          const res = await axiosServices.put('/user/favourite', { email, flag });
+          const { email: _email, flag: _flag } = res.data.data;
+          const f = favourites.filter((item) => item !== _email);
+          setFavourites(_flag ? [...f, _email] : f);
+        } catch (error) {
+          console.log(error);
+        }
+      })();
+    },
+    [favourites]
+  );
+
+  useEffect(() => {
+    getFavouriteUsers();
+  }, [getFavouriteUsers]);
 
   const leftChecked = intersection(
     checked,
@@ -84,28 +166,34 @@ export default function AddContributor({ users, value, onChange, exist = [], min
   );
   const rightChecked = intersection(checked, value);
 
-  const handleToggle = (item) => () => {
-    const currentIndex = checked.indexOf(item);
-    const newChecked = [...checked];
+  const handleToggle = useCallback(
+    (item) => () => {
+      const currentIndex = checked.indexOf(item);
+      const newChecked = [...checked];
 
-    if (currentIndex === -1) {
-      newChecked.push(item);
-    } else {
-      newChecked.splice(currentIndex, 1);
-    }
+      if (currentIndex === -1) {
+        newChecked.push(item);
+      } else {
+        newChecked.splice(currentIndex, 1);
+      }
 
-    setChecked(newChecked);
-  };
+      setChecked(newChecked);
+    },
+    [checked]
+  );
 
-  const numberOfChecked = (items) => intersection(checked, items).length;
+  const numberOfChecked = useCallback((items) => intersection(checked, items).length, [checked]);
 
-  const handleToggleAll = (items) => () => {
-    if (numberOfChecked(items) === items.length) {
-      setChecked(not(checked, items));
-    } else {
-      setChecked(union(checked, items));
-    }
-  };
+  const handleToggleAll = useCallback(
+    (items) => () => {
+      if (numberOfChecked(items) === items.length) {
+        setChecked(not(checked, items));
+      } else {
+        setChecked(union(checked, items));
+      }
+    },
+    [checked, numberOfChecked]
+  );
 
   const handleCheckedRight = () => {
     onChange(union(value, leftChecked));
@@ -133,111 +221,156 @@ export default function AddContributor({ users, value, onChange, exist = [], min
     setSearch(value.toLowerCase());
   }, 200);
 
-  const handleCloseCDlg = (res = false) => {
+  const handleCloseCDlg = useCallback((res = false) => {
     toggleOpenCDlg(false);
     toggleOpenDlg(res);
-  };
+  }, []);
 
-  const handleCloseDlg = (email = '') => {
-    toggleOpenDlg(false);
-    if (email) onChange([...value, email]);
-    setSearchVal('');
-  };
+  const handleCloseDlg = useCallback(
+    (email = '') => {
+      toggleOpenDlg(false);
+      if (email) onChange([...value, email]);
+      setSearchVal('');
+    },
+    [onChange, value]
+  );
 
-  const customList = (title, items) => {
-    const ids = items.filter((item) => user.email !== item.email && (mine ? mine.email !== item.email : true)).map((item) => item.email);
-    return (
-      <Card>
-        <CardHeader
-          sx={{ px: 2, py: 1 }}
-          avatar={
-            <Checkbox
-              onClick={handleToggleAll(ids)}
-              checked={numberOfChecked(ids) === ids.length && ids.length !== 0}
-              indeterminate={numberOfChecked(ids) !== ids.length && numberOfChecked(ids) !== 0}
-              disabled={ids.length === 0}
-              inputProps={{
-                'aria-label': 'all items selected'
-              }}
-            />
-          }
-          title={title}
-          subheader={`${numberOfChecked(ids)}/${ids.length} selected`}
-        />
-        <Divider />
-        <List
-          sx={{
-            width: 380,
-            height: '40vh',
-            minHeight: 250,
-            bgcolor: 'background.paper',
-            overflow: 'auto'
-          }}
-          dense
-          component="div"
-          role="list"
-        >
-          {items.map((item, key) => {
-            const labelId = `transfer-list-all-item-${item.email}-label`;
+  const handleSetFavourite = useCallback(
+    (email, flag) => {
+      setFavouriteUser(email, flag);
+    },
+    [setFavouriteUser]
+  );
 
-            return user.email === item.email || mine?.email === item.email ? (
-              <ListItem key={key} role="listitem">
-                <ListItemIcon>
-                  <Checkbox
-                    disabled
-                    checked={false}
-                    tabIndex={-1}
-                    disableRipple
-                    inputProps={{
-                      'aria-labelledby': labelId
-                    }}
-                  />
-                </ListItemIcon>
-                <ListItemText
-                  id={labelId}
-                  primary={
-                    <ListCell
-                      user={exist.find((x) => x.email === item.email)}
-                      dbClick={() => {}}
-                      dir={title === 'Choices'}
-                      reply={
-                        user.email === item.email
-                          ? mine?.email === item.email
-                            ? 'Creator/You'
-                            : 'You'
-                          : mine?.email === item.email
-                          ? 'Creator'
-                          : ''
+  const handleShowStars = useCallback(() => {
+    setShowStars(!showStars);
+  }, [showStars]);
+
+  const customList = useCallback(
+    (title, items) => {
+      const ids = items.filter((item) => user.email !== item.email && (mine ? mine.email !== item.email : true)).map((item) => item.email);
+      return (
+        <Card>
+          <CardHeader
+            sx={{ px: 2, py: 1 }}
+            avatar={
+              <Checkbox
+                onClick={handleToggleAll(ids)}
+                checked={numberOfChecked(ids) === ids.length && ids.length !== 0}
+                indeterminate={numberOfChecked(ids) !== ids.length && numberOfChecked(ids) !== 0}
+                disabled={ids.length === 0}
+                inputProps={{
+                  'aria-label': 'all items selected'
+                }}
+              />
+            }
+            title={title}
+            subheader={`${numberOfChecked(ids)}/${ids.length} selected`}
+            action={
+              title === 'Choices' && (
+                <IconButton onClick={handleShowStars}>
+                  <StarFilled style={{ transition: 'ease-in-out 0.2s', color: showStars ? 'gold' : 'grey' }} />
+                </IconButton>
+              )
+            }
+          />
+          <Divider />
+          <List
+            sx={{
+              width: 380,
+              height: '40vh',
+              minHeight: 250,
+              bgcolor: 'background.paper',
+              overflow: 'auto'
+            }}
+            dense
+            component="div"
+            role="list"
+          >
+            {items
+              .filter((item) => (showStars ? favourites.includes(item.email) : true))
+              .map((item, key) => {
+                const labelId = `transfer-list-all-item-${item.email}-label`;
+
+                return user.email === item.email || mine?.email === item.email ? (
+                  <ListItem key={key} role="listitem">
+                    <ListItemIcon>
+                      <Checkbox
+                        disabled
+                        checked={false}
+                        tabIndex={-1}
+                        disableRipple
+                        inputProps={{
+                          'aria-labelledby': labelId
+                        }}
+                      />
+                    </ListItemIcon>
+                    <ListItemText
+                      id={labelId}
+                      primary={
+                        <ListCell
+                          user={exist.find((x) => x.email === item.email)}
+                          dbClick={() => {}}
+                          dir={title === 'Choices'}
+                          reply={
+                            user.email === item.email
+                              ? mine?.email === item.email
+                                ? 'Creator/You'
+                                : 'You'
+                              : mine?.email === item.email
+                              ? 'Creator'
+                              : ''
+                          }
+                        />
                       }
                     />
-                  }
-                />
-              </ListItem>
-            ) : (
-              <ListItem key={key} role="listitem" onClick={handleToggle(item.email)} button>
-                <ListItemIcon>
-                  <Checkbox
-                    checked={checked.indexOf(item.email) !== -1}
-                    tabIndex={-1}
-                    disableRipple
-                    inputProps={{
-                      'aria-labelledby': labelId
-                    }}
-                  />
-                </ListItemIcon>
-                <ListItemText
-                  id={labelId}
-                  primary={
-                    <ListCell user={exist.find((x) => x.email === item.email) || item} dbClick={handleDbClick} dir={title === 'Choices'} />
-                  }
-                />
-              </ListItem>
-            );
-          })}
-        </List>
-      </Card>
-    );
-  };
+                  </ListItem>
+                ) : (
+                  <ListItem key={key} role="listitem" onClick={handleToggle(item.email)} button>
+                    <ListItemIcon>
+                      <Checkbox
+                        checked={checked.indexOf(item.email) !== -1}
+                        tabIndex={-1}
+                        disableRipple
+                        inputProps={{
+                          'aria-labelledby': labelId
+                        }}
+                      />
+                    </ListItemIcon>
+                    <ListItemText
+                      id={labelId}
+                      primary={
+                        <ListCell
+                          user={exist.find((x) => x.email === item.email) || item}
+                          dbClick={handleDbClick}
+                          dir={title === 'Choices'}
+                          favourites={favourites}
+                          setFavourites={handleSetFavourite}
+                        />
+                      }
+                    />
+                  </ListItem>
+                );
+              })}
+          </List>
+        </Card>
+      );
+    },
+    [
+      mine,
+      user,
+      showStars,
+      checked,
+      exist,
+      favourites,
+      handleDbClick,
+      handleSetFavourite,
+      handleShowStars,
+      handleToggle,
+      handleToggleAll,
+      numberOfChecked
+    ]
+  );
 
   return (
     <Stack sx={{ m: 1 }}>

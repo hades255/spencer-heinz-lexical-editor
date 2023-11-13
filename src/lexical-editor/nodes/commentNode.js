@@ -21,6 +21,7 @@ export class CommentNode extends ElementNode {
   __suppressed = false;
   /** @internal ! for local use only ! currentUser*/
   static __currentUser;
+  static __team;
 
   static getType() {
     return 'comment';
@@ -32,6 +33,11 @@ export class CommentNode extends ElementNode {
 
   static setCurrentUser(_user) {
     CommentNode.__currentUser = _user;
+    return false;
+  }
+
+  static setCurrentTeam(_team) {
+    CommentNode.__team = _team;
     return false;
   }
 
@@ -133,8 +139,13 @@ export class CommentNode extends ElementNode {
       return span;
     }
 
+    // console.log('handle showing comments', CommentNode.__currentUser, CommentNode.__team, this.__comments);
     const nComments = this.__comments?.filter(
-      (comment) => comment.commentor._id === CommentNode.__currentUser || comment.assignee === CommentNode.__currentUser
+      (comment) =>
+        comment.commentor._id === CommentNode.__currentUser ||
+        comment.assignee === CommentNode.__currentUser ||
+        !comment.commentor.team ||
+        comment.commentor.team === CommentNode.__team
     );
     if (!nComments || nComments?.length === 0) return span;
 

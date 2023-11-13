@@ -179,13 +179,16 @@ const Document = ({ user, document }) => {
                             minHeight: 420
                           }}
                         >
-                          <EditorHistoryStateContext>
-                            <LexicalEditor
-                              uniqueId={document._id}
-                              user={user}
-                              allUsers={me && me.team ? allUsers.filter((item) => item.team === me.team || item.leader) : allUsers}
-                            />
-                          </EditorHistoryStateContext>
+                          {me && (
+                            <EditorHistoryStateContext>
+                              <LexicalEditor
+                                uniqueId={document._id}
+                                user={me}
+                                users={me.team ? allUsers.filter((item) => item.team === me.team || item.leader) : allUsers}
+                                allUsers={allUsers}
+                              />
+                            </EditorHistoryStateContext>
+                          )}
                         </SimpleBar>
                       </Grid>
                     </Grid>

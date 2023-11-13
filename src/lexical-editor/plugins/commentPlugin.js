@@ -62,7 +62,7 @@ export const updateComment = () => {
 
 let floatTimeOut = 0;
 
-export default function CommentPlugin({ user, users }) {
+export default function CommentPlugin({ user, team, users }) {
   const [editor] = useLexicalComposerContext();
   const [comments, setComments] = useState([]);
   const [isOnFab, setIsOnFab] = useState(false);
@@ -92,6 +92,7 @@ export default function CommentPlugin({ user, users }) {
     });
     // set current user of commentNode
     CommentNode.setCurrentUser(user);
+    CommentNode.setCurrentTeam(team);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -231,6 +232,7 @@ export default function CommentPlugin({ user, users }) {
       //   lastNode = anchorNode;
       // }
       // let wrapElement = null;
+      // console.log('set new comment');
 
       const newComment = {
         assignee: assignee,
@@ -692,6 +694,7 @@ export default function CommentPlugin({ user, users }) {
 
 CommentPlugin.propTypes = {
   user: PropTypes.string,
+  team: PropTypes.string,
   users: PropTypes.array
 };
 

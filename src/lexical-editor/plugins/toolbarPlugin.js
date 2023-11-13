@@ -31,7 +31,7 @@ export function getSelectedNode(selection) {
 
 const LowPriority = 1;
 
-export default function ToolbarPlugin({ user, users }) {
+export default function ToolbarPlugin({ user, users, allUsers }) {
   const [editor] = useLexicalComposerContext();
   const toolbarRef = useRef(null);
   const [isLink, setIsLink] = useState(false);
@@ -154,8 +154,8 @@ export default function ToolbarPlugin({ user, users }) {
         </IconButton>
         {/* {isLink && createPortal(<FloatingLinkEditor editor={editor} />, document.body)} */}
       </>
-      <ToolbarLock users={users} user={user} editor={editor} />
-      <ToolbarBlackout users={users} user={user} editor={editor} />
+      <ToolbarLock users={allUsers} user={user} editor={editor} />
+      <ToolbarBlackout users={allUsers} user={user} editor={editor} />
       <ToolbarJump editor={editor} />
     </div>
   );
@@ -163,7 +163,8 @@ export default function ToolbarPlugin({ user, users }) {
 
 ToolbarPlugin.propTypes = {
   user: PropTypes.string,
-  users: PropTypes.array
+  users: PropTypes.array,
+  allUsers: PropTypes.array
 };
 
 export const getUserIds = (userData) => {

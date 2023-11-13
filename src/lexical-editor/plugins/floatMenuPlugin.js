@@ -99,8 +99,8 @@ export const FloatMenuPlugin = ({ user, users }) => {
     //   setCommentError('Invalid comment!');
     //   return false;
     // }
+    // console.log('submit comment');
     setDialogOpen(false);
-    console.log('A');
     editor.dispatchCommand(SET_COMMENT_COMMAND, { assignee, task, user, commentContent: comment });
   };
 

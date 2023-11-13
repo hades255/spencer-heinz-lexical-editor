@@ -46,7 +46,7 @@ const excludedProperties = new Map();
 excludedProperties.set(CommentNode, new Set(['__suppressed', '__currentUser']));
 excludedProperties.set(LockNode, new Set(['__currentUser']));
 
-const LexicalEditor = ({ uniqueId, user, allUsers }) => {
+const LexicalEditor = ({ uniqueId, user, users, allUsers }) => {
   const { historyState } = useEditorHistoryState();
 
   const [isLoading, setIsLoading] = useState(true);
@@ -97,7 +97,7 @@ const LexicalEditor = ({ uniqueId, user, allUsers }) => {
           if (!isBlackedOutNode(_commentNode, user._id)) editor.dispatchCommand(TOUCH_COMMENT_COMMAND, nodeKey);
         }}
       />
-      <ToolbarPlugin user={user._id} users={allUsers} />
+      <ToolbarPlugin user={user._id} users={users} allUsers={allUsers} />
       {!isLoading ? (
         <RichTextPlugin
           contentEditable={
@@ -148,8 +148,8 @@ const LexicalEditor = ({ uniqueId, user, allUsers }) => {
       <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
       {/* custom plugins */}
       <ActionsPlugin user={user._id} />
-      <CommentPlugin user={user._id} users={allUsers} />
-      <FloatMenuPlugin user={user} users={allUsers} />
+      <CommentPlugin user={user._id} team={user.team} users={users} />
+      <FloatMenuPlugin user={user} users={users} />
       <LockPlugin user={user._id} users={allUsers} />
       <BlackoutPlugin user={user._id} users={allUsers} />
       <JumpPlugin />
@@ -159,7 +159,9 @@ const LexicalEditor = ({ uniqueId, user, allUsers }) => {
 
 LexicalEditor.propTypes = {
   uniqueId: PropTypes.string,
-  user: PropTypes.object
+  user: PropTypes.object,
+  users: PropTypes.array,
+  allUsers: PropTypes.array
 };
 
 function initialEditorState() {

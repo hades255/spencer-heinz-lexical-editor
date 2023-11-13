@@ -1,9 +1,10 @@
 import { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
-import { UserSwitchOutlined } from '@ant-design/icons';
+import { SaveOutlined, UserSwitchOutlined } from '@ant-design/icons';
 import {
   Avatar,
   AvatarGroup,
+  Box,
   Button,
   Dialog,
   DialogContent,
@@ -108,7 +109,16 @@ const TeamManagement = ({ user, allUsers, socket }) => {
         >
           <CloseIcon />
         </IconButton>
-        {open && <Team team={team} exist={team ? members : [user]} user={user} users={allUsers} onClose={setOpen} socket={socket} />}
+        {open && (
+          <Team
+            team={team}
+            exist={team ? members : [user]}
+            user={user}
+            users={allUsers.filter((item) => !item.team || item.team === team)}
+            onClose={setOpen}
+            socket={socket}
+          />
+        )}
       </Dialog>
     </>
   );
@@ -154,10 +164,13 @@ const Team = ({ team, exist, users, onClose, user, socket }) => {
             sx={{ minWidth: 300, width: '50%' }}
             value={name}
             onChange={handleChange}
+            disabled={team ? true : false}
           />
-          <Button size="large" variant="contained" color="primary" onClick={handleSave}>
-            Save
-          </Button>
+          <Box>
+            <Button size="small" variant="outlined" color="primary" onClick={handleSave} endIcon={<SaveOutlined />}>
+              Save
+            </Button>
+          </Box>
         </Stack>
         <AddContributor
           users={users}
