@@ -168,7 +168,7 @@ export const FloatMenuPlugin = ({ user, users }) => {
         task={task}
         setTask={setTask}
         setDialogOpen={setDialogOpen}
-        currentUser={user?._id}
+        currentUser={user}
         users={permittedUsers}
       />
       <FloatDialog

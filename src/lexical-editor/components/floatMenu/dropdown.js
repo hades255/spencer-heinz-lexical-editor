@@ -20,7 +20,8 @@ export default function DropDownMenu({
   task,
   users,
   setDialogOpen,
-  pos
+  pos,
+  currentUser
 }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -115,7 +116,7 @@ export default function DropDownMenu({
                 handleUserMouseMove(event, user);
               }}
             >
-              {user.name}
+              {user.name} {user?.team !== currentUser?.team ? ` (TL ${user?.team})` : ''}
             </MenuItem>
           ))}
         </MenuList>
@@ -161,5 +162,6 @@ DropDownMenu.propTypes = {
   setTask: PropTypes.func,
   users: PropTypes.array,
   setDialogOpen: PropTypes.func,
-  pos: PropTypes.object
+  pos: PropTypes.object,
+  currentUser: PropTypes.any
 };

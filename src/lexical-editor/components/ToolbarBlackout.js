@@ -18,7 +18,7 @@ import { $isLockNode, isLockedNode } from 'lexical-editor/nodes/lockNode';
 
 const LowPriority = 1;
 
-const ToolbarBlackout = ({ user, users, editor }) => {
+const ToolbarBlackout = ({ user, users, editor, active }) => {
   const [isBlackedOut, setIsBlackedOut] = useState(false);
   const [lockedUsers, setLockedUsers] = useState([]);
   const [unlockedUsers, setUnlockedUsers] = useState([]);
@@ -124,6 +124,7 @@ const ToolbarBlackout = ({ user, users, editor }) => {
         icon="link"
         aria-label="Lock Node"
         id={'blackout-btn'}
+        disabled={!active}
         onClick={() => {
           // ! @topbot 2023/09/15 #add checking if node is locked out of current user
           if (!isLockedOut && (!isBlackedOut || unlockedUsers.includes(user))) {
@@ -151,6 +152,7 @@ const ToolbarBlackout = ({ user, users, editor }) => {
           size="large"
           icon="link"
           aria-label="Lock Node"
+          disabled={!active}
           onClick={() => {
             unblackoutNode();
           }}
@@ -179,6 +181,7 @@ const ToolbarBlackout = ({ user, users, editor }) => {
 ToolbarBlackout.propTypes = {
   user: PropTypes.string,
   users: PropTypes.array,
+  active: PropTypes.bool,
   editor: PropTypes.object
 };
 

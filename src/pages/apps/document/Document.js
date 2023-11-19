@@ -10,7 +10,6 @@ import CustomCell from 'components/customers/CustomCell';
 import { EditorHistoryStateContext } from 'contexts/LexicalEditor';
 import LexicalEditor from 'lexical-editor';
 import SimpleBar from 'simplebar-react';
-import AddContributorsFromContributor from './AddContributorsFromContributor';
 import UsersList from 'sections/apps/document/UsersList';
 import TeamManagement from './TeamManagement';
 
@@ -38,7 +37,6 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
 
 const Document = ({ user, document }) => {
   const theme = useTheme();
-  const [addContributorDlg, setAddContributorDlg] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(true);
   const handleDrawerOpen = useCallback(() => {
     setOpenDrawer((prevState) => !prevState);
@@ -46,11 +44,13 @@ const Document = ({ user, document }) => {
 
   const [allUsers, setAllUsers] = useState([]);
   const [me, setMe] = useState(null);
+  const [activeTeam, setActiveTeam] = useState('');
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
     const ws = new WebSocket(process.env.REACT_APP_DEFAULT_WEBSOCKET_URL + 'userrooms/' + document._id + '?userId=' + user._id);
     ws.onopen = () => {
+      console.log('open');
       setSocket(ws);
     };
 
@@ -59,6 +59,7 @@ const Document = ({ user, document }) => {
       switch (data.type) {
         case 'userslist':
           setMe(data.users.find((item) => item._id === user._id));
+          setActiveTeam(data.active);
           setAllUsers(data.users);
           break;
         default:
@@ -72,7 +73,8 @@ const Document = ({ user, document }) => {
     };
 
     return () => {
-      ws.close();
+      console.log('closing');
+      if (ws) ws.close();
     };
   }, [user, document]);
 
@@ -83,9 +85,10 @@ const Document = ({ user, document }) => {
           user={user}
           users={allUsers}
           document={document}
-          setAddContributorDlg={setAddContributorDlg}
           handleDrawerOpen={handleDrawerOpen}
           openDrawer={openDrawer}
+          socket={socket}
+          activeTeam={activeTeam}
         />
         <Main theme={theme} open={openDrawer}>
           <Grid container>
@@ -183,9 +186,17 @@ const Document = ({ user, document }) => {
                             <EditorHistoryStateContext>
                               <LexicalEditor
                                 uniqueId={document._id}
-                                user={me}
-                                users={me.team ? allUsers.filter((item) => item.team === me.team || item.leader) : allUsers}
+                                user={user}
+                                me={me}
+                                users={
+                                  me.team
+                                    ? allUsers
+                                        .filter((item) => item.team === me.team || item.leader)
+                                        .sort((a, b) => (a.team > b.team ? 1 : a.team < b.team ? -1 : a.leader ? -1 : b.leader ? 1 : 0))
+                                    : allUsers
+                                }
                                 allUsers={allUsers}
+                                activeTeam={activeTeam}
                               />
                             </EditorHistoryStateContext>
                           )}
@@ -199,14 +210,6 @@ const Document = ({ user, document }) => {
           </Grid>
         </Main>
       </Box>
-      <AddContributorsFromContributor
-        open={addContributorDlg}
-        onClose={setAddContributorDlg}
-        user={user}
-        exist={allUsers}
-        creator={document.creator}
-        uniqueId={document._id}
-      />
     </>
   );
 };

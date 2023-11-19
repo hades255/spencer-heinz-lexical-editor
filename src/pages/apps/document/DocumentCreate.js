@@ -119,7 +119,16 @@ const DocumentCreate = () => {
                     ...values,
                     invites: users
                       .filter((item) => contributors.includes(item.email))
-                      .map(({ _id, name, email, avatar, status, role }) => ({ _id, name, email, avatar, status, role }))
+                      .map(({ _id, name, email, avatar, status, role, mobilePhone, workPhone }) => ({
+                        _id,
+                        name,
+                        email,
+                        avatar,
+                        status,
+                        role,
+                        mobilePhone,
+                        workPhone
+                      }))
                   },
                   navigate
                 )
@@ -147,7 +156,7 @@ const DocumentCreate = () => {
                         {users
                           .filter((item) => contributors.includes(item.email))
                           .map((item, key) => (
-                            <CustomCell key={key} user={item} status />
+                            <CustomCell key={key} user={item} />
                           ))}
                       </Stack>
                     </Stack>

@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 // material-ui
 import { CodeNode } from '@lexical/code';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
@@ -40,20 +40,51 @@ import { LinearProgress } from '@mui/material';
 import { $createCustomTextNode, CustomTextNode } from './nodes/customTextNode';
 import { JumpNode } from './nodes/jumpNode';
 import { JumpPlugin } from './plugins/jumpPlugin';
+import ActiveTeamPlugin from './plugins/activeTeamPlugin';
 
 // set excluded properties for collab
 const excludedProperties = new Map();
 excludedProperties.set(CommentNode, new Set(['__suppressed', '__currentUser']));
 excludedProperties.set(LockNode, new Set(['__currentUser']));
 
-const LexicalEditor = ({ uniqueId, user, users, allUsers }) => {
+const LexicalEditor = ({ uniqueId, me, user, users, allUsers, activeTeam }) => {
   const { historyState } = useEditorHistoryState();
 
   const [isLoading, setIsLoading] = useState(true);
+  // const [provider, setProvider] = useState(null);
 
   useEffect(() => {
     CustomTextNode.setCurrentUser(user._id);
   }, [user]);
+
+  const handleProvider = useCallback(
+    (id, yjsDocMap) => {
+      const doc = new Y.Doc();
+      const permanentUserData = new Y.PermanentUserData(doc);
+      permanentUserData.setUserMapping(doc, doc.clientID, user._id);
+      yjsDocMap.set(id, doc);
+      const serviceToken = window.localStorage.getItem('serviceToken');
+      const provider = new WebsocketProvider(process.env.REACT_APP_YSOCKET_URL || 'ws://localhost:8000/document/connect', id, doc, {
+        params: { token: serviceToken }
+      });
+      provider.on('status', (event) => {
+        console.log('event.status: ', event.status);
+        if (event.status === EVENT_STATUS.CONNECTED) {
+          setIsLoading(false);
+        }
+      });
+      // provider.awareness.on('change', ({ added, removed, updated }) => {
+      provider.awareness.on('change', () => {
+        // console.log('state updated:', updated);
+        // console.log('These users connected:', added);
+        // console.log('These users disconnected:', removed);
+        // console.log('All user states:', provider.awareness.getStates());
+        // console.log(provider._updateHandler());
+      });
+      return provider;
+    },
+    [user]
+  );
 
   const EDITOR_NAMESPACE = uniqueId;
   const EDITOR_NODES = [
@@ -87,6 +118,7 @@ const LexicalEditor = ({ uniqueId, user, users, allUsers }) => {
       console.log(error);
     }
   };
+
   return (
     <LexicalComposer initialConfig={config}>
       <NodeEventPlugin
@@ -97,7 +129,7 @@ const LexicalEditor = ({ uniqueId, user, users, allUsers }) => {
           if (!isBlackedOutNode(_commentNode, user._id)) editor.dispatchCommand(TOUCH_COMMENT_COMMAND, nodeKey);
         }}
       />
-      <ToolbarPlugin user={user._id} users={users} allUsers={allUsers} />
+      <ToolbarPlugin user={user._id} me={me} users={users} allUsers={allUsers} active={activeTeam === me.team} />
       {!isLoading ? (
         <RichTextPlugin
           contentEditable={
@@ -111,30 +143,7 @@ const LexicalEditor = ({ uniqueId, user, users, allUsers }) => {
       <HistoryPlugin externalHistoryState={historyState} />
       <CollaborationPlugin
         id={uniqueId}
-        providerFactory={(id, yjsDocMap) => {
-          const doc = new Y.Doc();
-          const permanentUserData = new Y.PermanentUserData(doc);
-          permanentUserData.setUserMapping(doc, doc.clientID, user._id);
-          yjsDocMap.set(id, doc);
-          const serviceToken = window.localStorage.getItem('serviceToken');
-          const provider = new WebsocketProvider(process.env.REACT_APP_YSOCKET_URL || 'ws://localhost:8000/document/connect', id, doc, {
-            params: { token: serviceToken }
-          });
-          provider.on('status', (event) => {
-            console.log('event.status: ', event.status);
-            if (event.status === EVENT_STATUS.CONNECTED) {
-              setIsLoading(false);
-            }
-          });
-          provider.awareness.on('change', ({ added, removed, updated }) => {
-            // console.log('state updated:', updated);
-            // console.log('These users connected:', added);
-            // console.log('These users disconnected:', removed);
-            // console.log('All user states:', provider.awareness.getStates());
-            // console.log(provider._updateHandler());
-          });
-          return provider;
-        }}
+        providerFactory={handleProvider}
         key={uuidv4()}
         initialEditorState={initialEditorState}
         username={user.name}
@@ -148,18 +157,21 @@ const LexicalEditor = ({ uniqueId, user, users, allUsers }) => {
       <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
       {/* custom plugins */}
       <ActionsPlugin user={user._id} />
-      <CommentPlugin user={user._id} team={user.team} users={users} />
-      <FloatMenuPlugin user={user} users={users} />
+      <CommentPlugin user={user._id} me={me} users={users} />
+      <FloatMenuPlugin user={me} users={users} />
       <LockPlugin user={user._id} users={allUsers} />
       <BlackoutPlugin user={user._id} users={allUsers} />
       <JumpPlugin />
+      <ActiveTeamPlugin user={me} activeTeam={activeTeam} />
     </LexicalComposer>
   );
 };
 
 LexicalEditor.propTypes = {
   uniqueId: PropTypes.string,
+  activeTeam: PropTypes.string,
   user: PropTypes.object,
+  me: PropTypes.object,
   users: PropTypes.array,
   allUsers: PropTypes.array
 };

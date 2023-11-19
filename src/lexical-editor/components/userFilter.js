@@ -1,11 +1,12 @@
-import { CarOutlined } from '@ant-design/icons';
+import PropTypes from 'prop-types';
 import { Person4Rounded } from '@mui/icons-material';
 import { Button, ClickAwayListener, Grow, MenuItem, MenuList, Paper, Popper } from '@mui/material';
 import { FILTER_COMMENT } from 'lexical-editor/plugins/commentPlugin';
 import { useRef, useState } from 'react';
 
-const UserFilter = ({ users, editor }) => {
-  const [selectedUser, setSelectedUser] = useState('')
+const UserFilter = ({ users, me, editor }) => {
+  const team = me ? me.team : '';
+  const [selectedUser, setSelectedUser] = useState('');
   const [showDropDown, setShowDropDown] = useState(false);
 
   const anchorRef = useRef(null);
@@ -94,7 +95,7 @@ const UserFilter = ({ users, editor }) => {
                         }}
                         sx={{ paddingX: '30px' }}
                       >
-                        {_user?.name}
+                        {_user?.name} {_user?.team !== team ? ` (TL ${_user?.team})` : ''}
                       </MenuItem>
                     ))}
                   </MenuList>
@@ -109,3 +110,9 @@ const UserFilter = ({ users, editor }) => {
 };
 
 export default UserFilter;
+
+UserFilter.propTypes = {
+  users: PropTypes.any,
+  me: PropTypes.any,
+  editor: PropTypes.any
+};

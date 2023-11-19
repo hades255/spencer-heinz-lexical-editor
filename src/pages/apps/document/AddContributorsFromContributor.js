@@ -15,7 +15,6 @@ import AddContributor from 'sections/apps/document/AddContributor1';
 import { compareArraysByKey } from 'utils/array';
 import { openSnackbar } from 'store/reducers/snackbar';
 import axiosServices from 'utils/axios';
-import { getDocumentSingleList } from 'store/reducers/document';
 import { CloseCircleOutlined, SaveOutlined } from '@ant-design/icons';
 
 export default function AddContributorsFromContributor({ open: openThis = false, onClose, user, exist, creator, uniqueId }) {
@@ -70,7 +69,7 @@ export default function AddContributorsFromContributor({ open: openThis = false,
             })
           );
         }
-        dispatch(getDocumentSingleList(uniqueId));
+        // dispatch(getDocumentSingleList(uniqueId));
         onClose(false);
       } catch (error) {
         console.log(error);

@@ -20,7 +20,7 @@ import PropTypes from 'prop-types';
 
 const LowPriority = 1;
 
-export const ReassignButton = ({ users }) => {
+export const ReassignButton = ({ users, me }) => {
   const { user } = useAuth();
   const [isDropDownActive, setIsDropDownActive] = useState(false);
   const [isDialogOpen, setDialogOpen] = useState(false);
@@ -157,6 +157,7 @@ export const ReassignButton = ({ users }) => {
           users={permittedUsers}
           setDialogOpen={setDialogOpen}
           pos={{ x: 1, y: 1 }}
+          currentUser={me}
         />
       </Box>
       <FloatDialog
@@ -176,5 +177,6 @@ export const ReassignButton = ({ users }) => {
 };
 
 ReassignButton.propTypes = {
-  users: PropTypes.array
+  users: PropTypes.array,
+  me: PropTypes.any
 };

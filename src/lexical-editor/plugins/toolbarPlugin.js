@@ -31,7 +31,7 @@ export function getSelectedNode(selection) {
 
 const LowPriority = 1;
 
-export default function ToolbarPlugin({ user, users, allUsers }) {
+export default function ToolbarPlugin({ user, me, users, allUsers, active }) {
   const [editor] = useLexicalComposerContext();
   const toolbarRef = useRef(null);
   const [isLink, setIsLink] = useState(false);
@@ -92,13 +92,14 @@ export default function ToolbarPlugin({ user, users, allUsers }) {
 
   return (
     <div className="toolbar" ref={toolbarRef}>
-      <UserFilter users={users} editor={editor} />
+      <UserFilter users={users} me={me} editor={editor} />
       <>
         <IconButton
           size="large"
           icon="bold"
           aria-label="Format text as bold"
           color={isBold ? 'primary' : 'secondary'}
+          disabled={!active}
           onClick={() => {
             editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
           }}
@@ -110,6 +111,7 @@ export default function ToolbarPlugin({ user, users, allUsers }) {
           icon="italic"
           aria-label="Format text as italic"
           color={isItalic ? 'primary' : 'secondary'}
+          disabled={!active}
           onClick={() => {
             editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
           }}
@@ -121,6 +123,7 @@ export default function ToolbarPlugin({ user, users, allUsers }) {
           icon="bold"
           aria-label="Format text as underline"
           color={isUnderline ? 'primary' : 'secondary'}
+          disabled={!active}
           onClick={() => {
             editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
           }}
@@ -132,6 +135,7 @@ export default function ToolbarPlugin({ user, users, allUsers }) {
           icon="bold"
           aria-label="Format text as strikethrough"
           color={isStrikethrough ? 'primary' : 'secondary'}
+          disabled={!active}
           onClick={() => {
             editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough');
           }}
@@ -143,26 +147,36 @@ export default function ToolbarPlugin({ user, users, allUsers }) {
           icon="bold"
           aria-label="Format text as code"
           color={isCode ? 'primary' : 'secondary'}
+          disabled={!active}
           onClick={() => {
             editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'code');
           }}
         >
           <CodeOutlined />
         </IconButton>
-        <IconButton size="large" icon="link" aria-label="Insert Link" onClick={insertLink} color={isCode ? 'primary' : 'secondary'}>
+        <IconButton
+          size="large"
+          icon="link"
+          aria-label="Insert Link"
+          disabled={!active}
+          onClick={insertLink}
+          color={isCode ? 'primary' : 'secondary'}
+        >
           <LinkOutlined />
         </IconButton>
         {/* {isLink && createPortal(<FloatingLinkEditor editor={editor} />, document.body)} */}
       </>
-      <ToolbarLock users={allUsers} user={user} editor={editor} />
-      <ToolbarBlackout users={allUsers} user={user} editor={editor} />
-      <ToolbarJump editor={editor} />
+      <ToolbarLock users={allUsers} user={user} editor={editor} active={active} />
+      <ToolbarBlackout users={allUsers} user={user} editor={editor} active={active} />
+      <ToolbarJump editor={editor} active={active} />
     </div>
   );
 }
 
 ToolbarPlugin.propTypes = {
   user: PropTypes.string,
+  active: PropTypes.bool,
+  me: PropTypes.any,
   users: PropTypes.array,
   allUsers: PropTypes.array
 };

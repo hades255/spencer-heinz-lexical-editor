@@ -4,24 +4,11 @@ import { useEffect, useState } from 'react';
 // material-ui
 import { List, ListItemButton } from '@mui/material';
 
-// project imports
-import { useDispatch } from 'store';
-
 // assets
 import CustomCell from 'components/customers/CustomCell';
 
-function UserList({ search, uniqueId, users }) {
-  const dispatch = useDispatch();
+function UserList({ search, users }) {
   const [data, setData] = useState([]);
-
-  // useEffect(() => {
-  //   setData(users);
-  // }, []);
-
-  // useEffect(() => {
-  //   dispatch(getUsers(uniqueId));
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
 
   useEffect(() => {
     if (search) {

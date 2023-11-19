@@ -41,6 +41,11 @@ export class CommentNode extends ElementNode {
     return false;
   }
 
+  static setUsers(_users) {
+    CommentNode.__users = _users;
+    return false;
+  }
+
   constructor(className, comments, newOrUpdated, key) {
     super(key);
     this.__className = className;
@@ -139,8 +144,8 @@ export class CommentNode extends ElementNode {
       return span;
     }
 
-    // console.log('handle showing comments', CommentNode.__currentUser, CommentNode.__team, this.__comments);
-    const nComments = this.__comments?.filter(
+    // console.log('handle showing comments', CommentNode.__currentUser, CommentNode.__team, CommentNode.__users, this.__comments);
+    let nComments = this.__comments?.filter(
       (comment) =>
         comment.commentor._id === CommentNode.__currentUser ||
         comment.assignee === CommentNode.__currentUser ||
@@ -149,6 +154,15 @@ export class CommentNode extends ElementNode {
     );
     if (!nComments || nComments?.length === 0) return span;
 
+    // let _users = this.__users;
+    // nComments = nComments.map((item) => ({
+    //   ...item,
+    //   commentor:
+    //     item.commentor.team !== CommentNode.__team || _users.find((x) => x.team === item.commentor.team && x.leader)
+    //       ? _users.find((x) => x.team === item.commentor.team && x.leader)
+    //       : item.commentor
+    // }));
+    nComments = nComments.map((item) => ({ ...item, comment: 'AAA' }));
     span.setAttribute('data-lexical-comment', 'true');
     span.setAttribute('data-comments', JSON.stringify(nComments));
     span.setAttribute('data-new_or_updated', JSON.stringify(this.__newOrUpdated));
@@ -168,10 +182,10 @@ export class CommentNode extends ElementNode {
       // set selection of first child node so that comment box appears
       let range = new Range();
 
-      if (e.target.nextElementSibling) {
-        range.setStart(e.target.nextElementSibling, 0);
-        range.setEnd(e.target.nextElementSibling, 0);
-      }
+      // if (e.target.nextElementSibling) {
+      range.setStart(e.target.nextElementSibling, 0);
+      range.setEnd(e.target.nextElementSibling, 0);
+      // }
 
       // apply the selection, explained later below
       document.getSelection().removeAllRanges();

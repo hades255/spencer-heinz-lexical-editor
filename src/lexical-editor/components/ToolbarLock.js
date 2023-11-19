@@ -16,7 +16,7 @@ import PropTypes from 'prop-types';
 
 const LowPriority = 1;
 
-const ToolbarLock = ({ user, users, editor }) => {
+const ToolbarLock = ({ user, users, editor, active }) => {
   const [isLockedShow, setIsLockedShow] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [lockedUsers, setLockedUsers] = useState([]);
@@ -123,6 +123,7 @@ const ToolbarLock = ({ user, users, editor }) => {
         size="large"
         icon="link"
         aria-label="Lock Node"
+        disabled={!active}
         onClick={() => {
           if (!isLocked || unlockedUsers.includes(user)) {
             setIsLockingUser(true);
@@ -150,6 +151,7 @@ const ToolbarLock = ({ user, users, editor }) => {
           size="large"
           icon="link"
           aria-label="Lock Node"
+          disabled={!active}
           onClick={() => {
             unlockNode();
           }}
@@ -158,7 +160,14 @@ const ToolbarLock = ({ user, users, editor }) => {
           <LockOpenOutlined />
         </IconButton>
       )}
-      <IconButton size="large" icon="link" aria-label="Lock Node" onClick={showLockedNodes} color={isLockedShow ? 'primary' : 'secondary'}>
+      <IconButton
+        size="large"
+        icon="link"
+        aria-label="Lock Node"
+        disabled={!active}
+        onClick={showLockedNodes}
+        color={isLockedShow ? 'primary' : 'secondary'}
+      >
         {isLockedShow ? <EyeFilled /> : <EyeInvisibleFilled />}
       </IconButton>
       <LockUserDialog
@@ -181,6 +190,7 @@ const ToolbarLock = ({ user, users, editor }) => {
 ToolbarLock.propTypes = {
   user: PropTypes.string,
   users: PropTypes.array,
+  active: PropTypes.bool,
   editor: PropTypes.object
 };
 

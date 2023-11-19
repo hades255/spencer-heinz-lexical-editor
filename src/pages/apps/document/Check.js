@@ -7,10 +7,8 @@ import { AvatarGroup, Box, Grid, Stack, Typography } from '@mui/material';
 import MainCard from 'components/MainCard';
 import CustomCell from 'components/customers/CustomCell';
 import UserAvatar from 'sections/apps/user/UserAvatar';
-import { dispatch } from 'store';
-import { getDocumentSingleList } from 'store/reducers/document';
 
-const Check = ({ document }) => {
+const Check = ({ document, handleRefresh }) => {
   const [noti, setNoti] = useState(null);
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -28,11 +26,11 @@ const Check = ({ document }) => {
     } else {
       setNoti({ redirect: document._id });
     }
-  }, []);
+  }, [document]);
 
   const handleAction = useCallback(() => {
     setTimeout(() => {
-      dispatch(getDocumentSingleList(document._id));
+      handleRefresh();
     }, 500);
   }, [document]);
 
@@ -129,5 +127,6 @@ const Check = ({ document }) => {
 export default Check;
 
 Check.propTypes = {
-  document: PropTypes.any
+  document: PropTypes.any,
+  handleRefresh: PropTypes.func
 };

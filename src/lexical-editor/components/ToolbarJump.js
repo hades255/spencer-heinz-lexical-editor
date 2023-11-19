@@ -16,7 +16,7 @@ import PropTypes from 'prop-types';
 
 const LowPriority = 1;
 
-const ToolbarJump = ({ editor }) => {
+const ToolbarJump = ({ editor, active }) => {
   const [isJumped, setIsJumped] = useState(false);
   const [isJumpingNode, setIsJumpingNode] = useState(false);
   const anchorRef = useRef(null);
@@ -91,6 +91,7 @@ const ToolbarJump = ({ editor }) => {
         icon="link"
         aria-label="Jump Node"
         ref={anchorRef}
+        disabled={!active}
         onClick={() => {
           if (!isJumped) {
             setIsJumpingNode(true);
@@ -174,7 +175,8 @@ const ToolbarJump = ({ editor }) => {
 };
 
 ToolbarJump.propTypes = {
-  editor: PropTypes.object
+  editor: PropTypes.object,
+  active: PropTypes.bool
 };
 
 export default ToolbarJump;

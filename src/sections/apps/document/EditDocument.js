@@ -117,14 +117,29 @@ const EditDocument = ({ user, onCancel, document }) => {
                     ...document.invites.filter((item) => !r.includes(item.email)),
                     ...users
                       .filter((item) => a.includes(item.email))
-                      .map(({ _id, name, email, avatar, status }) => ({ _id, name, email, avatar, status, reply: 'pending' }))
+                      .map(({ _id, name, email, avatar, status, mobilePhone, workPhone }) => ({
+                        _id,
+                        name,
+                        email,
+                        avatar,
+                        status,
+                        mobilePhone,
+                        workPhone,
+                        reply: 'pending'
+                      }))
                   ],
                   a: users
                     .filter((item) => a.includes(item.email))
-                    .map(({ _id, name, email, avatar, status }) => ({ _id, name, email, avatar, status })),
-                  r: users
-                    .filter((item) => r.includes(item.email))
-                    .map(({ _id, name, email, avatar, status }) => ({ _id, name, email, avatar, status }))
+                    .map(({ _id, name, email, avatar, status, mobilePhone, workPhone }) => ({
+                      _id,
+                      name,
+                      email,
+                      avatar,
+                      status,
+                      mobilePhone,
+                      workPhone
+                    })),
+                  r: users.filter((item) => r.includes(item.email)).map(({ _id, name }) => ({ _id, name }))
                 })
               );
               setStatus({ success: true });
@@ -161,7 +176,7 @@ const EditDocument = ({ user, onCancel, document }) => {
                         {users
                           .filter((item) => contributors.includes(item.email))
                           .map((item, key) => (
-                            <CustomCell key={key} user={item} status />
+                            <CustomCell key={key} user={item} />
                           ))}
                       </Stack>
                     </Stack>

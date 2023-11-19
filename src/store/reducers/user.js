@@ -3,20 +3,11 @@ import { dispatch } from 'store';
 
 // third-party
 import { createSlice } from '@reduxjs/toolkit';
-// import { DOCUMENT_STATUS } from 'Plugins/constants';
 import axiosServices from 'utils/axios';
 import { openSnackbar } from './snackbar';
 
 const initialState = {
   lists: []
-  // document: {
-  //   name: '',
-  //   description: '',
-  //   initialText: '',
-  //   status: DOCUMENT_STATUS.EDITING
-  // },
-  // navList: [],
-  // error: null
 };
 
 // ==============================|| INVOICE - SLICE ||============================== //
@@ -34,20 +25,10 @@ const user = createSlice({
       state.lists = action.payload;
     },
 
-    // get invoice details
-    // getSingleList(state, action) {
-    //   state.document = action.payload;
-    // },
-
     // create user
     createUser(state, action) {
       state.lists = [...state.lists, action.payload];
     },
-
-    // GET USERS
-    // getNavListSuccess(state, action) {
-    //   state.navList = action.payload;
-    // },
 
     // update user
     updateUser(state, action) {
@@ -72,7 +53,6 @@ const user = createSlice({
 
 export default user.reducer;
 
-// export const { getLists, hasError, getSingleList, createDocument, updateDocument, deleteDocument } = user.actions;
 export const { getLists, deleteUser, updateUser, createUser } = user.actions;
 
 export function addNewUser(newUser) {
@@ -247,18 +227,3 @@ export function resetUserPassword(userId) {
     }
   };
 }
-
-// export function getDocumentSingleList(documentId) {
-//   return async () => {
-//     try {
-//       const response = await axios.post('/api/document/single', { id: documentId });
-//       dispatch(getSingleList(response.data));
-//     } catch (error) {
-//       dispatch(hasError(error));
-//     }
-//   };
-// }
-
-// export function getNavList(navList) {
-//   return dispatch(getNavListSuccess(navList ?? []));
-// }

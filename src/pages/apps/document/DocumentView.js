@@ -1,23 +1,31 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import AuthContext from 'contexts/JWTContext';
-import { dispatch } from 'store';
-import { getDocumentSingleList, getSingleList } from 'store/reducers/document';
-import { useSelector } from 'store';
 import Check from './Check';
 import Document from './Document';
-
+import { Button, Grid, Stack, Typography } from '@mui/material';
+import axiosServices from 'utils/axios';
 
 const DocumentView = () => {
   const { uniqueId } = useParams();
   const user = useContext(AuthContext).user;
-  const document = useSelector((state) => state.document.document);
+  const [document, setDocument] = useState(null);
+
+  const handleRefresh = useCallback(() => {
+    (async () => {
+      try {
+        const response = await axiosServices.get('/document/' + uniqueId);
+        setDocument(response.data.data.document);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, [uniqueId]);
 
   useEffect(() => {
-    dispatch(getSingleList(null)); //  set init document as null.
-    dispatch(getDocumentSingleList(uniqueId)); //  get document and use getSingleList action to set.
-  }, [uniqueId]);
+    handleRefresh();
+  }, [handleRefresh]);
 
   return (
     <>
@@ -26,7 +34,7 @@ const DocumentView = () => {
         (document.creator.email === user.email || document.invites.some((item) => item.email === user.email && item.reply === 'accept') ? (
           <Document user={user} document={document} />
         ) : document.invites.some((item) => item.email === user.email && item.reply === 'pending') ? (
-          <Check document={document} />
+          <Check document={document} handleRefresh={handleRefresh} />
         ) : (
           <Redirect />
         ))}
@@ -38,8 +46,19 @@ export default DocumentView;
 
 const Redirect = () => {
   const navigate = useNavigate();
-  useEffect(() => {
-    navigate('/');
+  const handleRedirect = useCallback(() => {
+    navigate('/document/list');
   }, [navigate]);
-  return <></>;
+  return (
+    <>
+      <Grid item xs={12}>
+        <Stack direction={'row'} justifyContent={'center'}>
+          <Typography variant="h5">You cannot access this document</Typography>
+        </Stack>
+        <Stack direction={'row'} justifyContent={'center'}>
+          <Button onClick={handleRedirect}>Go Document List</Button>
+        </Stack>
+      </Grid>
+    </>
+  );
 };

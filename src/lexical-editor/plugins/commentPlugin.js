@@ -62,7 +62,7 @@ export const updateComment = () => {
 
 let floatTimeOut = 0;
 
-export default function CommentPlugin({ user, team, users }) {
+export default function CommentPlugin({ user, me, users }) {
   const [editor] = useLexicalComposerContext();
   const [comments, setComments] = useState([]);
   const [isOnFab, setIsOnFab] = useState(false);
@@ -92,9 +92,10 @@ export default function CommentPlugin({ user, team, users }) {
     });
     // set current user of commentNode
     CommentNode.setCurrentUser(user);
-    CommentNode.setCurrentTeam(team);
+    CommentNode.setCurrentTeam(me?.team);
+    CommentNode.setUsers(users);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [me, user, users]);
 
   useEffect(() => {
     if (isDialogOpen) {
@@ -199,8 +200,22 @@ export default function CommentPlugin({ user, team, users }) {
     [editor]
   );
 
+  const getLeaderFromTeam = useCallback(
+    (team) => {
+      return users.find((item) => item.team === team && item.leader);
+    },
+    [users]
+  );
+
   const handleTouchComment = useCallback(
     (nodeKey) => {
+      /**.map((item) => ({
+          ...item,
+          commentor:
+            item.commentor.team !== me.team && getLeaderFromTeam(item.commentor.team)
+              ? getLeaderFromTeam(item.commentor.team)
+              : item.commentor
+        })) */
       const writable = $getNodeByKey(nodeKey).getWritable();
       const newCommentNode = $createCommentNode('editor-comment', writable.getComments(), [...writable.getNewOrUpdated(), user]);
       const children = writable.getChildren();
@@ -211,7 +226,7 @@ export default function CommentPlugin({ user, team, users }) {
       return false;
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [editor]
+    [editor, me, getLeaderFromTeam]
   );
 
   const setComment = useCallback(
@@ -585,7 +600,7 @@ export default function CommentPlugin({ user, team, users }) {
                       >
                         <HideSourceRounded />
                       </IconButton>
-                      <ReassignButton users={users} />
+                      <ReassignButton users={users} me={me} />
                       <Button
                         variant={'outlined'}
                         sx={{
@@ -694,7 +709,7 @@ export default function CommentPlugin({ user, team, users }) {
 
 CommentPlugin.propTypes = {
   user: PropTypes.string,
-  team: PropTypes.string,
+  me: PropTypes.any,
   users: PropTypes.array
 };
 

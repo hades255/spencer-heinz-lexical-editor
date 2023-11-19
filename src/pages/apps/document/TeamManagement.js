@@ -1,13 +1,17 @@
 import { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
-import { SaveOutlined, UserSwitchOutlined } from '@ant-design/icons';
+import { DeleteFilled, DeleteOutlined, SaveOutlined, UserSwitchOutlined } from '@ant-design/icons';
 import {
   Avatar,
   AvatarGroup,
   Box,
   Button,
+  ButtonGroup,
   Dialog,
+  DialogActions,
   DialogContent,
+  DialogContentText,
+  DialogTitle,
   Grid,
   IconButton,
   Stack,
@@ -20,6 +24,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import AddContributor from 'sections/apps/document/AddContributor1';
 import UserAvatar from 'sections/apps/user/UserAvatar';
 import { PopupTransition } from 'components/@extended/Transitions';
+import NAvatar from 'components/@extended/Avatar';
 import MainCard from 'components/MainCard';
 import { not } from 'utils/array';
 
@@ -129,6 +134,20 @@ export default TeamManagement;
 const Team = ({ team, exist, users, onClose, user, socket }) => {
   const [value, setValue] = useState(exist.map((item) => item.email));
   const [name, setName] = useState(team || '');
+  const [open, setOpen] = useState(false);
+
+  const handleClickOpen = useCallback(() => {
+    setOpen(true);
+  }, []);
+
+  const handleClose = useCallback(() => {
+    setOpen(false);
+  }, []);
+
+  const handleAccept = useCallback(() => {
+    setOpen(false);
+    socket.send(JSON.stringify({ type: 'remove-team', name, value: exist.map((item) => item._id) }));
+  }, [socket, team, exist]);
 
   const handleChange = useCallback(({ target: { value } }) => {
     setName(value);
@@ -151,38 +170,65 @@ const Team = ({ team, exist, users, onClose, user, socket }) => {
   }, [team, exist, value, name, onClose, socket, users]);
 
   return (
-    <DialogContent>
-      <Stack direction={'row'} justifyContent={'center'}>
-        <Typography variant="subtitle1">{user.team ? 'Team management' : 'Create your Team'}</Typography>
-      </Stack>
-      <MainCard sx={{ mt: 1, minHeight: '50vh' }}>
-        <Stack direction={'row'} justifyContent={'space-between'} sx={{ mb: 3 }}>
-          <TextField
-            id="standard-basic"
-            label="Type name of Team"
-            variant="standard"
-            sx={{ minWidth: 300, width: '50%' }}
-            value={name}
-            onChange={handleChange}
-            disabled={team ? true : false}
-          />
-          <Box>
-            <Button size="small" variant="outlined" color="primary" onClick={handleSave} endIcon={<SaveOutlined />}>
-              Save
-            </Button>
-          </Box>
+    <>
+      <DialogContent>
+        <Stack direction={'row'} justifyContent={'center'}>
+          <Typography variant="subtitle1">{user.team ? 'Team management' : 'Create your Team'}</Typography>
         </Stack>
-        <AddContributor
-          users={users}
-          value={value}
-          onChange={setValue}
-          exist={exist}
-          mine={exist.find((item) => item.leader)}
-          user={user}
-          team
-        />
-      </MainCard>
-    </DialogContent>
+        <MainCard sx={{ mt: 1, minHeight: '50vh' }}>
+          <Stack direction={'row'} justifyContent={'space-between'} sx={{ mb: 3 }}>
+            <TextField
+              id="standard-basic"
+              label="Type name of Team"
+              variant="standard"
+              sx={{ minWidth: 300, width: '50%' }}
+              value={name}
+              onChange={handleChange}
+              disabled={team ? true : false}
+            />
+            <Box>
+              <ButtonGroup variant="outlined">
+                {team && (
+                  <Button size="small" color="error" onClick={handleClickOpen} endIcon={<DeleteOutlined />}>
+                    Delete
+                  </Button>
+                )}
+                <Button size="small" color="primary" onClick={handleSave} endIcon={<SaveOutlined />}>
+                  Save
+                </Button>
+              </ButtonGroup>
+            </Box>
+          </Stack>
+          <AddContributor
+            users={users}
+            value={value}
+            onChange={setValue}
+            exist={exist}
+            mine={exist.find((item) => item.leader)}
+            user={user}
+            team
+          />
+        </MainCard>
+      </DialogContent>
+      <Dialog open={open} onClose={handleClose} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description">
+        <DialogTitle id="alert-dialog-title">
+          <Stack direction={'row'} justifyContent={'center'}>
+            <NAvatar color="error" sx={{ width: 72, height: 72, fontSize: '1.75rem' }}>
+              <DeleteFilled />
+            </NAvatar>
+          </Stack>
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">Are you sure to delete your team?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Disagree</Button>
+          <Button onClick={handleAccept} autoFocus>
+            Agree
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 

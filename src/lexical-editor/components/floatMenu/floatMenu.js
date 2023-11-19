@@ -108,7 +108,7 @@ const FloatMenu = ({ show, ...props }) => {
 
     if (isMouseInRect && (!mouseSelecting || props.isDropDownActive)) {
       if ((mouseToMenu || props.isDropDownActive) && pos?.x && pos?.y) {
-        return () => { };
+        return () => {};
       } else {
         clearTimeout(setPosTimeout);
         if (isUndefined(pos?.x) || isUndefined(pos?.y)) {
@@ -165,6 +165,7 @@ const FloatMenu = ({ show, ...props }) => {
           users={props.users}
           setDialogOpen={props.setDialogOpen}
           pos={pos}
+          currentUser={props.currentUser}
         />
       </Box>
     </>
@@ -181,6 +182,7 @@ FloatMenu.propTypes = {
   setAssignee: PropTypes.func,
   setTask: PropTypes.func,
   setDialogOpen: PropTypes.func,
+  currentUser: PropTypes.any
 };
 
 export default FloatMenu;
