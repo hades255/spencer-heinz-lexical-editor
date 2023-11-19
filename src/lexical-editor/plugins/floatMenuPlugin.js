@@ -16,6 +16,7 @@ import { getSelectedNode } from './toolbarPlugin';
 import { BlackoutNode, isBlackedOutNode } from 'lexical-editor/nodes/blackoutNode';
 import { mergeRegister } from '@lexical/utils';
 import { ACTION_REQUEST_USER } from 'lexical-editor/utils/constants';
+import { useSelector } from 'store';
 
 const ANCHOR_ELEMENT = document.body;
 
@@ -23,7 +24,18 @@ let setPosTimeout = 0;
 
 const LowPriority = 1;
 
-export const FloatMenuPlugin = ({ user, users }) => {
+export const FloatMenuPlugin = () => {
+  const allUsers = useSelector((state) => state.document.users);
+  const user = useSelector((state) => state.document.me);
+  const me = useSelector((state) => state.document.me);
+  const users = me
+    ? me.team
+      ? allUsers
+          .filter((item) => item.team === me.team || item.leader)
+          .sort((a, b) => (a.team > b.team ? 1 : a.team < b.team ? -1 : a.leader ? -1 : b.leader ? 1 : 0))
+      : allUsers
+    : [];
+
   const [show, setShow] = useState(false);
   const [isDropDownActive, setIsDropDownActive] = useState(false);
   const [isDialogOpen, setDialogOpen] = useState(false);

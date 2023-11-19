@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { useSelector } from 'store';
 
-const ActiveTeamPlugin = ({ user, activeTeam }) => {
+const ActiveTeamPlugin = () => {
+  const activeTeam = useSelector((state) => state.document.activeTeam);
+  const user = useSelector((state) => state.document.me);
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
@@ -16,8 +18,3 @@ const ActiveTeamPlugin = ({ user, activeTeam }) => {
 };
 
 export default ActiveTeamPlugin;
-
-ActiveTeamPlugin.propTypes = {
-  user: PropTypes.any,
-  activeTeam: PropTypes.any
-};

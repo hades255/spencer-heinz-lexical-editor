@@ -47,7 +47,7 @@ const excludedProperties = new Map();
 excludedProperties.set(CommentNode, new Set(['__suppressed', '__currentUser']));
 excludedProperties.set(LockNode, new Set(['__currentUser']));
 
-const LexicalEditor = ({ uniqueId, me, user, users, allUsers, activeTeam }) => {
+const LexicalEditor = ({ uniqueId, user }) => {
   const { historyState } = useEditorHistoryState();
 
   const [isLoading, setIsLoading] = useState(true);
@@ -64,6 +64,7 @@ const LexicalEditor = ({ uniqueId, me, user, users, allUsers, activeTeam }) => {
       permanentUserData.setUserMapping(doc, doc.clientID, user._id);
       yjsDocMap.set(id, doc);
       const serviceToken = window.localStorage.getItem('serviceToken');
+      console.log('connecting to Y server');
       const provider = new WebsocketProvider(process.env.REACT_APP_YSOCKET_URL || 'ws://localhost:8000/document/connect', id, doc, {
         params: { token: serviceToken }
       });
@@ -129,7 +130,7 @@ const LexicalEditor = ({ uniqueId, me, user, users, allUsers, activeTeam }) => {
           if (!isBlackedOutNode(_commentNode, user._id)) editor.dispatchCommand(TOUCH_COMMENT_COMMAND, nodeKey);
         }}
       />
-      <ToolbarPlugin user={user._id} me={me} users={users} allUsers={allUsers} active={activeTeam === me.team} />
+      <ToolbarPlugin user={user._id} />
       {!isLoading ? (
         <RichTextPlugin
           contentEditable={
@@ -157,23 +158,19 @@ const LexicalEditor = ({ uniqueId, me, user, users, allUsers, activeTeam }) => {
       <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
       {/* custom plugins */}
       <ActionsPlugin user={user._id} />
-      <CommentPlugin user={user._id} me={me} users={users} />
-      <FloatMenuPlugin user={me} users={users} />
-      <LockPlugin user={user._id} users={allUsers} />
-      <BlackoutPlugin user={user._id} users={allUsers} />
+      <CommentPlugin user={user._id} />
+      <FloatMenuPlugin />
+      <LockPlugin user={user._id} />
+      <BlackoutPlugin user={user._id} />
       <JumpPlugin />
-      <ActiveTeamPlugin user={me} activeTeam={activeTeam} />
+      <ActiveTeamPlugin />
     </LexicalComposer>
   );
 };
 
 LexicalEditor.propTypes = {
   uniqueId: PropTypes.string,
-  activeTeam: PropTypes.string,
-  user: PropTypes.object,
-  me: PropTypes.object,
-  users: PropTypes.array,
-  allUsers: PropTypes.array
+  user: PropTypes.object
 };
 
 function initialEditorState() {

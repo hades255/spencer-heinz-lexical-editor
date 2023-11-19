@@ -46,6 +46,7 @@ import { $isLockNode } from 'lexical-editor/nodes/lockNode';
 import { $isBlackoutNode, isBlackedOutNode } from 'lexical-editor/nodes/blackoutNode';
 import { ACTION_REQUEST_USER, COMMENT_TYPES } from 'lexical-editor/utils/constants';
 import { ReassignButton } from 'lexical-editor/components/comment/reassignButton';
+import { useSelector } from 'store';
 
 const EditorPriority = 1;
 export const SET_COMMENT_COMMAND = createCommand('SET_COMMENT_COMMAND');
@@ -62,7 +63,15 @@ export const updateComment = () => {
 
 let floatTimeOut = 0;
 
-export default function CommentPlugin({ user, me, users }) {
+export default function CommentPlugin({ user }) {
+  const allUsers = useSelector((state) => state.document.users);
+  const me = useSelector((state) => state.document.me);
+  const users = me?.team
+    ? allUsers
+        .filter((item) => item.team === me.team || item.leader)
+        .sort((a, b) => (a.team > b.team ? 1 : a.team < b.team ? -1 : a.leader ? -1 : b.leader ? 1 : 0))
+    : allUsers;
+
   const [editor] = useLexicalComposerContext();
   const [comments, setComments] = useState([]);
   const [isOnFab, setIsOnFab] = useState(false);

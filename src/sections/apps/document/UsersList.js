@@ -44,10 +44,14 @@ import { ThemeMode } from 'config';
 import AddContributorsFromContributor from 'pages/apps/document/AddContributorsFromContributor';
 import { PopupTransition } from 'components/@extended/Transitions';
 import TeamsManagement from 'pages/apps/document/TeamsManagement';
+import { useSelector } from 'store';
 
 // ==============================|| CHAT DRAWER ||============================== //
 
-function UsersList({ user, document, openDrawer, handleDrawerOpen, users, socket, activeTeam }) {
+function UsersList({ user, document, openDrawer, handleDrawerOpen, socket }) {
+  const users = useSelector((state) => state.document.users);
+  const activeTeam = useSelector((state) => state.document.activeTeam);
+
   const theme = useTheme();
   const [addContributorDlg, setAddContributorDlg] = useState(false);
   const [openManageTeamDlg, setOpenManageTeamDlg] = useState(false);
@@ -325,13 +329,11 @@ function UsersList({ user, document, openDrawer, handleDrawerOpen, users, socket
 }
 
 UsersList.propTypes = {
-  activeTeam: PropTypes.any,
   user: PropTypes.any,
   socket: PropTypes.any,
   document: PropTypes.any,
   handleDrawerOpen: PropTypes.func,
-  openDrawer: PropTypes.bool,
-  users: PropTypes.any
+  openDrawer: PropTypes.bool
 };
 
 export default UsersList;

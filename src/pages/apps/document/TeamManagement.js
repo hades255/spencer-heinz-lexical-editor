@@ -27,8 +27,12 @@ import { PopupTransition } from 'components/@extended/Transitions';
 import NAvatar from 'components/@extended/Avatar';
 import MainCard from 'components/MainCard';
 import { not } from 'utils/array';
+import { useSelector } from 'store';
 
-const TeamManagement = ({ user, allUsers, socket }) => {
+const TeamManagement = ({ socket }) => {
+  const allUsers = useSelector((state) => state.document.users);
+  const user = useSelector((state) => state.document.me);
+
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   const team = user.team;
@@ -147,7 +151,7 @@ const Team = ({ team, exist, users, onClose, user, socket }) => {
   const handleAccept = useCallback(() => {
     setOpen(false);
     socket.send(JSON.stringify({ type: 'remove-team', name, value: exist.map((item) => item._id) }));
-  }, [socket, team, exist]);
+  }, [socket, exist, name]);
 
   const handleChange = useCallback(({ target: { value } }) => {
     setName(value);
@@ -233,8 +237,6 @@ const Team = ({ team, exist, users, onClose, user, socket }) => {
 };
 
 TeamManagement.propTypes = {
-  user: PropTypes.any,
-  allUsers: PropTypes.any,
   socket: PropTypes.any
 };
 

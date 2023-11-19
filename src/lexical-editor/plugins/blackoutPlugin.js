@@ -12,11 +12,13 @@ import { $isCommentNode } from 'lexical-editor/nodes/commentNode';
 import { $isLockNode, isLockedNode } from 'lexical-editor/nodes/lockNode';
 import { openSnackbar } from 'store/reducers/snackbar';
 import { dispatch } from 'store';
+import { useSelector } from 'store';
 
 const EditorPriority = 1;
 export const BLACK_OUT_COMMAND = createCommand('BLACK_OUT_COMMAND');
 export const UNBLACK_OUT_COMMAND = createCommand('UNBLACK_OUT_COMMAND');
-export const BlackoutPlugin = ({ user, users }) => {
+export const BlackoutPlugin = ({ user }) => {
+  const users = useSelector((state) => state.document.users);
   const [editor] = useLexicalComposerContext();
   useEffect(() => {
     // set current user when initialized

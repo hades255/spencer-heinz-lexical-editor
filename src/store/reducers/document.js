@@ -10,6 +10,9 @@ const initialState = {
   lists: [],
   document: null,
   navList: [],
+  users: [],
+  me: null,
+  activeTeam: null,
   error: null
 };
 
@@ -21,6 +24,15 @@ const document = createSlice({
   reducers: {
     hasError(state, action) {
       state.error = action.payload.error;
+    },
+    setDocUsers(state, action) {
+      state.users = action.payload;
+    },
+    setDocMe(state, action) {
+      state.me = action.payload;
+    },
+    setDocActiveTeam(state, action) {
+      state.activeTeam = action.payload;
     },
 
     // get all invoice list
@@ -66,7 +78,17 @@ const document = createSlice({
 
 export default document.reducer;
 
-export const { getLists, hasError, getSingleList, createDocument, updateDocument, deleteDocument } = document.actions;
+export const {
+  getLists,
+  hasError,
+  getSingleList,
+  createDocument,
+  updateDocument,
+  deleteDocument,
+  setDocMe,
+  setDocUsers,
+  setDocActiveTeam
+} = document.actions;
 
 export function getDocumentLists() {
   return async () => {

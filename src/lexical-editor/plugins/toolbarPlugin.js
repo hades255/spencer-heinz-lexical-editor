@@ -12,6 +12,7 @@ import ToolbarLock from 'lexical-editor/components/ToolbarLock';
 import PropTypes from 'prop-types';
 import ToolbarBlackout from 'lexical-editor/components/ToolbarBlackout';
 import ToolbarJump from 'lexical-editor/components/ToolbarJump';
+import { useSelector } from 'store';
 
 export function getSelectedNode(selection) {
   const anchor = selection.anchor;
@@ -31,7 +32,18 @@ export function getSelectedNode(selection) {
 
 const LowPriority = 1;
 
-export default function ToolbarPlugin({ user, me, users, allUsers, active }) {
+export default function ToolbarPlugin({ user }) {
+  const allUsers = useSelector((state) => state.document.users);
+  const me = useSelector((state) => state.document.me);
+  const active = useSelector((state) => state.document.activeTeam) === me?.team;
+  const users = me
+    ? me.team
+      ? allUsers
+          .filter((item) => item.team === me.team || item.leader)
+          .sort((a, b) => (a.team > b.team ? 1 : a.team < b.team ? -1 : a.leader ? -1 : b.leader ? 1 : 0))
+      : allUsers
+    : [];
+
   const [editor] = useLexicalComposerContext();
   const toolbarRef = useRef(null);
   const [isLink, setIsLink] = useState(false);
@@ -174,11 +186,7 @@ export default function ToolbarPlugin({ user, me, users, allUsers, active }) {
 }
 
 ToolbarPlugin.propTypes = {
-  user: PropTypes.string,
-  active: PropTypes.bool,
-  me: PropTypes.any,
-  users: PropTypes.array,
-  allUsers: PropTypes.array
+  user: PropTypes.string
 };
 
 export const getUserIds = (userData) => {

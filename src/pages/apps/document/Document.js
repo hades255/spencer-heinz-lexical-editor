@@ -12,6 +12,8 @@ import LexicalEditor from 'lexical-editor';
 import SimpleBar from 'simplebar-react';
 import UsersList from 'sections/apps/document/UsersList';
 import TeamManagement from './TeamManagement';
+import { dispatch } from 'store';
+import { setDocActiveTeam, setDocMe, setDocUsers } from 'store/reducers/document';
 
 const drawerWidth = 320;
 
@@ -42,10 +44,11 @@ const Document = ({ user, document }) => {
     setOpenDrawer((prevState) => !prevState);
   }, []);
 
-  const [allUsers, setAllUsers] = useState([]);
-  const [me, setMe] = useState(null);
-  const [activeTeam, setActiveTeam] = useState('');
+  // const [allUsers, setAllUsers] = useState([]);
+  // const [me, setMe] = useState(null);
+  // const [activeTeam, setActiveTeam] = useState('');
   const [socket, setSocket] = useState(null);
+  const [load, setLoad] = useState(false);
 
   useEffect(() => {
     const ws = new WebSocket(process.env.REACT_APP_DEFAULT_WEBSOCKET_URL + 'userrooms/' + document._id + '?userId=' + user._id);
@@ -58,9 +61,18 @@ const Document = ({ user, document }) => {
       const data = JSON.parse(event.data);
       switch (data.type) {
         case 'userslist':
-          setMe(data.users.find((item) => item._id === user._id));
-          setActiveTeam(data.active);
-          setAllUsers(data.users);
+          dispatch(setDocUsers(data.users));
+          dispatch(setDocMe(data.users.find((item) => item._id === user._id)));
+          dispatch(setDocActiveTeam(data.active));
+          // setMe(data.users.find((item) => item._id === user._id));
+          // setActiveTeam(data.active);
+
+          // setAllUsers(data.users);
+          if (!load) {
+            setTimeout(() => {
+              setLoad(true);
+            }, 300);
+          }
           break;
         default:
           break;
@@ -76,20 +88,12 @@ const Document = ({ user, document }) => {
       console.log('closing');
       if (ws) ws.close();
     };
-  }, [user, document]);
+  }, [user, document, load]);
 
   return (
     <>
       <Box sx={{ display: 'flex' }}>
-        <UsersList
-          user={user}
-          users={allUsers}
-          document={document}
-          handleDrawerOpen={handleDrawerOpen}
-          openDrawer={openDrawer}
-          socket={socket}
-          activeTeam={activeTeam}
-        />
+        <UsersList user={user} document={document} handleDrawerOpen={handleDrawerOpen} openDrawer={openDrawer} socket={socket} />
         <Main theme={theme} open={openDrawer}>
           <Grid container>
             <Grid
@@ -142,7 +146,7 @@ const Document = ({ user, document }) => {
                           <Typography variant="h4">{document?.name}</Typography>
                         </Stack>
                       </Grid>
-                      {me && <TeamManagement allUsers={allUsers} user={me} socket={socket} />}
+                      {load && <TeamManagement socket={socket} />}
                     </Grid>
                   </Grid>
                 </Grid>
@@ -182,22 +186,9 @@ const Document = ({ user, document }) => {
                             minHeight: 420
                           }}
                         >
-                          {me && (
+                          {load && (
                             <EditorHistoryStateContext>
-                              <LexicalEditor
-                                uniqueId={document._id}
-                                user={user}
-                                me={me}
-                                users={
-                                  me.team
-                                    ? allUsers
-                                        .filter((item) => item.team === me.team || item.leader)
-                                        .sort((a, b) => (a.team > b.team ? 1 : a.team < b.team ? -1 : a.leader ? -1 : b.leader ? 1 : 0))
-                                    : allUsers
-                                }
-                                allUsers={allUsers}
-                                activeTeam={activeTeam}
-                              />
+                              <LexicalEditor uniqueId={document._id} user={user} />
                             </EditorHistoryStateContext>
                           )}
                         </SimpleBar>
