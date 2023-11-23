@@ -13,12 +13,11 @@ import IconButton from 'components/@extended/IconButton';
 import { PopupTransition } from 'components/@extended/Transitions';
 
 // assets
-import { CloseOutlined, EyeTwoTone, EditTwoTone, MessageOutlined, DeleteTwoTone } from '@ant-design/icons';
+import { CloseOutlined, EyeTwoTone, EditTwoTone, DeleteTwoTone } from '@ant-design/icons';
 import { DOCUMENT_STATUS } from 'Plugins/constants';
 import { documentDelete, getDocumentLists } from 'store/reducers/document';
 import { useSelector } from 'react-redux';
 import { dispatch } from 'store';
-import { useNavigate } from 'react-router';
 import DocumentTable from '../document/document-table';
 import DocumentCell from 'components/documents/DocumentCell';
 import CustomCell from 'components/customers/CustomCell';
@@ -55,7 +54,6 @@ StatusCell.propTypes = {
 };
 
 const ActionCell = ({ row, setDocument, handleClose, handleDeleteDocument, theme }) => {
-  const navigate = useNavigate();
   const collapseIcon = row.isExpanded ? (
     <CloseOutlined style={{ color: theme.palette.error.main }} />
   ) : (
@@ -79,7 +77,7 @@ const ActionCell = ({ row, setDocument, handleClose, handleDeleteDocument, theme
           color="primary"
           onClick={(e) => {
             e.stopPropagation();
-            setDocument(row.values);
+            setDocument(row.original);
             setTimeout(() => {
               handleClose();
             }, 300);

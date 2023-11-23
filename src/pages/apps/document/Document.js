@@ -44,9 +44,6 @@ const Document = ({ user, document }) => {
     setOpenDrawer((prevState) => !prevState);
   }, []);
 
-  // const [allUsers, setAllUsers] = useState([]);
-  // const [me, setMe] = useState(null);
-  // const [activeTeam, setActiveTeam] = useState('');
   const [socket, setSocket] = useState(null);
   const [load, setLoad] = useState(false);
 
@@ -64,15 +61,9 @@ const Document = ({ user, document }) => {
           dispatch(setDocUsers(data.users));
           dispatch(setDocMe(data.users.find((item) => item._id === user._id)));
           dispatch(setDocActiveTeam(data.active));
-          // setMe(data.users.find((item) => item._id === user._id));
-          // setActiveTeam(data.active);
-
-          // setAllUsers(data.users);
-          if (!load) {
-            setTimeout(() => {
-              setLoad(true);
-            }, 300);
-          }
+          setTimeout(() => {
+            setLoad(true);
+          }, 300);
           break;
         default:
           break;
@@ -88,7 +79,7 @@ const Document = ({ user, document }) => {
       console.log('closing');
       if (ws) ws.close();
     };
-  }, [user, document, load]);
+  }, [user, document]);
 
   return (
     <>

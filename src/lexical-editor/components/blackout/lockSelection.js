@@ -1,13 +1,13 @@
 import * as React from 'react';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { getUserIds } from 'lexical-editor/plugins/toolbarPlugin';
 import PropTypes from 'prop-types';
+import { ListItemButton } from '@mui/material';
 
 export function not(a, b) {
   return a.filter((value) => b.indexOf(value) === -1).sort();
@@ -19,6 +19,7 @@ export function intersection(a, b) {
 
 export default function UserLockList({ lockedUsers, setLockedUsers, unlockedUsers, setUnlockedUsers, currentUser, users }) {
   const [checked, setChecked] = React.useState([]);
+  const team = users.find((item) => item._id === currentUser)?.team;
 
   const leftChecked = intersection(checked, lockedUsers);
   const rightChecked = intersection(checked, unlockedUsers);
@@ -68,31 +69,22 @@ export default function UserLockList({ lockedUsers, setLockedUsers, unlockedUser
         {locked ? `The following users are BLACKED and can't view the text.` : `The following users are UNBLACKED and can view the text.`}
       </Typography>
       <List dense component="div" role="list">
-        {not(items, [currentUser]).map((value, index) => {
-          const labelId = `transfer-list-item-${value}-label`;
+        {users
+          .filter((item) => not(items, [currentUser]).includes(item._id))
+          .map((value, index) => {
+            const labelId = `transfer-list-item-${value._id}-label`;
 
-          return (
-            <ListItem
-              key={`lock-user-${index}`}
-              role="listitem"
-              button
-              onClick={handleToggle(value)}
-              sx={{ backgroundColor: checked.indexOf(value) !== -1 ? `rgba(30,169,169, 0.2)` : `white` }}
-            >
-              {/* <ListItemIcon>
-                <Checkbox
-                  checked={checked.indexOf(value) !== -1}
-                  tabIndex={-1}
-                  disableRipple
-                  inputProps={{
-                    'aria-labelledby': labelId
-                  }}
-                />
-              </ListItemIcon> */}
-              <ListItemText id={labelId} primary={`${users.find((user) => user._id === value)?.name}`} />
-            </ListItem>
-          );
-        })}
+            return (
+              <ListItemButton
+                key={`lock-user-${index}`}
+                role="listitem"
+                onClick={handleToggle(value._id)}
+                sx={{ backgroundColor: checked.indexOf(value._id) !== -1 ? `rgba(30,169,169, 0.2)` : `white` }}
+              >
+                <ListItemText id={labelId} primary={`${value.name} ${value?.team !== team ? ` (TL ${value?.team})` : ''}`} />
+              </ListItemButton>
+            );
+          })}
       </List>
     </Paper>
   );

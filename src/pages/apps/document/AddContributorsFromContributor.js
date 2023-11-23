@@ -17,8 +17,9 @@ import { openSnackbar } from 'store/reducers/snackbar';
 import axiosServices from 'utils/axios';
 import { CloseCircleOutlined, SaveOutlined } from '@ant-design/icons';
 
-export default function AddContributorsFromContributor({ open: openThis = false, onClose, user, exist, creator, uniqueId }) {
+export default function AddContributorsFromContributor({ open: openThis = false, team, onClose, user, exist, creator, uniqueId }) {
   const users = useSelector((state) => state.user.lists);
+  const me = useSelector((state) => state.document.me);
   const [value, setValue] = useState([]);
 
   useEffect(() => {
@@ -55,7 +56,8 @@ export default function AddContributorsFromContributor({ open: openThis = false,
         }
         if (changes.B.length !== 0) {
           await axiosServices.post('/document/' + uniqueId + '/invite', {
-            invites: changes.B
+            invites: changes.B,
+            team: me.team || team
           });
           dispatch(
             openSnackbar({
@@ -84,7 +86,7 @@ export default function AddContributorsFromContributor({ open: openThis = false,
         });
       }
     })();
-  }, [uniqueId, value, exist, onClose, users]);
+  }, [uniqueId, value, exist, onClose, users, me, team]);
 
   useEffect(() => {
     dispatch(getUserLists());
@@ -157,5 +159,6 @@ AddContributorsFromContributor.propTypes = {
   exist: PropTypes.any,
   onClose: PropTypes.any,
   creator: PropTypes.object,
-  uniqueId: PropTypes.any
+  uniqueId: PropTypes.any,
+  team: PropTypes.any
 };

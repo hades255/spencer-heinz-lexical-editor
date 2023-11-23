@@ -28,6 +28,8 @@ import NAvatar from 'components/@extended/Avatar';
 import MainCard from 'components/MainCard';
 import { not } from 'utils/array';
 import { useSelector } from 'store';
+import { dispatch } from 'store';
+import { openSnackbar } from 'store/reducers/snackbar';
 
 const TeamManagement = ({ socket }) => {
   const allUsers = useSelector((state) => state.document.users);
@@ -35,11 +37,12 @@ const TeamManagement = ({ socket }) => {
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
-  const team = user.team;
+  const team = user?.team;
   let members = [];
   if (team) {
     members = allUsers.filter((item) => item.team === user.team);
   }
+  console.log(members);
   const [open, setOpen] = useState(false);
 
   return (
@@ -150,7 +153,33 @@ const Team = ({ team, exist, users, onClose, user, socket }) => {
 
   const handleAccept = useCallback(() => {
     setOpen(false);
-    socket.send(JSON.stringify({ type: 'remove-team', name, value: exist.map((item) => item._id) }));
+    try {
+      socket.send(JSON.stringify({ type: 'remove-team', name, value: exist.map((item) => item._id) }));
+      dispatch(
+        openSnackbar({
+          open: true,
+          message: `Set active team successfully.`,
+          variant: 'alert',
+          alert: {
+            color: 'success'
+          },
+          close: true
+        })
+      );
+    } catch (error) {
+      console.log(error);
+      dispatch(
+        openSnackbar({
+          open: true,
+          message: `Error.`,
+          variant: 'alert',
+          alert: {
+            color: 'error'
+          },
+          close: true
+        })
+      );
+    }
   }, [socket, exist, name]);
 
   const handleChange = useCallback(({ target: { value } }) => {
@@ -160,14 +189,40 @@ const Team = ({ team, exist, users, onClose, user, socket }) => {
   const handleSave = useCallback(() => {
     if (name && value.length) {
       const v = users.filter((item) => value.includes(item.email)).map((item) => item._id);
-      if (team) {
-        const old = exist.map((item) => item._id);
-        const a = not(v, old);
-        const r = not(old, v);
-        const _v = not(v, a);
-        socket.send(JSON.stringify({ type: 'edit-team', name, team: name !== team, a, r, value: _v }));
-      } else {
-        socket.send(JSON.stringify({ type: 'new-team', name, value: v }));
+      try {
+        if (team) {
+          const old = exist.map((item) => item._id);
+          const a = not(v, old);
+          const r = not(old, v);
+          const _v = not(v, a);
+          socket.send(JSON.stringify({ type: 'edit-team', name, team: name !== team, a, r, value: _v }));
+        } else {
+          socket.send(JSON.stringify({ type: 'new-team', name, value: v }));
+        }
+        dispatch(
+          openSnackbar({
+            open: true,
+            message: `Set team successfully.`,
+            variant: 'alert',
+            alert: {
+              color: 'success'
+            },
+            close: true
+          })
+        );
+      } catch (error) {
+        console.log(error);
+        dispatch(
+          openSnackbar({
+            open: true,
+            message: `Error.`,
+            variant: 'alert',
+            alert: {
+              color: 'error'
+            },
+            close: true
+          })
+        );
       }
       onClose(false);
     }

@@ -125,7 +125,8 @@ const EditDocument = ({ user, onCancel, document }) => {
                         status,
                         mobilePhone,
                         workPhone,
-                        reply: 'pending'
+                        reply: 'pending',
+                        team: document.team
                       }))
                   ],
                   a: users

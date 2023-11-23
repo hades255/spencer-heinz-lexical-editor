@@ -6,7 +6,7 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import { DialogContent, FormHelperText, Stack } from '@mui/material';
+import { DialogContent, FormHelperText, Stack, TextField } from '@mui/material';
 
 import { postDocumentCreate } from 'store/reducers/document';
 
@@ -25,7 +25,7 @@ import AddContributor from 'sections/apps/document/AddContributor1';
 import MainCard from 'components/MainCard';
 import { StepWrapper } from 'sections/apps/document/AddDocument';
 
-const steps = ['Title', 'Descriptions', 'Contributors'];
+const steps = ['Title', 'Descriptions', 'Contributors', 'Team'];
 
 const DocumentCreate = () => {
   const navigate = useNavigate();
@@ -59,7 +59,7 @@ const DocumentCreate = () => {
   useEffect(() => {
     if (user) {
       setContributors([user.email]);
-      firstinput.current.focus();
+      if (firstinput) firstinput.current.focus();
     }
   }, [user]);
 
@@ -106,11 +106,13 @@ const DocumentCreate = () => {
           <Formik
             initialValues={{
               name: '',
-              description: ``
+              description: ``,
+              team: ''
             }}
             validationSchema={Yup.object().shape({
               name: Yup.string().max(255).required('Document title is required'),
-              description: Yup.string().max(1024).required('Document description is required')
+              description: Yup.string().max(1024).required('Document description is required'),
+              team: Yup.string().max(1024).required('Team description is required')
             })}
             onSubmit={async (values, { setStatus, setSubmitting }) => {
               dispatch(
@@ -118,7 +120,7 @@ const DocumentCreate = () => {
                   {
                     ...values,
                     invites: users
-                      .filter((item) => contributors.includes(item.email))
+                      .filter((item) => item.email !== user.email && contributors.includes(item.email))
                       .map(({ _id, name, email, avatar, status, role, mobilePhone, workPhone }) => ({
                         _id,
                         name,
@@ -127,7 +129,9 @@ const DocumentCreate = () => {
                         status,
                         role,
                         mobilePhone,
-                        workPhone
+                        workPhone,
+                        team: values.team,
+                        reply: 'pending'
                       }))
                   },
                   navigate
@@ -228,6 +232,42 @@ const DocumentCreate = () => {
                         user={user}
                         exist={[user]}
                       />
+                    )}
+                    {activeStep === 3 && (
+                      <>
+                        <Stack>
+                          <TextField
+                            id="name-team"
+                            value={values.team}
+                            name="team"
+                            onBlur={handleBlur}
+                            onChange={handleChange}
+                            placeholder="Name of Team"
+                            label="Type name of Team"
+                            variant="standard"
+                            sx={{ minWidth: 300, width: '50%' }}
+                          />
+                          {touched.team && errors.team && (
+                            <FormHelperText error id="helper-text-team-doc">
+                              {errors.team}
+                            </FormHelperText>
+                          )}
+                        </Stack>
+                        <Stack spacing={0.3} sx={{ mt: 2 }}>
+                          <Stack direction={'row'} alignItems={'center'} spacing={0.3}>
+                            <Typography sx={{ width: 100, flexShrink: 0 }}>Team Leader</Typography>
+                            <CustomCell user={user} />
+                          </Stack>
+                          <Stack direction={'row'} alignItems={'center'} spacing={0.3}>
+                            <Typography sx={{ width: 100, flexShrink: 0 }}>Members</Typography>
+                            {users
+                              .filter((item) => item.email !== user.email && contributors.includes(item.email))
+                              .map((item, key) => (
+                                <CustomCell key={key} user={item} />
+                              ))}
+                          </Stack>
+                        </Stack>
+                      </>
                     )}
                   </StepWrapper>
                 )}

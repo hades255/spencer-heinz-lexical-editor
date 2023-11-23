@@ -297,6 +297,7 @@ function UsersList({ user, document, openDrawer, handleDrawerOpen, socket }) {
         exist={users}
         creator={document.creator}
         uniqueId={document._id}
+        team={document.team}
       />
       <Dialog
         TransitionComponent={PopupTransition}

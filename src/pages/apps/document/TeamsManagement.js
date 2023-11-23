@@ -10,6 +10,8 @@ import { MobileOutlined, PhoneOutlined } from '@ant-design/icons';
 import { PatternFormat } from 'react-number-format';
 import CustomCell from 'components/customers/CustomCell';
 import { StatusCell } from '../customer/list';
+import { dispatch } from 'store';
+import { openSnackbar } from 'store/reducers/snackbar';
 
 const TeamsManagement = ({ users, socket, activeTeam }) => {
   let _teams = {};
@@ -84,7 +86,33 @@ const TeamItem = ({ team, socket, activeTeam, expanded, handleChange }) => {
     (e) => {
       e.preventDefault();
       e.stopPropagation();
-      socket.send(JSON.stringify({ type: 'set-active', team: team.name }));
+      try {
+        socket.send(JSON.stringify({ type: 'set-active', team: team.name }));
+        dispatch(
+          openSnackbar({
+            open: true,
+            message: `Set active team successfully.`,
+            variant: 'alert',
+            alert: {
+              color: 'success'
+            },
+            close: true
+          })
+        );
+      } catch (error) {
+        console.log(error);
+        dispatch(
+          openSnackbar({
+            open: true,
+            message: `Error.`,
+            variant: 'alert',
+            alert: {
+              color: 'error'
+            },
+            close: true
+          })
+        );
+      }
     },
     [socket, team]
   );
@@ -141,7 +169,7 @@ TeamItem.propTypes = {
   handleChange: PropTypes.any
 };
 
-const UserItem = ({ user }) => {
+export const UserItem = ({ user }) => {
   return (
     <Stack flexGrow={'inherit'} direction={'row'} alignItems={'center'} spacing={0.3} width={'100%'} flexWrap={'wrap'}>
       <Box sx={{ width: '30%', minWidth: 180 }}>
