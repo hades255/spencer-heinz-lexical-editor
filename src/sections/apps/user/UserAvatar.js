@@ -16,7 +16,7 @@ const avatarImage = require.context('assets/images/users', true);
 const UserAvatar = ({ user }) => (
   <Badge
     overlap="circular"
-    badgeContent={<AvatarStatus status={user.online_status} />}
+    badgeContent={<AvatarStatus status={user.online_status || 'none'} />}
     anchorOrigin={{
       vertical: 'top',
       horizontal: 'right'

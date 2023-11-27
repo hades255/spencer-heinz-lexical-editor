@@ -1,300 +1,522 @@
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import React, { useState } from 'react';
-
-// material-ui
-import { useTheme, styled } from '@mui/material/styles';
-import { autocompleteClasses, Autocomplete, Box, ButtonBase, ClickAwayListener, InputBase, Popper, Stack, Typography } from '@mui/material';
-import { createFilterOptions } from '@mui/material/Autocomplete';
-// project import
-import MainCard from 'components/MainCard';
-import { ThemeMode } from 'config';
-
-// assets
-import { CloseOutlined, CheckOutlined } from '@ant-design/icons';
+import Grid from '@mui/material/Grid';
+import List from '@mui/material/List';
+import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import Checkbox from '@mui/material/Checkbox';
+import Button from '@mui/material/Button';
+import Divider from '@mui/material/Divider';
 import CustomCell from 'components/customers/CustomCell';
-import BackgroundLetterAvatar from 'components/@extended/BackgroundLetterAvatar';
-import AddNewInviteDlg from './AddNewInviteDlg';
+import { Box, Chip, IconButton, Stack, TextField } from '@mui/material';
+import { StatusCell } from 'pages/apps/customer/list';
+import { useAsyncDebounce } from 'react-table';
+import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import AddNewInviteConfirmDlg from './AddNewInviteConfirmDlg';
+import AddNewInviteDlg from './AddNewInviteDlg';
+import { intersection, not, union } from 'utils/array';
+import { StarFilled } from '@ant-design/icons';
+import { StarOutline } from '@mui/icons-material';
+import axiosServices from 'utils/axios';
 const filter = createFilterOptions();
 
-const StyledAutocompletePopper = styled('div')(({ theme }) => ({
-  [`& .${autocompleteClasses.paper}`]: {
-    boxShadow: 'none',
-    margin: 0,
-    color: 'inherit',
-    fontSize: 13
-  },
-  [`& .${autocompleteClasses.listbox}`]: {
-    backgroundColor: theme.palette.mode === ThemeMode.DARK ? '#1c2128' : '#fff',
-    padding: 0,
-    [`& .${autocompleteClasses.option}`]: {
-      minHeight: 'auto',
-      alignItems: 'flex-start',
-      padding: 8,
-      borderBottom: `1px solid  ${theme.palette.mode === ThemeMode.DARK ? '#30363d' : '#eaecef'}`,
-      '&[aria-selected="true"]': {
-        backgroundColor: 'transparent'
-      },
-      '&[data-focus="true"], &[data-focus="true"][aria-selected="true"]': {
-        backgroundColor: theme.palette.action.hover
-      }
-    }
-  },
-  [`&.${autocompleteClasses.popperDisablePortal}`]: {
-    position: 'relative'
+export const ReplyCell = ({ value }) => {
+  switch (value) {
+    case 'pending':
+      return <Chip color="info" label="Pending" size="small" variant="light" sx={{ p: 0, m: 0, fontSize: 11 }} />;
+    case 'accept':
+      return <Chip color="success" label="Accepted" size="small" variant="light" sx={{ p: 0, m: 0, fontSize: 11 }} />;
+    case 'reject':
+      return <Chip color="warning" label="Rejected" size="small" variant="light" sx={{ p: 0, m: 0, fontSize: 11 }} />;
+    case 'You':
+      return <Chip color="primary" label="You" size="small" variant="light" sx={{ p: 0, m: 0, fontSize: 11 }} />;
+    case 'Creator':
+      return <Chip color="error" label="Creator" size="small" variant="light" sx={{ p: 0, m: 0, fontSize: 11 }} />;
+    case 'Creator/You':
+      return <Chip color="error" label="Crea/You" size="small" variant="light" sx={{ p: 0, m: 0, fontSize: 11 }} />;
+    default:
+      return <Chip color="info" label="Pending" size="small" variant="light" sx={{ p: 0, m: 0, fontSize: 11 }} />;
   }
-}));
-
-function PopperComponent(props) {
-  const { disablePortal, anchorEl, ...other } = props;
-  return <StyledAutocompletePopper disableportal={disablePortal.toString()} anchorel={anchorEl.toString()} {...other} />;
-}
-
-PopperComponent.propTypes = {
-  disablePortal: PropTypes.bool,
-  anchorEl: PropTypes.any
 };
 
-const StyledPopper = styled(Popper)(({ theme }) => ({
-  boxShadow: `0 8px 24px ${theme.palette.mode === ThemeMode.DARK ? 'rgb(1, 4, 9)' : 'rgba(149, 157, 165, 0.2)'}`,
-  borderRadius: 6,
-  width: 300,
-  zIndex: theme.zIndex.modal,
-  fontSize: 13,
-  color: theme.palette.mode === ThemeMode.DARK ? '#c9d1d9' : '#24292e',
-  backgroundColor: theme.palette.mode === ThemeMode.DARK ? '#1c2128' : '#fff'
-}));
+ReplyCell.propTypes = {
+  value: PropTypes.string
+};
 
-const StyledInput = styled(InputBase)(({ theme }) => ({
-  padding: 10,
-  width: '100%',
-  borderBottom: `1px solid ${theme.palette.divider}`,
-  '& input': {
-    borderRadius: 4,
-    backgroundColor: theme.palette.background.paper,
-    padding: 8,
-    transition: theme.transitions.create(['border-color', 'box-shadow']),
-    border: `1px solid ${theme.palette.primary.main}`,
-    fontSize: 14,
-    '&:focus-visible': {
-      boxShadow: theme.customShadows.primary,
-      borderColor: theme.palette.primary.main
-    }
-  }
-}));
+const ListCell = ({ user, dbClick, dir, reply, favourites, setFavourites }) => {
+  const [show, setShow] = useState(false);
 
-const Button = styled(ButtonBase)(({ theme }) => ({
-  fontSize: 13,
-  width: '100%',
-  textAlign: 'left',
-  marginBottom: 8,
-  color: theme.palette.text.primary,
-  fontWeight: 600,
-  '&:hover': {
-    color: theme.palette.primary.main
-  },
-  '&:focus-visible': {
-    borderRadius: 2,
-    outline: `2px solid ${theme.palette.secondary.dark}`,
-    outlineOffset: 2
-  },
-  '& span': {
-    width: '100%'
-  },
-  '& svg': {
-    width: 16,
-    height: 16
-  }
-}));
+  const handleMouseEnter = useCallback(() => {
+    setShow(true);
+  }, []);
 
-// From https://github.com/abdonrd/github-users
+  const handleMouseLeave = useCallback(() => {
+    setShow(false);
+  }, []);
 
-// ==============================|| AUTOCOMPLETE - GITHUB ||============================== //
+  const handleClickStar = useCallback(
+    (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      setFavourites(user.email, !favourites.includes(user.email));
+    },
+    [setFavourites, favourites, user]
+  );
 
-export default function AddContributor({ users, value, onChange }) {
-  const theme = useTheme();
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [pendingValue, setPendingValue] = useState([]);
-  const [dialogValue, setDialogValue] = useState('');
+  const handleDbClick = useCallback(() => {
+    dbClick(user.email, dir);
+  }, [dbClick, user, dir]);
+
+  return user ? (
+    <Stack
+      direction={'row'}
+      justifyContent={'space-between'}
+      onDoubleClick={handleDbClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <CustomCell user={user} />
+      <Stack>
+        <StatusCell value={user.status} />
+        {!dir && <ReplyCell value={reply || user.reply} />}
+      </Stack>
+      {!reply && (
+        <Box
+          sx={{
+            position: 'absolute',
+            right: '20px',
+            top: '10px',
+            visibility: show || favourites.includes(user.email) ? 'visible' : 'hidden',
+            width: 20,
+            height: 20,
+            borderRadius: 10,
+            background: favourites.includes(user.email) ? 'white' : '#1677FF'
+          }}
+          onClick={handleClickStar}
+        >
+          {favourites.includes(user.email) ? (
+            <StarFilled style={{ fontSize: 20, color: 'gold' }} />
+          ) : (
+            <StarOutline style={{ fontSize: 20, color: 'white' }} />
+          )}
+        </Box>
+      )}
+    </Stack>
+  ) : (
+    <></>
+  );
+};
+
+ListCell.propTypes = {
+  user: PropTypes.object,
+  dbClick: PropTypes.func,
+  setFavourites: PropTypes.func,
+  dir: PropTypes.bool,
+  favourites: PropTypes.array,
+  reply: PropTypes.string
+};
+
+export default function AddContributor({ users, value, onChange, exist = [], mine = null, user, team = false }) {
+  const [checked, setChecked] = useState([]);
+  const [searchVal, setSearchVal] = useState('');
+  const [search, setSearch] = useState('');
   const [openDlg, toggleOpenDlg] = useState(false);
   const [openCDlg, toggleOpenCDlg] = useState(false);
+  const inputRef = useRef(null);
+  const [showStars, setShowStars] = useState(false);
+  const [favourites, setFavourites] = useState([]);
 
-  const handleClick = (event) => {
-    setPendingValue(value);
-    setAnchorEl(event.currentTarget);
+  const getFavouriteUsers = useCallback(() => {
+    (async () => {
+      try {
+        const res = await axiosServices.get('/user/favourite');
+        setFavourites(res.data.data);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, []);
+
+  const setFavouriteUser = useCallback(
+    (email, flag) => {
+      (async () => {
+        try {
+          const res = await axiosServices.put('/user/favourite', { email, flag });
+          const { email: _email, flag: _flag } = res.data.data;
+          const f = favourites.filter((item) => item !== _email);
+          setFavourites(_flag ? [...f, _email] : f);
+        } catch (error) {
+          console.log(error);
+        }
+      })();
+    },
+    [favourites]
+  );
+
+  useEffect(() => {
+    getFavouriteUsers();
+  }, [getFavouriteUsers]);
+
+  const leftChecked = intersection(
+    checked,
+    users.filter((item) => !value.includes(item.email)).map((item) => item.email)
+  );
+  const rightChecked = intersection(checked, value);
+
+  const handleToggle = useCallback(
+    (item) => () => {
+      const currentIndex = checked.indexOf(item);
+      const newChecked = [...checked];
+
+      if (currentIndex === -1) {
+        newChecked.push(item);
+      } else {
+        newChecked.splice(currentIndex, 1);
+      }
+
+      setChecked(newChecked);
+    },
+    [checked]
+  );
+
+  const numberOfChecked = useCallback((items) => intersection(checked, items).length, [checked]);
+
+  const handleToggleAll = useCallback(
+    (items) => () => {
+      if (numberOfChecked(items) === items.length) {
+        setChecked(not(checked, items));
+      } else {
+        setChecked(union(checked, items));
+      }
+    },
+    [checked, numberOfChecked]
+  );
+
+  const handleCheckedRight = () => {
+    onChange(union(value, leftChecked));
+    setChecked(not(checked, leftChecked));
   };
 
-  const handleCloseCDlg = (res = false) => {
+  const handleCheckedLeft = () => {
+    onChange(not(value, rightChecked));
+    setChecked(not(checked, rightChecked));
+  };
+
+  const handleDbClick = useCallback(
+    (email, dir = true) => {
+      if (dir) {
+        onChange(union(value, [email]));
+      } else {
+        onChange(not(value, [email]));
+      }
+      setChecked(not(checked, [email]));
+    },
+    [value, checked, onChange]
+  );
+
+  const onSearch = useAsyncDebounce((value) => {
+    setSearch(value.toLowerCase());
+  }, 200);
+
+  const handleCloseCDlg = useCallback((res = false) => {
     toggleOpenCDlg(false);
     toggleOpenDlg(res);
-  };
+  }, []);
 
-  const handleCloseDlg = (email = '') => {
-    toggleOpenDlg(false);
-    if (email) onChange([...value, email]);
-    setDialogValue('');
-  };
+  const handleCloseDlg = useCallback(
+    (email = '') => {
+      toggleOpenDlg(false);
+      if (email) onChange([...value, email]);
+      setSearchVal('');
+    },
+    [onChange, value]
+  );
 
-  const handleClose = () => {
-    onChange(pendingValue);
-    if (anchorEl) {
-      anchorEl.focus();
-    }
-    setAnchorEl(null);
-  };
+  const handleSetFavourite = useCallback(
+    (email, flag) => {
+      setFavouriteUser(email, flag);
+    },
+    [setFavouriteUser]
+  );
 
-  const open = Boolean(anchorEl);
-  const id = open ? 'select-contributors' : undefined;
+  const handleShowStars = useCallback(() => {
+    setShowStars(!showStars);
+  }, [showStars]);
 
-  return (
-    <MainCard border={false}>
-      <Box>
-        <Stack direction={'row'} sx={{ mb: '10px' }}>
-          <Stack spacing={1.5} alignItems="center">
-            <Button disableRipple aria-describedby={id} onClick={handleClick}>
-              <Stack direction="row" spacing={1.5} alignItems="center">
-                <BackgroundLetterAvatar name={'+'} />
-                <Stack spacing={0}>
-                  <Typography variant="subtitle1">Add Contributors</Typography>
-                </Stack>
-              </Stack>
-            </Button>
-          </Stack>
-        </Stack>
-        <Stack direction={'row'} flexWrap="wrap">
-          {value.map((option, index) => (
-            <CustomCell status key={index} user={users.find((item) => item.email === option)} />
-          ))}
-        </Stack>
-      </Box>
+  const customList = useCallback(
+    (title, items) => {
+      const ids = items.filter((item) => user.email !== item.email && (mine ? mine.email !== item.email : true)).map((item) => item.email);
+      return (
+        <Card>
+          <CardHeader
+            sx={{ px: 2, py: 1 }}
+            avatar={
+              <Checkbox
+                onClick={handleToggleAll(ids)}
+                checked={numberOfChecked(ids) === ids.length && ids.length !== 0}
+                indeterminate={numberOfChecked(ids) !== ids.length && numberOfChecked(ids) !== 0}
+                disabled={ids.length === 0}
+                inputProps={{
+                  'aria-label': 'all items selected'
+                }}
+              />
+            }
+            title={title}
+            subheader={`${numberOfChecked(ids)}/${ids.length} selected`}
+            action={
+              title === 'Choices' && (
+                <IconButton onClick={handleShowStars}>
+                  <StarFilled style={{ transition: 'ease-in-out 0.2s', color: showStars ? 'gold' : 'grey' }} />
+                </IconButton>
+              )
+            }
+          />
+          <Divider />
+          <List
+            sx={{
+              width: 380,
+              height: '40vh',
+              minHeight: 250,
+              bgcolor: 'background.paper',
+              overflow: 'auto'
+            }}
+            dense
+            component="div"
+            role="list"
+          >
+            {items
+              .filter((item) => (showStars ? favourites.includes(item.email) : true))
+              .map((item, key) => {
+                const labelId = `transfer-list-all-item-${item.email}-label`;
 
-      <StyledPopper id={id} open={open} anchorEl={anchorEl} placement="bottom-start">
-        <ClickAwayListener onClickAway={handleClose}>
-          <div>
-            <Autocomplete
-              open
-              multiple
-              onClose={(event, reason) => {
-                if (reason === 'escape') {
-                  handleClose();
-                }
-              }}
-              value={pendingValue}
-              onChange={(event, newValue, reason) => {
-                console.log(event.type, event.key, reason);
-                if (event.type === 'keydown' && event.key === 'Backspace' && reason === 'removeOption') {
-                  return;
-                }
-                setPendingValue(newValue);
-              }}
-              freeSolo
-              selectOnFocus
-              clearOnBlur
-              handleHomeEndKeys
-              disableCloseOnSelect
-              PopperComponent={PopperComponent}
-              renderTags={() => null}
-              noOptionsText="No users"
-              renderOption={(props, option, { selected }, { options }) =>
-                typeof option !== 'string' ? (
-                  options.includes(option.inputValue) ? null : (
-                    <li {...props} key={'add new'}>
-                      {/* {console.log(props)} */}
-                      <Box
-                        component={CheckOutlined}
-                        sx={{ width: 17, height: 17, mr: '5px', ml: '-2px', mt: 0.25 }}
-                        style={{
-                          visibility: 'hidden'
+                return user.email === item.email || mine?.email === item.email ? (
+                  <ListItem key={key} role="listitem">
+                    <ListItemIcon>
+                      <Checkbox
+                        disabled
+                        checked={false}
+                        tabIndex={-1}
+                        disableRipple
+                        inputProps={{
+                          'aria-labelledby': labelId
                         }}
                       />
-                      <Box
-                        sx={{
-                          flexGrow: 1,
-                          '& span': {
-                            color: theme.palette.mode === ThemeMode.DARK ? '#586069' : '#8b949e'
+                    </ListItemIcon>
+                    <ListItemText
+                      id={labelId}
+                      primary={
+                        <ListCell
+                          user={exist.find((x) => x.email === item.email)}
+                          dbClick={() => {}}
+                          dir={title === 'Choices'}
+                          reply={
+                            user.email === item.email
+                              ? mine?.email === item.email
+                                ? 'Creator/You'
+                                : 'You'
+                              : mine?.email === item.email
+                              ? 'Creator'
+                              : ''
                           }
-                        }}
-                        onKeyDown={(e) => {
-                          e.preventDefault();
-                          console.log(e);
-                        }}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleClose();
-                          toggleOpenCDlg(true);
-                          setDialogValue(option.inputValue);
-                        }}
-                      >
-                        <CustomCell user={{ name: 'Add New', email: option.inputValue, avatar: '' }} />
-                      </Box>
-                    </li>
-                  )
+                        />
+                      }
+                    />
+                  </ListItem>
                 ) : (
-                  <li {...props}>
-                    <Box
-                      component={CheckOutlined}
-                      sx={{ width: 17, height: 17, mr: '5px', ml: '-2px', mt: 0.25 }}
-                      style={{
-                        visibility: selected ? 'visible' : 'hidden'
-                      }}
+                  <ListItem key={key} role="listitem" onClick={handleToggle(item.email)} button>
+                    <ListItemIcon>
+                      <Checkbox
+                        checked={checked.indexOf(item.email) !== -1}
+                        tabIndex={-1}
+                        disableRipple
+                        inputProps={{
+                          'aria-labelledby': labelId
+                        }}
+                      />
+                    </ListItemIcon>
+                    <ListItemText
+                      id={labelId}
+                      primary={
+                        <ListCell
+                          user={exist.find((x) => x.email === item.email) || item}
+                          dbClick={handleDbClick}
+                          dir={title === 'Choices'}
+                          favourites={favourites}
+                          setFavourites={handleSetFavourite}
+                        />
+                      }
                     />
-                    <Box
-                      sx={{
-                        flexGrow: 1,
-                        '& span': {
-                          color: theme.palette.mode === ThemeMode.DARK ? '#586069' : '#8b949e'
-                        }
-                      }}
-                    >
-                      <CustomCell status user={users.find((item) => item.email === option)} />
-                    </Box>
-                    <Box
-                      component={CloseOutlined}
-                      sx={{ opacity: 0.6, width: 18, height: 18, mt: 0.25 }}
-                      style={{
-                        visibility: selected ? 'visible' : 'hidden'
-                      }}
-                    />
-                  </li>
-                )
-              }
-              options={[...users]
-                .sort((a, b) => {
-                  return value.includes(b.email) - value.includes(a.email);
-                })
-                .map((item) => item.email)}
-              filterOptions={(options, params) => {
-                const filtered = filter(options, params);
+                  </ListItem>
+                );
+              })}
+          </List>
+        </Card>
+      );
+    },
+    [
+      mine,
+      user,
+      showStars,
+      checked,
+      exist,
+      favourites,
+      handleDbClick,
+      handleSetFavourite,
+      handleShowStars,
+      handleToggle,
+      handleToggleAll,
+      numberOfChecked
+    ]
+  );
 
-                if (params.inputValue !== '') {
-                  filtered.push({
-                    inputValue: params.inputValue
-                  });
-                }
-
-                return filtered;
-              }}
-              getOptionLabel={(option) => {
-                if (typeof option === 'string') {
-                  return option;
-                }
-                return option.inputValue;
-              }}
-              renderInput={(params) => (
-                <StyledInput ref={params.InputProps.ref} inputProps={params.inputProps} autoFocus placeholder="Filter users" />
-              )}
-            />
-          </div>
-        </ClickAwayListener>
-      </StyledPopper>
-      <AddNewInviteConfirmDlg open={openCDlg} onClose={handleCloseCDlg} />
-      {openDlg && <AddNewInviteDlg open={openDlg} email={dialogValue} onClose={handleCloseDlg} />}
-    </MainCard>
+  return (
+    <Stack sx={{ m: 1 }}>
+      {!team && (
+        <SearchInput
+          searchVal={searchVal}
+          toggleOpenCDlg={toggleOpenCDlg}
+          users={users}
+          setSearchVal={setSearchVal}
+          onSearch={onSearch}
+          inputRef={inputRef}
+        />
+      )}
+      <Grid container spacing={2} justifyContent="center" alignItems="center">
+        <Grid item>
+          {customList(
+            'Choices',
+            users
+              .filter((item) => !value.includes(item.email) && item.email.includes(search))
+              .sort((a, b) => (a.status > b.status ? 1 : a.status < b.status ? -1 : 0))
+          )}
+        </Grid>
+        <Grid item>
+          <Grid container direction="column" alignItems="center">
+            <Button
+              sx={{ my: 0.5 }}
+              variant="outlined"
+              size="small"
+              onClick={handleCheckedRight}
+              disabled={users.filter((item) => !value.includes(item.email)).length === 0}
+              aria-label="move selected right"
+            >
+              &gt;
+            </Button>
+            <Button
+              sx={{ my: 0.5 }}
+              variant="outlined"
+              size="small"
+              onClick={handleCheckedLeft}
+              disabled={value.length === 0}
+              aria-label="move selected left"
+            >
+              &lt;
+            </Button>
+          </Grid>
+        </Grid>
+        <Grid item>
+          {customList(
+            'Chosen',
+            users
+              .filter((item) => value.includes(item.email) && item.email.includes(search))
+              .sort((a, b) => (a.status > b.status ? 1 : a.status < b.status ? -1 : 0))
+          )}
+        </Grid>
+      </Grid>
+      {openCDlg && <AddNewInviteConfirmDlg open={openCDlg} onClose={handleCloseCDlg} />}
+      {openDlg && <AddNewInviteDlg open={openDlg} email={searchVal} onClose={handleCloseDlg} />}
+    </Stack>
   );
 }
 
 AddContributor.propTypes = {
   users: PropTypes.any,
+  user: PropTypes.any,
   value: PropTypes.any,
-  onChange: PropTypes.any
+  exist: PropTypes.any,
+  mine: PropTypes.any,
+  team: PropTypes.any,
+  onChange: PropTypes.func
+};
+
+const SearchInput = ({ searchVal, toggleOpenCDlg, users, setSearchVal, onSearch, inputRef }) => {
+  useEffect(() => {
+    setTimeout(() => {
+      inputRef.current.focus();
+    }, 100);
+  }, [inputRef]);
+
+  return (
+    <Grid container spacing={2} justifyContent="center" alignItems="center">
+      <Autocomplete
+        value={searchVal}
+        onChange={(event, newValue, reason) => {
+          if (
+            (event.type === 'keydown' && event.key === 'Backspace' && reason === 'removeOption') ||
+            (event.type === 'change' && reason === 'clear')
+          )
+            return;
+          // if (users.map((item) => item.email).includes(searchVal) || !searchVal || !searchVal.includes('@') || !searchVal.includes('.'))
+          //   return;
+          toggleOpenCDlg(true);
+        }}
+        filterOptions={(options, params) => {
+          const filtered = filter(options, params);
+          if (users.map((item) => item.email).includes(searchVal) || !searchVal || !searchVal.includes('@') || !searchVal.includes('.'))
+            return filtered;
+          filtered.push({
+            inputValue: searchVal,
+            title: `Add "${searchVal}"`
+          });
+          return filtered;
+        }}
+        onInputChange={(e, v) => {
+          setSearchVal(v);
+          onSearch(v);
+        }}
+        disableClearable
+        options={[]}
+        autoHighlight
+        getOptionLabel={(option) => {
+          if (typeof option === 'string') {
+            return option;
+          }
+          if (option.inputValue) {
+            return option.inputValue;
+          }
+          return option.title;
+        }}
+        clearOnBlur
+        renderOption={(props, option) => (
+          <li {...props} style={{ background: '#1677FF', color: 'white' }}>
+            {option.title}
+          </li>
+        )}
+        freeSolo
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Search email..."
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') e.preventDefault();
+            }}
+            inputRef={inputRef}
+          />
+        )}
+        sx={{ width: 300 }}
+      />
+    </Grid>
+  );
+};
+
+SearchInput.propTypes = {
+  searchVal: PropTypes.any,
+  toggleOpenCDlg: PropTypes.any,
+  users: PropTypes.any,
+  setSearchVal: PropTypes.any,
+  onSearch: PropTypes.any,
+  inputRef: PropTypes.any
 };

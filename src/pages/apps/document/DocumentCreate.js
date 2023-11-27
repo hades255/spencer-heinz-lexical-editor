@@ -21,7 +21,7 @@ import AuthContext from 'contexts/JWTContext';
 import { useSelector } from 'store';
 import { getUserLists } from 'store/reducers/user';
 import CustomCell from 'components/customers/CustomCell';
-import AddContributor from 'sections/apps/document/AddContributor1';
+import AddContributor from 'sections/apps/document/AddContributor';
 import MainCard from 'components/MainCard';
 import { StepWrapper } from 'sections/apps/document/AddDocument';
 

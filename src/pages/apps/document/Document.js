@@ -13,7 +13,7 @@ import SimpleBar from 'simplebar-react';
 import UsersList from 'sections/apps/document/UsersList';
 import TeamManagement from './TeamManagement';
 import { dispatch } from 'store';
-import { setDocActiveTeam, setDocMe, setDocUsers } from 'store/reducers/document';
+import { setDocActiveTeam, setDocEmails, setDocLeaders, setDocMe, setDocUsers } from 'store/reducers/document';
 
 const drawerWidth = 320;
 
@@ -47,6 +47,8 @@ const Document = ({ user, document }) => {
   const [socket, setSocket] = useState(null);
   const [load, setLoad] = useState(false);
 
+  const handleSetSocket = useCallback(() => {}, []);
+
   useEffect(() => {
     const ws = new WebSocket(process.env.REACT_APP_DEFAULT_WEBSOCKET_URL + 'userrooms/' + document._id + '?userId=' + user._id);
     ws.onopen = () => {
@@ -61,6 +63,16 @@ const Document = ({ user, document }) => {
           dispatch(setDocUsers(data.users));
           dispatch(setDocMe(data.users.find((item) => item._id === user._id)));
           dispatch(setDocActiveTeam(data.active));
+          setTimeout(() => {
+            setLoad(true);
+          }, 300);
+          break;
+        case 'userslistWithTeam':
+          dispatch(setDocLeaders(data.leaders)); //  all leaders of each team
+          dispatch(setDocUsers(data.users)); //  users in my team
+          dispatch(setDocEmails(data.emails)); //  all emails in this doc
+          dispatch(setDocMe(data.users.find((item) => item._id === user._id))); //  me
+          dispatch(setDocActiveTeam(data.active)); //  active status team
           setTimeout(() => {
             setLoad(true);
           }, 300);
@@ -84,7 +96,7 @@ const Document = ({ user, document }) => {
   return (
     <>
       <Box sx={{ display: 'flex' }}>
-        <UsersList user={user} document={document} handleDrawerOpen={handleDrawerOpen} openDrawer={openDrawer} socket={socket} />
+        <UsersList handleDrawerOpen={handleDrawerOpen} openDrawer={openDrawer} socket={socket} document={document} />
         <Main theme={theme} open={openDrawer}>
           <Grid container>
             <Grid

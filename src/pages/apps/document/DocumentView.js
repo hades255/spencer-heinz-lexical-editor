@@ -6,6 +6,8 @@ import Check from './Check';
 import Document from './Document';
 import { Button, Grid, Stack, Typography } from '@mui/material';
 import axiosServices from 'utils/axios';
+import { dispatch } from 'store';
+import { getSingleList } from 'store/reducers/document';
 
 const DocumentView = () => {
   const { uniqueId } = useParams();
@@ -17,6 +19,7 @@ const DocumentView = () => {
       try {
         const response = await axiosServices.get('/document/' + uniqueId);
         setDocument(response.data.data.document);
+        dispatch(getSingleList(response.data.data.document));
       } catch (error) {
         console.log(error);
       }

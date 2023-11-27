@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
 // material-ui
@@ -11,16 +12,21 @@ import { useSelector } from 'store';
 import { dispatch } from 'store';
 import { getUserLists } from 'store/reducers/user';
 import { PopupTransition } from 'components/@extended/Transitions';
-import AddContributor from 'sections/apps/document/AddContributor1';
+import AddContributor from './AddContributor';
 import { compareArraysByKey } from 'utils/array';
 import { openSnackbar } from 'store/reducers/snackbar';
 import axiosServices from 'utils/axios';
 import { CloseCircleOutlined, SaveOutlined } from '@ant-design/icons';
 
-export default function AddContributorsFromContributor({ open: openThis = false, team, onClose, user, exist, creator, uniqueId }) {
+export default function AddContributorsFromContributor({ open: openThis = false, onClose, exist, me, document }) {
+  const { uniqueId } = useParams();
   const users = useSelector((state) => state.user.lists);
-  const me = useSelector((state) => state.document.me);
+  const emails = useSelector((state) => state.document.emails);
   const [value, setValue] = useState([]);
+
+  useEffect(() => {
+    dispatch(getUserLists());
+  }, []);
 
   useEffect(() => {
     setValue(exist.map((item) => item.email));
@@ -86,11 +92,7 @@ export default function AddContributorsFromContributor({ open: openThis = false,
         });
       }
     })();
-  }, [uniqueId, value, exist, onClose, users, me, team]);
-
-  useEffect(() => {
-    dispatch(getUserLists());
-  }, []);
+  }, [value, exist, users, me, onClose, uniqueId]);
 
   return (
     <Dialog
@@ -146,7 +148,17 @@ export default function AddContributorsFromContributor({ open: openThis = false,
               </Stack>
             </Stack>
           </Box>
-          {openThis && <AddContributor users={users} value={value} onChange={setValue} exist={exist} mine={creator} user={user} />}
+          {openThis && (
+            <AddContributor
+              user={me}
+              users={users}
+              value={value}
+              onChange={setValue}
+              exist={exist}
+              initEmails={emails}
+              document={document}
+            />
+          )}
         </MainCard>
       </DialogContent>
     </Dialog>
@@ -155,10 +167,8 @@ export default function AddContributorsFromContributor({ open: openThis = false,
 
 AddContributorsFromContributor.propTypes = {
   open: PropTypes.bool,
-  user: PropTypes.object,
+  me: PropTypes.any,
   exist: PropTypes.any,
   onClose: PropTypes.any,
-  creator: PropTypes.object,
-  uniqueId: PropTypes.any,
-  team: PropTypes.any
+  document: PropTypes.object
 };

@@ -20,7 +20,7 @@ import StyledTextarea from 'components/form/StyledTextarea';
 import { useSelector } from 'store';
 import { getUserLists } from 'store/reducers/user';
 import CustomCell from 'components/customers/CustomCell';
-import AddContributor from './AddContributor1';
+import AddContributor from './AddContributor';
 import { not } from 'utils/array';
 
 const steps = ['Title', 'Descriptions', 'Contributors'];

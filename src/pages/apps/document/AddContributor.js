@@ -15,12 +15,12 @@ import { Box, Chip, IconButton, Stack, TextField } from '@mui/material';
 import { StatusCell } from 'pages/apps/customer/list';
 import { useAsyncDebounce } from 'react-table';
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
-import AddNewInviteConfirmDlg from './AddNewInviteConfirmDlg';
-import AddNewInviteDlg from './AddNewInviteDlg';
 import { intersection, not, union } from 'utils/array';
 import { StarFilled } from '@ant-design/icons';
 import { StarOutline } from '@mui/icons-material';
 import axiosServices from 'utils/axios';
+import AddNewInviteConfirmDlg from 'sections/apps/document/AddNewInviteConfirmDlg';
+import AddNewInviteDlg from 'sections/apps/document/AddNewInviteDlg';
 const filter = createFilterOptions();
 
 export const ReplyCell = ({ value }) => {
@@ -35,7 +35,7 @@ export const ReplyCell = ({ value }) => {
       return <Chip color="primary" label="You" size="small" variant="light" sx={{ p: 0, m: 0, fontSize: 11 }} />;
     case 'Creator':
       return <Chip color="error" label="Creator" size="small" variant="light" sx={{ p: 0, m: 0, fontSize: 11 }} />;
-    case 'Creator/You':
+    case 'You/Cre':
       return <Chip color="error" label="Crea/You" size="small" variant="light" sx={{ p: 0, m: 0, fontSize: 11 }} />;
     default:
       return <Chip color="info" label="Pending" size="small" variant="light" sx={{ p: 0, m: 0, fontSize: 11 }} />;
@@ -46,7 +46,7 @@ ReplyCell.propTypes = {
   value: PropTypes.string
 };
 
-const ListCell = ({ user, dbClick, dir, reply, favourites, setFavourites }) => {
+const ListCell = ({ user, dbClick, dir, reply, favourites = [], setFavourites }) => {
   const [show, setShow] = useState(false);
 
   const handleMouseEnter = useCallback(() => {
@@ -119,7 +119,8 @@ ListCell.propTypes = {
   reply: PropTypes.string
 };
 
-export default function AddContributor({ users, value, onChange, exist = [], mine = null, user, team = false }) {
+export default function AddContributor({ users, value, onChange, exist = [], user, initEmails = [], document }) {
+  const [emails, setEmails] = useState(initEmails);
   const [checked, setChecked] = useState([]);
   const [searchVal, setSearchVal] = useState('');
   const [search, setSearch] = useState('');
@@ -195,26 +196,30 @@ export default function AddContributor({ users, value, onChange, exist = [], min
     [checked, numberOfChecked]
   );
 
-  const handleCheckedRight = () => {
+  const handleCheckedRight = useCallback(() => {
     onChange(union(value, leftChecked));
+    setEmails(union(emails, leftChecked));
     setChecked(not(checked, leftChecked));
-  };
+  }, [value, emails, checked, leftChecked, onChange]);
 
-  const handleCheckedLeft = () => {
+  const handleCheckedLeft = useCallback(() => {
     onChange(not(value, rightChecked));
+    setEmails(union(emails, rightChecked));
     setChecked(not(checked, rightChecked));
-  };
+  }, [value, emails, checked, rightChecked, onChange]);
 
   const handleDbClick = useCallback(
     (email, dir = true) => {
       if (dir) {
         onChange(union(value, [email]));
+        setEmails(union(emails, [email]));
       } else {
         onChange(not(value, [email]));
+        setEmails(not(emails, [email]));
       }
       setChecked(not(checked, [email]));
     },
-    [value, checked, onChange]
+    [value, checked, onChange, emails]
   );
 
   const onSearch = useAsyncDebounce((value) => {
@@ -229,10 +234,13 @@ export default function AddContributor({ users, value, onChange, exist = [], min
   const handleCloseDlg = useCallback(
     (email = '') => {
       toggleOpenDlg(false);
-      if (email) onChange([...value, email]);
+      if (email) {
+        onChange([...value, email]);
+        setEmails([...emails, email]);
+      }
       setSearchVal('');
     },
-    [onChange, value]
+    [onChange, value, emails]
   );
 
   const handleSetFavourite = useCallback(
@@ -248,7 +256,7 @@ export default function AddContributor({ users, value, onChange, exist = [], min
 
   const customList = useCallback(
     (title, items) => {
-      const ids = items.filter((item) => user.email !== item.email && (mine ? mine.email !== item.email : true)).map((item) => item.email);
+      const ids = items.filter((item) => user.email !== item.email && document.creator.email !== item.email).map((item) => item.email);
       return (
         <Card>
           <CardHeader
@@ -292,7 +300,7 @@ export default function AddContributor({ users, value, onChange, exist = [], min
               .map((item, key) => {
                 const labelId = `transfer-list-all-item-${item.email}-label`;
 
-                return user.email === item.email || mine?.email === item.email ? (
+                return user.email === item.email || item.email === document.creator.email ? (
                   <ListItem key={key} role="listitem">
                     <ListItemIcon>
                       <Checkbox
@@ -312,15 +320,7 @@ export default function AddContributor({ users, value, onChange, exist = [], min
                           user={exist.find((x) => x.email === item.email)}
                           dbClick={() => {}}
                           dir={title === 'Choices'}
-                          reply={
-                            user.email === item.email
-                              ? mine?.email === item.email
-                                ? 'Creator/You'
-                                : 'You'
-                              : mine?.email === item.email
-                              ? 'Creator'
-                              : ''
-                          }
+                          reply={user.email === document.creator.email ? 'You/Cre' : item.email === user.email ? 'You' : 'Creator'}
                         />
                       }
                     />
@@ -357,12 +357,12 @@ export default function AddContributor({ users, value, onChange, exist = [], min
       );
     },
     [
-      mine,
       user,
       showStars,
       checked,
       exist,
       favourites,
+      document,
       handleDbClick,
       handleSetFavourite,
       handleShowStars,
@@ -374,22 +374,20 @@ export default function AddContributor({ users, value, onChange, exist = [], min
 
   return (
     <Stack sx={{ m: 1 }}>
-      {!team && (
-        <SearchInput
-          searchVal={searchVal}
-          toggleOpenCDlg={toggleOpenCDlg}
-          users={users}
-          setSearchVal={setSearchVal}
-          onSearch={onSearch}
-          inputRef={inputRef}
-        />
-      )}
+      <SearchInput
+        searchVal={searchVal}
+        toggleOpenCDlg={toggleOpenCDlg}
+        users={users}
+        setSearchVal={setSearchVal}
+        onSearch={onSearch}
+        inputRef={inputRef}
+      />
       <Grid container spacing={2} justifyContent="center" alignItems="center">
         <Grid item>
           {customList(
             'Choices',
             users
-              .filter((item) => !value.includes(item.email) && item.email.includes(search))
+              .filter((item) => !emails.includes(item.email) && item.email.includes(search))
               .sort((a, b) => (a.status > b.status ? 1 : a.status < b.status ? -1 : 0))
           )}
         </Grid>
@@ -436,9 +434,9 @@ AddContributor.propTypes = {
   users: PropTypes.any,
   user: PropTypes.any,
   value: PropTypes.any,
+  initEmails: PropTypes.any,
   exist: PropTypes.any,
-  mine: PropTypes.any,
-  team: PropTypes.any,
+  document: PropTypes.any,
   onChange: PropTypes.func
 };
 

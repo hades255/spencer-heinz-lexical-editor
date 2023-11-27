@@ -11,6 +11,8 @@ const initialState = {
   document: null,
   navList: [],
   users: [],
+  leaders: [],
+  emails: [],
   me: null,
   activeTeam: null,
   error: null
@@ -27,6 +29,12 @@ const document = createSlice({
     },
     setDocUsers(state, action) {
       state.users = action.payload;
+    },
+    setDocLeaders(state, action) {
+      state.leaders = action.payload;
+    },
+    setDocEmails(state, action) {
+      state.emails = action.payload;
     },
     setDocMe(state, action) {
       state.me = action.payload;
@@ -86,7 +94,9 @@ export const {
   updateDocument,
   deleteDocument,
   setDocMe,
+  setDocEmails,
   setDocUsers,
+  setDocLeaders,
   setDocActiveTeam
 } = document.actions;
 
