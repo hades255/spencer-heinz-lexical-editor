@@ -6,7 +6,7 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import { DialogContent, FormHelperText, Stack, TextField } from '@mui/material';
+import { Checkbox, DialogContent, FormControlLabel, FormHelperText, Stack, TextField } from '@mui/material';
 
 import { postDocumentCreate } from 'store/reducers/document';
 
@@ -107,12 +107,12 @@ const DocumentCreate = () => {
             initialValues={{
               name: '',
               description: ``,
-              team: ''
+              team: '',
+              defaultTeam: true
             }}
             validationSchema={Yup.object().shape({
               name: Yup.string().max(255).required('Document title is required'),
-              description: Yup.string().max(1024).required('Document description is required'),
-              team: Yup.string().max(1024).required('Team description is required')
+              description: Yup.string().max(1024).required('Document description is required')
             })}
             onSubmit={async (values, { setStatus, setSubmitting }) => {
               dispatch(
@@ -130,7 +130,7 @@ const DocumentCreate = () => {
                         role,
                         mobilePhone,
                         workPhone,
-                        team: values.team,
+                        team: values.defaultTeam || !values.team ? 'Authoring' : values.team,
                         reply: 'pending'
                       }))
                   },
@@ -146,8 +146,14 @@ const DocumentCreate = () => {
                 {activeStep === steps.length ? (
                   <>
                     <Stack sx={{ mt: 2, mb: 1 }}>
+                      <Typography sx={{ mt: 2, mb: 1 }} variant="h5">
+                        Title
+                      </Typography>
                       <Typography sx={{ mt: 2, mb: 1 }} variant="h4">
                         {values.name}
+                      </Typography>
+                      <Typography sx={{ mt: 2, mb: 1 }} variant="h5">
+                        Description
                       </Typography>
                       <Typography sx={{ mt: 2, mb: 1 }}>{values.description}</Typography>
                       {users.filter((item) => contributors.includes(item.email) && item.status !== 'active' && item.status !== 'invited')
@@ -236,6 +242,12 @@ const DocumentCreate = () => {
                     {activeStep === 3 && (
                       <>
                         <Stack>
+                          <FormControlLabel
+                            control={
+                              <Checkbox checked={values.defaultTeam} onChange={handleChange} id="default-name-team" name="defaultTeam" />
+                            }
+                            label={'Use default Team name "authoring"'}
+                          />
                           <TextField
                             id="name-team"
                             value={values.team}
@@ -245,7 +257,7 @@ const DocumentCreate = () => {
                             placeholder="Name of Team"
                             label="Type name of Team"
                             variant="standard"
-                            sx={{ minWidth: 300, width: '50%' }}
+                            sx={{ minWidth: 300, width: '50%', visibility: values.defaultTeam ? 'hidden' : 'visible' }}
                           />
                           {touched.team && errors.team && (
                             <FormHelperText error id="helper-text-team-doc">

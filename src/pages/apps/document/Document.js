@@ -47,9 +47,7 @@ const Document = ({ user, document }) => {
   const [socket, setSocket] = useState(null);
   const [load, setLoad] = useState(false);
 
-  const handleSetSocket = useCallback(() => {}, []);
-
-  useEffect(() => {
+  const handleSetSocket = useCallback(() => {
     const ws = new WebSocket(process.env.REACT_APP_DEFAULT_WEBSOCKET_URL + 'userrooms/' + document._id + '?userId=' + user._id);
     ws.onopen = () => {
       console.log('open');
@@ -59,13 +57,8 @@ const Document = ({ user, document }) => {
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       switch (data.type) {
-        case 'userslist':
-          dispatch(setDocUsers(data.users));
-          dispatch(setDocMe(data.users.find((item) => item._id === user._id)));
-          dispatch(setDocActiveTeam(data.active));
-          setTimeout(() => {
-            setLoad(true);
-          }, 300);
+        case 'active-team':
+          dispatch(setDocActiveTeam(data.active)); //  active status team
           break;
         case 'userslistWithTeam':
           dispatch(setDocLeaders(data.leaders)); //  all leaders of each team
@@ -92,6 +85,14 @@ const Document = ({ user, document }) => {
       if (ws) ws.close();
     };
   }, [user, document]);
+
+  useEffect(() => {
+    if (!socket) handleSetSocket();
+
+    return () => {
+      if (socket) socket.close();
+    };
+  }, [socket, handleSetSocket]);
 
   return (
     <>

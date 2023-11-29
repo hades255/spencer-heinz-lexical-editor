@@ -4,14 +4,13 @@ import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
-import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import CustomCell from 'components/customers/CustomCell';
-import { Box, Chip, IconButton, Stack, TextField } from '@mui/material';
+import { Box, Chip, IconButton, ListItemButton, Stack, TextField } from '@mui/material';
 import { StatusCell } from 'pages/apps/customer/list';
 import { useAsyncDebounce } from 'react-table';
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
@@ -293,7 +292,7 @@ export default function AddContributor({ users, value, onChange, exist = [], min
                 const labelId = `transfer-list-all-item-${item.email}-label`;
 
                 return user.email === item.email || mine?.email === item.email ? (
-                  <ListItem key={key} role="listitem">
+                  <ListItemButton key={key} role="listitem">
                     <ListItemIcon>
                       <Checkbox
                         disabled
@@ -324,9 +323,9 @@ export default function AddContributor({ users, value, onChange, exist = [], min
                         />
                       }
                     />
-                  </ListItem>
+                  </ListItemButton>
                 ) : (
-                  <ListItem key={key} role="listitem" onClick={handleToggle(item.email)} button>
+                  <ListItemButton key={key} role="listitem" onClick={handleToggle(item.email)}>
                     <ListItemIcon>
                       <Checkbox
                         checked={checked.indexOf(item.email) !== -1}
@@ -349,7 +348,7 @@ export default function AddContributor({ users, value, onChange, exist = [], min
                         />
                       }
                     />
-                  </ListItem>
+                  </ListItemButton>
                 );
               })}
           </List>

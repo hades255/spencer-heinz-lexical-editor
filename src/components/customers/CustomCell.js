@@ -1,4 +1,4 @@
-import { Stack, Typography } from '@mui/material';
+import { Stack, Tooltip, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import UserAvatar from 'sections/apps/user/UserAvatar';
 
@@ -14,10 +14,14 @@ const CustomCell = ({ user, status = false }) => {
         }}
       />
       <Stack spacing={0}>
-        <Typography variant="subtitle1">{user.name}</Typography>
-        <Typography variant="caption" color="textSecondary">
-          {user.email}
-        </Typography>
+        <Tooltip title={user.name}>
+          <Typography variant="subtitle1">{user.name}</Typography>
+        </Tooltip>
+        <Tooltip title={user.email}>
+          <Typography variant="caption" color="textSecondary">
+            {user.email}
+          </Typography>
+        </Tooltip>
       </Stack>
     </Stack>
   );

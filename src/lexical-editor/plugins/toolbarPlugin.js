@@ -1,5 +1,5 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SELECTION_CHANGE_COMMAND, FORMAT_TEXT_COMMAND, $getSelection, $isRangeSelection } from 'lexical';
 import { $isLinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
 import { $isAtNodeEnd } from '@lexical/selection';
@@ -36,13 +36,8 @@ export default function ToolbarPlugin({ user }) {
   const allUsers = useSelector((state) => state.document.users);
   const me = useSelector((state) => state.document.me);
   const active = useSelector((state) => state.document.activeTeam) === me?.team;
-  const users = me
-    ? me.team
-      ? allUsers
-          .filter((item) => item.team === me.team || item.leader)
-          .sort((a, b) => (a.team > b.team ? 1 : a.team < b.team ? -1 : a.leader ? -1 : b.leader ? 1 : 0))
-      : allUsers
-    : [];
+  const leaders = useSelector((state) => state.document.leaders);
+  const users = useMemo(() => [...allUsers, ...leaders.filter((item) => item.team !== me.team)], [allUsers, leaders, me]);
 
   const [editor] = useLexicalComposerContext();
   const toolbarRef = useRef(null);

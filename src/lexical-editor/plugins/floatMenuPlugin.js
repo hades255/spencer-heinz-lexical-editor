@@ -1,6 +1,6 @@
 import FloatMenu from '../components/floatMenu/floatMenu';
 /* eslint-disable prettier/prettier */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { $getSelection, SELECTION_CHANGE_COMMAND } from 'lexical';
@@ -26,15 +26,9 @@ const LowPriority = 1;
 
 export const FloatMenuPlugin = () => {
   const allUsers = useSelector((state) => state.document.users);
+  const leaders = useSelector((state) => state.document.leaders);
   const user = useSelector((state) => state.document.me);
-  const me = useSelector((state) => state.document.me);
-  const users = me
-    ? me.team
-      ? allUsers
-          .filter((item) => item.team === me.team || item.leader)
-          .sort((a, b) => (a.team > b.team ? 1 : a.team < b.team ? -1 : a.leader ? -1 : b.leader ? 1 : 0))
-      : allUsers
-    : [];
+  const users = useMemo(() => [...allUsers, ...leaders.filter((item) => item.team !== user.team)], [allUsers, leaders, user]);
 
   const [show, setShow] = useState(false);
   const [isDropDownActive, setIsDropDownActive] = useState(false);

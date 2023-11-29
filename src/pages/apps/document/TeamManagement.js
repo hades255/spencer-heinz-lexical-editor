@@ -1,23 +1,30 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { CheckOutlined, DeleteOutlined, MobileOutlined, PhoneOutlined, SaveOutlined } from '@ant-design/icons';
 import {
+  ArrowRightOutlined,
+  CheckOutlined,
+  DeleteOutlined,
+  MobileOutlined,
+  PhoneOutlined,
+  SaveOutlined,
+  StarFilled
+} from '@ant-design/icons';
+import {
+  Autocomplete,
   Box,
   Button,
   ButtonGroup,
-  Chip,
   Dialog,
   DialogContent,
   FormControl,
   Grid,
   IconButton,
-  InputLabel,
   List,
-  ListItem,
   ListItemButton,
-  MenuItem,
-  Select,
+  ListItemIcon,
+  ListItemText,
   Stack,
+  Tab,
   TextField,
   Tooltip,
   Typography,
@@ -35,6 +42,10 @@ import { PatternFormat } from 'react-number-format';
 import { StatusCell } from '../customer/list';
 import CustomCell from 'components/customers/CustomCell';
 import BackgroundLetterAvatar from 'components/@extended/BackgroundLetterAvatar';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
+import { getUserLists } from 'store/reducers/user';
+import axiosServices from 'utils/axios';
+import { StarOutline } from '@mui/icons-material';
 
 const TeamManagement = ({ socket }) => {
   const theme = useTheme();
@@ -56,7 +67,7 @@ const TeamManagement = ({ socket }) => {
           >
             <Stack spacing={0}>
               <Typography variant="subtitle1" sx={{ textDecorationLine: 'underline', textDecorationColor: 'Highlight' }}>
-                Add Team
+                Teams
               </Typography>
             </Stack>
           </Stack>
@@ -101,6 +112,49 @@ const Team = ({ socket }) => {
   const me = useSelector((state) => state.document.me);
   const document = useSelector((state) => state.document.document);
   const activeTeam = useSelector((state) => state.document.activeTeam);
+  const leaderEmails = leaders.map((item) => item.email);
+  const users = useSelector((state) => state.user.lists).filter(
+    (item) => !item.hide && !leaderEmails.includes(item.email) && item.email !== document.creator?.email
+  );
+  const [favourites, setFavourites] = useState([]);
+  const [showStars, setShowStars] = useState(false);
+  const [value, setValue] = useState('tab-1');
+  const [newTeamLeader, setNewTeamLeader] = useState(users[0]?.email);
+
+  const handleShowStars = useCallback(() => {
+    setShowStars(!showStars);
+  }, [showStars]);
+
+  const getFavouriteUsers = useCallback(() => {
+    (async () => {
+      try {
+        const res = await axiosServices.get('/user/favourite');
+        setFavourites(res.data.data);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, []);
+
+  const setFavouriteUser = useCallback(
+    (email, flag) => {
+      (async () => {
+        try {
+          const res = await axiosServices.put('/user/favourite', { email, flag });
+          const { email: _email, flag: _flag } = res.data.data;
+          const f = favourites.filter((item) => item !== _email);
+          setFavourites(_flag ? [...f, _email] : f);
+        } catch (error) {
+          console.log(error);
+        }
+      })();
+    },
+    [favourites]
+  );
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
 
   const handleRemoveTeam = useCallback(
     (oldTeam, newTeam) => {
@@ -175,37 +229,82 @@ const Team = ({ socket }) => {
     [socket]
   );
 
+  useEffect(() => {
+    dispatch(getUserLists());
+  }, []);
+
+  useEffect(() => {
+    getFavouriteUsers();
+  }, [getFavouriteUsers]);
+
   return (
     <>
       {activeTeam && (
         <DialogContent>
           <Stack direction={'row'} justifyContent={'center'}>
-            Add / Remove Teams
+            Teams
           </Stack>
           <MainCard sx={{ mt: 2 }}>
             <Grid container justifyContent={'center'} spacing={2}>
               <Grid item xs={10} sm={6}>
-                <List sx={{ m: 2, height: 400, width: 400, overflowY: 'scroll' }}>
-                  <ListItem>
-                    <Typography variant="subtitle1" color={'secondary'}>
-                      All Teams
-                    </Typography>
-                  </ListItem>
-                  {leaders.map((item, key) => (
-                    <LeaderItem
-                      key={key}
-                      user={item}
-                      me={me}
-                      creator={document?.creator}
-                      activeTeam={activeTeam}
-                      removeTeam={handleRemoveTeam}
-                      setActiveTeam={handlesetActiveTeam}
-                    />
-                  ))}
-                </List>
+                <TabContext value={value}>
+                  <Stack
+                    sx={{ borderBottom: 1, borderColor: 'divider' }}
+                    direction={'row'}
+                    alignItems={'center'}
+                    justifyContent={'space-between'}
+                  >
+                    <TabList onChange={handleChange}>
+                      <Tab label="Available Users" value={'tab-1'} />
+                      <Tab label="Teams" value={'tab-2'} />
+                    </TabList>
+                    <Box>
+                      <Tooltip title={`${showStars ? 'Hide' : 'Show'} favorite users`}>
+                        <IconButton onClick={handleShowStars} sx={{ borderRadius: 20 }}>
+                          <StarFilled style={{ transition: 'ease-in-out 0.2s', color: showStars ? 'gold' : 'grey' }} />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </Stack>
+                  <TabPanel value={'tab-1'} sx={{ p: 0, pt: 1 }}>
+                    <List sx={{ height: 400, width: '100%', overflowY: 'scroll' }}>
+                      {users
+                        .filter((item) => (showStars ? favourites.includes(item.email) : true))
+                        .map((item, key) => (
+                          <UserItem
+                            user={item}
+                            key={key}
+                            favourites={favourites}
+                            setFavourites={setFavouriteUser}
+                            setLeader={setNewTeamLeader}
+                          />
+                        ))}
+                    </List>
+                  </TabPanel>
+                  <TabPanel value={'tab-2'} sx={{ p: 0, pt: 1 }}>
+                    <List sx={{ height: 400, width: '100%', overflowY: 'scroll' }}>
+                      {leaders
+                        .filter((item) => (showStars ? favourites.includes(item.email) : true))
+                        .map((item, key) => (
+                          <LeaderItem
+                            key={key}
+                            user={item}
+                            me={me}
+                            team={document?.team}
+                            creator={document?.creator}
+                            activeTeam={activeTeam}
+                            removeTeam={handleRemoveTeam}
+                            setActiveTeam={handlesetActiveTeam}
+                            favourites={favourites}
+                            setFavourites={setFavouriteUser}
+                          />
+                        ))}
+                    </List>
+                  </TabPanel>
+                </TabContext>
               </Grid>
               <Grid item xs={10} sm={6}>
-                <NewTeam socket={socket} />
+                <NewTeam socket={socket} users={users} favourites={favourites} newTeamLeader={newTeamLeader} />
               </Grid>
             </Grid>
           </MainCard>
@@ -215,17 +314,30 @@ const Team = ({ socket }) => {
   );
 };
 
-const LeaderItem = ({ user, me, creator = {}, activeTeam, removeTeam, setActiveTeam }) => {
+const LeaderItem = ({ user, me, creator = {}, team, activeTeam, removeTeam, setActiveTeam, favourites, setFavourites }) => {
   const handleRemoveTeam = useCallback(() => {
-    removeTeam(user.team, user._id === me._id ? creator.team : me.team);
-  }, [user, me, creator, removeTeam]);
+    removeTeam(user.team, user._id === me._id ? team : me.team);
+  }, [user, me, team, removeTeam]);
 
   const handleSetActiveTeam = useCallback(() => {
     setActiveTeam(user.team);
   }, [user, setActiveTeam]);
 
+  const handleClickStar = useCallback(() => {
+    setFavourites(user.email, !favourites.includes(user.email));
+  }, [setFavourites, favourites, user]);
+
   return (
     <ListItemButton sx={{ borderBottom: '1px solid', borderColor: 'divider' }}>
+      <ListItemIcon>
+        <IconButton onClick={handleClickStar} sx={{ borderRadius: 20 }}>
+          {favourites.includes(user.email) ? (
+            <StarFilled style={{ fontSize: 20, color: 'gold' }} />
+          ) : (
+            <StarOutline style={{ fontSize: 20, color: 'gold' }} />
+          )}
+        </IconButton>
+      </ListItemIcon>
       <Grid>
         <Stack direction={'row'} justifyContent={'space-between'}>
           <Stack direction={'row'} alignItems={'center'}>
@@ -262,7 +374,7 @@ const LeaderItem = ({ user, me, creator = {}, activeTeam, removeTeam, setActiveT
             )}
           </Stack>
           <ButtonGroup variant="text">
-            {creator._id !== user._id && user._id !== me._id && me.leader && user.team !== activeTeam && (
+            {((creator._id !== user._id && me.leader && user.team !== activeTeam) || user.invitor === me._id) && (
               <Tooltip title="Remove Team">
                 <IconButton color="error" onClick={handleRemoveTeam}>
                   <DeleteOutlined />
@@ -279,10 +391,10 @@ const LeaderItem = ({ user, me, creator = {}, activeTeam, removeTeam, setActiveT
           </ButtonGroup>
         </Stack>
         <Stack flexGrow={'inherit'} direction={'row'} alignItems={'center'} spacing={0.3} width={'100%'} flexWrap={'wrap'}>
-          <Box sx={{ width: '30%', minWidth: 180 }}>
+          <Box sx={{ width: 200, overflowX: 'hidden' }}>
             <CustomCell user={user} />
           </Box>
-          <Stack sx={{ width: '30%', minWidth: 150 }} spacing={0}>
+          <Stack sx={{ width: 150 }} spacing={0}>
             <Typography variant="" color="textSecondary">
               <MobileOutlined style={{ borderRadius: '10px' }} />
               <PatternFormat displayType="text" format=" +1 (###) ###-####" mask="_" defaultValue={user.mobilePhone} />
@@ -298,18 +410,108 @@ const LeaderItem = ({ user, me, creator = {}, activeTeam, removeTeam, setActiveT
   );
 };
 
-const NewTeam = ({ socket }) => {
+const UserItem = ({ user, favourites, setFavourites, setLeader }) => {
+  const [show, setShow] = useState(false);
+
+  const handleMouseEnter = useCallback(() => {
+    setShow(true);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setShow(false);
+  }, []);
+
+  const handleClickStar = useCallback(() => {
+    setFavourites(user.email, !favourites.includes(user.email));
+  }, [setFavourites, favourites, user]);
+
+  const handleSetTeamLeader = useCallback(
+    (e) => {
+      e.stopPropagation();
+      setLeader(user.email);
+    },
+    [setLeader, user]
+  );
+
+  return (
+    <ListItemButton role="listitem" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      <ListItemIcon>
+        <IconButton onClick={handleClickStar} sx={{ borderRadius: 20 }}>
+          {favourites.includes(user.email) ? (
+            <StarFilled style={{ fontSize: 20, color: 'gold' }} />
+          ) : (
+            <StarOutline style={{ fontSize: 20, color: 'gold' }} />
+          )}
+        </IconButton>
+      </ListItemIcon>
+      <ListItemText
+        id={user._id}
+        primary={
+          <Stack flexGrow={'inherit'} direction={'row'} alignItems={'center'} spacing={0.1} width={'100%'} flexWrap={'wrap'}>
+            <Box sx={{ width: 200, overflowX: 'hidden' }}>
+              <CustomCell user={user} />
+            </Box>
+            <Stack sx={{ width: 150 }} spacing={0}>
+              <Typography variant="" color="textSecondary">
+                <MobileOutlined style={{ borderRadius: '10px' }} />
+                <PatternFormat displayType="text" format=" +1 (###) ###-####" mask="_" defaultValue={user.mobilePhone} />
+              </Typography>
+              <Typography variant="" color="textSecondary">
+                <PhoneOutlined />
+                <PatternFormat displayType="text" format=" +1 (###) ###-####" mask="_" defaultValue={user.workPhone} />
+              </Typography>
+            </Stack>
+            <Box
+              sx={{
+                position: 'absolute',
+                right: '20px',
+                top: '10px',
+                visibility: show ? 'visible' : 'hidden',
+                width: 20,
+                height: 20,
+                borderRadius: 10
+              }}
+              onClick={handleClickStar}
+            >
+              <Tooltip title="Add new Team with this user">
+                <IconButton sx={{ borderRadius: 20 }} onClick={handleSetTeamLeader}>
+                  <ArrowRightOutlined style={{ fontSize: 20 }} />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Stack>
+        }
+      />
+    </ListItemButton>
+  );
+};
+
+const NewTeam = ({ socket, favourites, users, newTeamLeader }) => {
+  const me = useSelector((state) => state.document.me);
   const leaders = useSelector((state) => state.document.leaders);
-  const users = useSelector((state) => state.document.users);
+  const emails = useSelector((state) => state.document.emails);
   const [error, setError] = useState({ teamName: '' });
   const [teamName, setTeamName] = useState('');
-  const [teamLeader, setTeamLeader] = useState('');
+  const [teamLeader, setTeamLeader] = useState(users[0]?.email);
+
+  useEffect(() => {
+    setTeamLeader(newTeamLeader);
+  }, [newTeamLeader]);
 
   const handleTeamNameChange = useCallback(({ target: { value } }) => {
     setTeamName(value);
     setError({ teamName: '' });
   }, []);
-  const handleTeamLeaderChange = useCallback(({ target: { value } }) => setTeamLeader(value), []);
+
+  const getTeamUserFromUsers = useCallback(
+    (email) => {
+      const user = users.find((item) => item.email === email);
+      if (!user) return null;
+      const { _id, name, avatar, status, mobilePhone, workPhone } = user;
+      return { _id, name, email, avatar, status, mobilePhone, workPhone };
+    },
+    [users]
+  );
 
   const handleSave = useCallback(() => {
     if (!teamName) {
@@ -322,7 +524,18 @@ const NewTeam = ({ socket }) => {
     }
     (async () => {
       try {
-        socket.send(JSON.stringify({ type: 'add-team', teamName, teamLeader }));
+        if (emails.includes(teamLeader)) {
+          socket.send(JSON.stringify({ type: 'add-team', teamName, teamLeader: getTeamUserFromUsers(teamLeader)._id }));
+        } else {
+          socket.send(
+            JSON.stringify({
+              type: 'add-new-team',
+              teamName,
+              teamLeader: getTeamUserFromUsers(teamLeader),
+              user: { _id: me._id, email: me.email, name: me.name, avatar: me.avatar, status: me.status, role: me.role }
+            })
+          );
+        }
         setTeamLeader('');
         setTeamName('');
         dispatch(
@@ -351,7 +564,7 @@ const NewTeam = ({ socket }) => {
         );
       }
     })();
-  }, [leaders, teamName, teamLeader, socket]);
+  }, [leaders, teamName, teamLeader, emails, socket, getTeamUserFromUsers, me]);
 
   return (
     <Stack spacing={1}>
@@ -365,26 +578,30 @@ const NewTeam = ({ socket }) => {
       />
       {error.teamName && <Typography color={'red'}>{error.teamName}</Typography>}
       <FormControl variant="standard">
-        <InputLabel id="team-leader-email-label">Select Leader</InputLabel>
-        <Select
-          labelId="team-leader-email-label"
-          id="team-leader-email"
-          sx={{ minWidth: 300, width: '50%' }}
+        <Autocomplete
+          disablePortal
+          autoHighlight
+          id="team-leader-email-select"
+          sx={{ minWidth: 300, width: '50%', mt: 2 }}
+          options={users.map((item) => item.email)}
+          renderInput={(params) => <TextField {...params} label="Select Team Leader" />}
           value={teamLeader}
-          onChange={handleTeamLeaderChange}
-        >
-          {users
-            .filter((item) => !item.leader)
-            .map((item, key) => (
-              <MenuItem key={key} value={item._id}>
-                {item.email}
-              </MenuItem>
-            ))}
-        </Select>
+          onChange={(e, v) => setTeamLeader(v)}
+          renderOption={(props, option, { selected }, { options }) =>
+            options.includes(option) ? (
+              <ListItemButton {...props}>
+                <ListItemIcon>{favourites.includes(option) && <StarFilled style={{ fontSize: 15, color: 'gold' }} />}</ListItemIcon>
+                <ListItemText>{option}</ListItemText>
+              </ListItemButton>
+            ) : (
+              <></>
+            )
+          }
+        />
       </FormControl>
-      {teamLeader && (
+      {teamLeader && users.find((item) => item.email === teamLeader) && (
         <Stack direction={'row'}>
-          <TeamLeaderItem user={users.find((item) => item._id === teamLeader)} />
+          <TeamLeaderItem user={users.find((item) => item.email === teamLeader)} />
           <Box>
             <Button variant="outlined" size="small" color="primary" onClick={handleSave} endIcon={<SaveOutlined />}>
               Add
@@ -396,7 +613,7 @@ const NewTeam = ({ socket }) => {
   );
 };
 
-const TeamLeaderItem = ({ user }) => {
+const TeamLeaderItem = ({ user = {} }) => {
   return (
     <Stack direction="row" spacing={2}>
       <UserAvatar
@@ -425,17 +642,6 @@ const TeamLeaderItem = ({ user }) => {
           </Typography>
           <StatusCell value={user.status} />
         </Stack>
-        <Stack direction={'row'}>
-          <Typography color={'textSecondary'} textAlign={'center'}>
-            Reply:
-          </Typography>
-          <Chip
-            label={user.reply.toUpperCase()}
-            size="small"
-            variant="light"
-            color={user.reply === 'accept' ? 'success' : user.reply === 'pending' ? 'primary' : 'info'}
-          />
-        </Stack>
       </Stack>
     </Stack>
   );
@@ -446,7 +652,10 @@ TeamManagement.propTypes = {
 };
 
 NewTeam.propTypes = {
-  socket: PropTypes.any
+  socket: PropTypes.any,
+  users: PropTypes.any,
+  favourites: PropTypes.any,
+  newTeamLeader: PropTypes.any
 };
 
 Team.propTypes = {
@@ -458,11 +667,21 @@ TeamLeaderItem.propTypes = {
   user: PropTypes.any
 };
 
+UserItem.propTypes = {
+  user: PropTypes.any,
+  favourites: PropTypes.any,
+  setFavourites: PropTypes.func,
+  setLeader: PropTypes.func
+};
+
 LeaderItem.propTypes = {
   user: PropTypes.any,
   creator: PropTypes.any,
   me: PropTypes.any,
   activeTeam: PropTypes.any,
   removeTeam: PropTypes.any,
-  setActiveTeam: PropTypes.any
+  setActiveTeam: PropTypes.any,
+  team: PropTypes.any,
+  favourites: PropTypes.any,
+  setFavourites: PropTypes.func
 };

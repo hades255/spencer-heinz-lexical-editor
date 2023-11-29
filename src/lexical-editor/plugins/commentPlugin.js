@@ -13,7 +13,7 @@ import {
 import { $createCommentNode, CommentNode } from 'lexical-editor/nodes/commentNode';
 import { mergeRegister, $wrapNodeInElement } from '@lexical/utils';
 import { $isCommentNode } from '../nodes/commentNode';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { $isAtNodeEnd } from '@lexical/selection';
 import { isEmpty, isFunction, isUndefined, max, min, trim } from 'lodash';
 import PropTypes from 'prop-types';
@@ -65,12 +65,9 @@ let floatTimeOut = 0;
 
 export default function CommentPlugin({ user }) {
   const allUsers = useSelector((state) => state.document.users);
+  const leaders = useSelector((state) => state.document.leaders);
   const me = useSelector((state) => state.document.me);
-  const users = me?.team
-    ? allUsers
-        .filter((item) => item.team === me.team || item.leader)
-        .sort((a, b) => (a.team > b.team ? 1 : a.team < b.team ? -1 : a.leader ? -1 : b.leader ? 1 : 0))
-    : allUsers;
+  const users = useMemo(() => [...allUsers, ...leaders.filter((item) => item.team !== me.team)], [allUsers, leaders, me]);
 
   const [editor] = useLexicalComposerContext();
   const [comments, setComments] = useState([]);
@@ -153,15 +150,17 @@ export default function CommentPlugin({ user }) {
         }
         // ! @topbot 2023/09/11 #filter comments created by current user if blacked out
         const _comments = isBlackedOutNode(_commentNode, user) ? filteredComments : _commentNode.getComments();
-        setComments([
-          ...(_comments.map((item) => ({
+        console.log(_comments);
+        console.log(me.team);
+        setComments(
+          _comments.map((item) => ({
             ...item,
             commentor:
               me.team === item.commentor.team || item.commentor.leader
                 ? item.commentor
-                : allUsers.find((_item) => _item.team === item.commentor.team && _item.leader) || item.commentor
-          })) ?? [])
-        ]);
+                : leaders.find((_item) => _item.team === item.commentor.team && _item.leader) || item.commentor
+          })) ?? []
+        );
         // check suppressedComments in localstorage and do update
         const storedValue = window.localStorage.getItem('suppressedComments');
         let suppressedUniqueIds = storedValue === null ? [] : JSON.parse(storedValue);
@@ -498,12 +497,9 @@ export default function CommentPlugin({ user }) {
               setIsOnFab(true);
             }}
           >
+            {/* LookHERE */}
             {comments
-              .filter(
-                (comment) =>
-                  !suppressedComments?.includes(comment.uniqueId) &&
-                  (comment.assignee === CommentNode.__currentUser || comment.commentor._id === CommentNode.__currentUser)
-              )
+              .filter((comment) => !suppressedComments?.includes(comment.uniqueId))
               .map((_comment, _index) => (
                 <Paper
                   key={`comment-list-${_index}`}

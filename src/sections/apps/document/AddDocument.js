@@ -7,7 +7,7 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import { DialogContent, DialogTitle, Divider, FormHelperText, Stack, TextField } from '@mui/material';
+import { Checkbox, DialogContent, DialogTitle, Divider, FormControlLabel, FormHelperText, Stack, TextField } from '@mui/material';
 
 import { postDocumentCreate } from 'store/reducers/document';
 
@@ -104,12 +104,12 @@ const AddDocument = ({ user }) => {
             initialValues={{
               name: '',
               description: ``,
-              team: ''
+              team: '',
+              defaultTeam: true
             }}
             validationSchema={Yup.object().shape({
               name: Yup.string().max(255).required('Document title is required'),
-              description: Yup.string().max(1024).required('Document description is required'),
-              team: Yup.string().max(1024).required('Team name is required')
+              description: Yup.string().max(1024).required('Document description is required')
             })}
             onSubmit={async (values, { setStatus, setSubmitting }) => {
               dispatch(
@@ -127,7 +127,7 @@ const AddDocument = ({ user }) => {
                         role,
                         mobilePhone,
                         workPhone,
-                        team: values.team,
+                        team: values.defaultTeam || !values.team ? 'Authoring' : values.team,
                         reply: 'pending'
                       }))
                   },
@@ -244,6 +244,12 @@ const AddDocument = ({ user }) => {
                     {activeStep === 3 && (
                       <>
                         <Stack>
+                          <FormControlLabel
+                            control={
+                              <Checkbox checked={values.defaultTeam} onChange={handleChange} id="default-name-team" name="defaultTeam" />
+                            }
+                            label={'Use default Team name "authoring"'}
+                          />
                           <TextField
                             id="name-team"
                             value={values.team}
@@ -253,7 +259,7 @@ const AddDocument = ({ user }) => {
                             placeholder="Name of Team"
                             label="Type name of Team"
                             variant="standard"
-                            sx={{ minWidth: 300, width: '50%' }}
+                            sx={{ minWidth: 300, width: '50%', visibility: values.defaultTeam ? 'hidden' : 'visible' }}
                           />
                           {touched.team && errors.team && (
                             <FormHelperText error id="helper-text-team-doc">
