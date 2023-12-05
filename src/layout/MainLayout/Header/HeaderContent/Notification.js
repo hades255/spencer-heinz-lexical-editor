@@ -1,5 +1,5 @@
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -33,9 +33,11 @@ import NotificationItem from './NotificationItem';
 import AuthContext from 'contexts/JWTContext';
 import { HandleNotificationDlg } from './HandleNotification';
 import { NewNotificationDlg } from './NewNotificationDlg';
-import { RELOAD_REQUIRED_NOTIFICATION_TYPES } from 'config/constants';
+import { NOTIFICATION_TYPES, RELOAD_REQUIRED_NOTIFICATION_TYPES } from 'config/constants';
 import useAuth from 'hooks/useAuth';
 import { openSnackbar } from 'store/reducers/snackbar';
+import { getDocumentLists, getDocumentSingleList, getMyDocumentLists } from 'store/reducers/document';
+import { getUserLists } from 'store/reducers/user';
 
 // sx styles
 export const avatarSX = {
@@ -59,6 +61,8 @@ export const actionSX = {
 const Notification = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const { uniqueId } = useParams();
   const user = useContext(AuthContext).user;
   const { logout } = useAuth();
   const matchesXs = useMediaQuery(theme.breakpoints.down('md'));
@@ -71,6 +75,64 @@ const Notification = () => {
 
   const [notiHandle, setNotiHandle] = useState(null);
   const [openHandle, setOpenHandle] = useState(false);
+
+  const handleAfterReceiveNotification = useCallback(
+    (notification) => {
+      console.log(notification.type);
+      if (RELOAD_REQUIRED_NOTIFICATION_TYPES.includes(notification.type)) {
+        dispatch(
+          openSnackbar({
+            open: true,
+            message: 'Admin changed your status. You have to login again.',
+            variant: 'alert',
+            alert: {
+              color: 'info'
+            },
+            close: true
+          })
+        );
+        logout();
+      } else {
+        switch (notification.type) {
+          case NOTIFICATION_TYPES.DOCUMENT_INVITE_RECEIVE:
+            //  if /document/list page-> reload documents data
+            if (pathname === '/document/list') {
+              console.log('A');
+              dispatch(getMyDocumentLists());
+            }
+            break;
+          case NOTIFICATION_TYPES.DOCUMENT_CREATE_NEW:
+            //  if /admin/document-management page-> reload documents data
+            if (pathname === '/admin/document-management') {
+              console.log('B');
+              dispatch(getDocumentLists());
+            }
+            break;
+          case NOTIFICATION_TYPES.DOCUMENT_INVITE_DELETE:
+            //  if /document/list page-> reload documents data
+            //  if /document/:id page-> reload document data
+            if (pathname === '/document/list') {
+              console.log('A');
+              dispatch(getMyDocumentLists());
+            } else if (uniqueId === notification.redirect) {
+              console.log('C');
+              dispatch(getDocumentSingleList(uniqueId));
+            }
+            break;
+          case NOTIFICATION_TYPES.USER_CREATE_NEW:
+            //  if /admin/user-management page-> reload users data
+            if (pathname === '/admin/user-management') {
+              console.log('D');
+              dispatch(getUserLists());
+            }
+            break;
+          default:
+            break;
+        }
+      }
+    },
+    [logout, pathname, uniqueId]
+  );
 
   const handleToggle = useCallback(() => {
     setOpen((prevOpen) => !prevOpen);
@@ -107,11 +169,24 @@ const Notification = () => {
     dispatch(setMessageLists([]));
   }, []);
 
+  const [flag, setFlag] = useState(false);
+
+  useEffect(() => {
+    if (flag) {
+      setFlag(true);
+    } else {
+      notifications.forEach((item) => {
+        if (item.status === 'unread') {
+          handleAfterReceiveNotification(item);
+        }
+      });
+    }
+  }, [notifications, flag]);
+
   // const [socket, setSocket] = useState({ ws: null, opened: false });
 
   useEffect(() => {
     if (!user) return;
-    let flag = true;
     const ws = new WebSocket(process.env.REACT_APP_NOTIFICATION_WEBSOCKET_URL || 'ws://localhost:8000/notification/socket');
     ws.onopen = () => {
       ws.send(JSON.stringify({ _id: user._id, role: user.role }));
@@ -120,26 +195,10 @@ const Notification = () => {
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      if (flag) flag = false;
-      else {
-        const requireRefreshNotifications = data.notifications.filter((item) => RELOAD_REQUIRED_NOTIFICATION_TYPES.includes(item.type));
-        if (requireRefreshNotifications?.length !== 0) {
-          dispatch(
-            openSnackbar({
-              open: true,
-              message: 'Admin changed your status. You have to login again.',
-              variant: 'alert',
-              alert: {
-                color: 'info'
-              },
-              close: true
-            })
-          );
-          logout();
-        }
-      }
-      if (data) {
+      if (data.notifications.length !== 0) {
         dispatch(addLists(data.notifications));
+      }
+      if (data.messages.length !== 0) {
         dispatch(addMessageLists(data.messages));
       }
     };
@@ -151,7 +210,7 @@ const Notification = () => {
     return () => {
       ws.close();
     };
-  }, [user, logout]);
+  }, [user]);
 
   const handleClose = useCallback(
     (event) => {

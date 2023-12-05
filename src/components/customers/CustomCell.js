@@ -4,7 +4,6 @@ import UserAvatar from 'sections/apps/user/UserAvatar';
 
 const CustomCell = ({ user, status = false }) => {
   if (!user) return <></>;
-  console.log(user)
   return (
     <Stack direction="row" spacing={1.5} alignItems="center">
       <UserAvatar

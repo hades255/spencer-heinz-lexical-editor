@@ -15,9 +15,11 @@ export const NOTIFICATION_TYPES = {
   DOCUMENT_INVITE_ACCEPT: '@document/invite/accept',
   DOCUMENT_INVITE_REJECT: '@document/invite/reject',
   DOCUMENT_INVITE_DELETE: '@document/invite/delete',
+  DOCUMENT_CREATE_NEW: '@document/new',
   USER_SETTING_ROLE: '@user/setting/role',
   USER_SETTING_STATUS: '@user/setting/status',
-  USER_RESET_PASSWORD: '@user/reset/password'
+  USER_RESET_PASSWORD: '@user/reset/password',
+  USER_CREATE_NEW: '@user/new'
 };
 
 export const RELOAD_REQUIRED_NOTIFICATION_TYPES = [
@@ -25,7 +27,7 @@ export const RELOAD_REQUIRED_NOTIFICATION_TYPES = [
   NOTIFICATION_TYPES.USER_SETTING_STATUS,
   NOTIFICATION_TYPES.USER_RESET_PASSWORD
 ];
-  ``
+
 export const NOTIFICATION_ITEM = {
   [NOTIFICATION_TYPES.DOCUMENT_INVITE_SEND]: {
     color: 'primary',
@@ -57,6 +59,12 @@ export const NOTIFICATION_ITEM = {
     avatar: (data) => data.data[0].text[0],
     title: 'Invitation'
   },
+  [NOTIFICATION_TYPES.DOCUMENT_CREATE_NEW]: {
+    color: 'info',
+    bgcolor: 'info',
+    avatar: () => 'D',
+    title: 'New Document'
+  },
   [NOTIFICATION_TYPES.USER_SETTING_ROLE]: {
     color: 'error',
     bgcolor: 'error',
@@ -74,6 +82,12 @@ export const NOTIFICATION_ITEM = {
     bgcolor: 'error',
     avatar: (data) => data.data[0].text[0],
     title: 'Reset Password'
+  },
+  [NOTIFICATION_TYPES.USER_CREATE_NEW]: {
+    color: 'warning',
+    bgcolor: 'warning',
+    avatar: () => 'U',
+    title: 'New User'
   }
 };
 
