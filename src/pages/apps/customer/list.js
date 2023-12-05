@@ -49,7 +49,8 @@ import {
   EyeTwoTone,
   EditTwoTone,
   DeleteTwoTone,
-  UnlockOutlined
+  UnlockOutlined,
+  ArrowUpOutlined
 } from '@ant-design/icons';
 
 import { useSelector } from 'react-redux';
@@ -60,6 +61,7 @@ import AuthContext from 'contexts/JWTContext';
 import AlertCustomerPwdreset from 'sections/apps/customer/AlertCustomerPwdreset';
 import { SelectionCell, SelectionHeader } from 'components/table/Selection';
 import CustomCell from 'components/customers/CustomCell';
+import { USER_ROLES } from 'config/constants';
 
 const CustomerCell = ({ row: { values } }) => {
   return <CustomCell user={values} />;
@@ -280,21 +282,43 @@ const RoleCell = ({ row, value, handleUpdateRole, role }) => {
     <div>
       <Chip
         onClick={handleClick}
-        label={value.toUpperCase()}
+        label={
+          <>
+            {value.toUpperCase()}{' '}
+            {value === 'creator' && (
+              <Tooltip title="Upgrade to VIP">
+                <Chip
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSelect(e, USER_ROLES.CREATOR_VIP);
+                  }}
+                  label={<ArrowUpOutlined />}
+                  size="small"
+                  variant="dark"
+                  color="error"
+                />
+              </Tooltip>
+            )}
+          </>
+        }
         size="small"
         variant="light"
-        color={value === 'admin' ? 'success' : value === 'creator' ? 'primary' : 'info'}
+        color={value === 'admin' ? 'success' : value.includes('creator') ? 'primary' : 'info'}
       />
       <Menu id="roles-menu" anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>
         {role === 'super admin' && (
-          <MenuItem onClick={(e) => handleSelect(e, 'admin')}>
+          <MenuItem onClick={(e) => handleSelect(e, USER_ROLES.ADMIN)}>
             <Chip label="Admin" size="small" variant="dark" color="success" />
           </MenuItem>
         )}
-        <MenuItem onClick={(e) => handleSelect(e, 'creator')}>
+        <MenuItem onClick={(e) => handleSelect(e, USER_ROLES.CREATOR)}>
           <Chip label="Creator" size="small" variant="dark" color="primary" />
         </MenuItem>
-        <MenuItem color="info" onClick={(e) => handleSelect(e, 'contributor')}>
+        <MenuItem onClick={(e) => handleSelect(e, USER_ROLES.CREATOR_VIP)}>
+          <Chip label="Creator-VIP" size="small" variant="dark" color="primary" />
+        </MenuItem>
+        <MenuItem onClick={(e) => handleSelect(e, USER_ROLES.CONTRIBUTOR)}>
           <Chip label="Contributor" size="small" variant="dark" color="info" />
         </MenuItem>
       </Menu>

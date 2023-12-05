@@ -10,18 +10,18 @@ import { actionSX, avatarSX } from './Notification';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { dispatch } from 'store';
 import { setNotificationsRead } from 'store/reducers/notification';
-import CloseIcon from '@mui/icons-material/Close';
 
 export const NewNotificationDlg = ({ notifications, open, handleClose, redirect }) => {
-  const handleClickClose = useCallback(() => {
-    handleClose(false);
-  }, [handleClose]);
-
   const handleSetRead = useCallback(() => {
     if (notifications?.filter((item) => item.status === 'unread').length) {
       dispatch(setNotificationsRead());
     }
   }, [notifications]);
+
+  const handleClickClose = useCallback(() => {
+    handleSetRead();
+    handleClose(false);
+  }, [handleClose, handleSetRead]);
 
   return (
     <Dialog
@@ -34,7 +34,7 @@ export const NewNotificationDlg = ({ notifications, open, handleClose, redirect 
       sx={{ '& .MuiDialog-paper': { p: 0 }, transition: 'transform 225ms' }}
       aria-describedby="alert-dialog-slide-description"
     >
-      <IconButton
+      {/* <IconButton
         aria-label="close"
         onClick={handleClickClose}
         sx={{
@@ -45,9 +45,9 @@ export const NewNotificationDlg = ({ notifications, open, handleClose, redirect 
         }}
       >
         <CloseIcon />
-      </IconButton>
-      <Tooltip title="Mark all as read" sx={{ position: 'absolute', top: 11, right: 40 }}>
-        <IconButton color="success" size="small" onClick={handleSetRead}>
+      </IconButton> */}
+      <Tooltip title="Mark all as read and Close" sx={{ position: 'absolute', top: 11, right: 11 }}>
+        <IconButton color="success" size="small" onClick={handleClickClose}>
           <CheckCircleOutlined style={{ fontSize: '1.15rem' }} />
         </IconButton>
       </Tooltip>

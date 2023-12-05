@@ -130,7 +130,7 @@ const LexicalEditor = ({ uniqueId, user }) => {
           if (!isBlackedOutNode(_commentNode, user._id)) editor.dispatchCommand(TOUCH_COMMENT_COMMAND, nodeKey);
         }}
       />
-      <ToolbarPlugin user={user._id} />
+      <ToolbarPlugin user={user} />
       {!isLoading ? (
         <RichTextPlugin
           contentEditable={

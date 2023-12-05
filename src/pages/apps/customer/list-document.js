@@ -45,7 +45,7 @@ const DocumentListPage = () => {
 
   const handleAdd = () => {
     if (!add) {
-      if (!['super admin', 'admin', 'creator'].includes(user.role)) {
+      if (!['super admin', 'admin', 'creator', 'craetor-vip'].includes(user.role)) {
         setCheckPremium(true);
         return;
       }

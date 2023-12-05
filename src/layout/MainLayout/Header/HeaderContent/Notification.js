@@ -78,7 +78,6 @@ const Notification = () => {
 
   const handleAfterReceiveNotification = useCallback(
     (notification) => {
-      console.log(notification.type);
       if (RELOAD_REQUIRED_NOTIFICATION_TYPES.includes(notification.type)) {
         dispatch(
           openSnackbar({
@@ -97,14 +96,12 @@ const Notification = () => {
           case NOTIFICATION_TYPES.DOCUMENT_INVITE_RECEIVE:
             //  if /document/list page-> reload documents data
             if (pathname === '/document/list') {
-              console.log('A');
               dispatch(getMyDocumentLists());
             }
             break;
           case NOTIFICATION_TYPES.DOCUMENT_CREATE_NEW:
             //  if /admin/document-management page-> reload documents data
             if (pathname === '/admin/document-management') {
-              console.log('B');
               dispatch(getDocumentLists());
             }
             break;
@@ -112,10 +109,8 @@ const Notification = () => {
             //  if /document/list page-> reload documents data
             //  if /document/:id page-> reload document data
             if (pathname === '/document/list') {
-              console.log('A');
               dispatch(getMyDocumentLists());
             } else if (uniqueId === notification.redirect) {
-              console.log('C');
               dispatch(getDocumentSingleList(uniqueId));
             }
             break;
@@ -169,12 +164,10 @@ const Notification = () => {
     dispatch(setMessageLists([]));
   }, []);
 
-  const [flag, setFlag] = useState(false);
+  const [flag, setFlag] = useState(0);
 
   useEffect(() => {
-    if (flag) {
-      setFlag(true);
-    } else {
+    if (flag > 1) {
       notifications.forEach((item) => {
         if (item.status === 'unread') {
           handleAfterReceiveNotification(item);
@@ -183,19 +176,17 @@ const Notification = () => {
     }
   }, [notifications, flag]);
 
-  // const [socket, setSocket] = useState({ ws: null, opened: false });
-
   useEffect(() => {
     if (!user) return;
     const ws = new WebSocket(process.env.REACT_APP_NOTIFICATION_WEBSOCKET_URL || 'ws://localhost:8000/notification/socket');
     ws.onopen = () => {
       ws.send(JSON.stringify({ _id: user._id, role: user.role }));
-      // setSocket({ ws, opened: true });
     };
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.notifications.length !== 0) {
+        setFlag((f) => f + 1);
         dispatch(addLists(data.notifications));
       }
       if (data.messages.length !== 0) {
@@ -203,9 +194,7 @@ const Notification = () => {
       }
     };
 
-    ws.onclose = () => {
-      // setSocket({ ws: null, opened: false });
-    };
+    ws.onclose = () => {};
 
     return () => {
       ws.close();

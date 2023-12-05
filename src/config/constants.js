@@ -101,3 +101,11 @@ export const USER_STATUS_COMMENTS = [
     comment: 'access more than 3 times'
   }
 ];
+
+export const USER_ROLES = {
+  ADMIN: 'admin',
+  SUPERADMIN: 'super admin',
+  CREATOR: 'creator',
+  CREATOR_VIP: 'creator-vip',
+  CONTRIBUTOR: 'contributor'
+};

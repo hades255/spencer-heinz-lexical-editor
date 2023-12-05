@@ -33,12 +33,14 @@ export function getSelectedNode(selection) {
 const LowPriority = 1;
 
 export default function ToolbarPlugin({ user }) {
+  const { creator } = useSelector((state) => state.document.document);
   const allUsers = useSelector((state) => state.document.users);
   const me = useSelector((state) => state.document.me);
   const active = useSelector((state) => state.document.activeTeam) === me?.team;
   const leaders = useSelector((state) => state.document.leaders);
   const users = useMemo(() => [...allUsers, ...leaders.filter((item) => item.team !== me.team)], [allUsers, leaders, me]);
 
+  const vipRoles = useMemo(() => ['super admin', 'admin', 'creator-vip'], []);
   const [editor] = useLexicalComposerContext();
   const toolbarRef = useRef(null);
   const [isLink, setIsLink] = useState(false);
@@ -173,25 +175,29 @@ export default function ToolbarPlugin({ user }) {
         </IconButton>
         {/* {isLink && createPortal(<FloatingLinkEditor editor={editor} />, document.body)} */}
       </>
-      <ToolbarLock
-        users={users.filter((item) => item.team === me.team || (me.team && item.leader))}
-        user={user}
-        editor={editor}
-        active={active}
-      />
-      <ToolbarBlackout
-        users={users.filter((item) => item.team === me.team || (me.team && item.leader))}
-        user={user}
-        editor={editor}
-        active={active}
-      />
-      <ToolbarJump editor={editor} active={active} />
+      {vipRoles.includes(creator.role) && (
+        <>
+          <ToolbarLock
+            users={users.filter((item) => item.team === me.team || (me.team && item.leader))}
+            user={user._id}
+            editor={editor}
+            active={active}
+          />
+          <ToolbarBlackout
+            users={users.filter((item) => item.team === me.team || (me.team && item.leader))}
+            user={user._id}
+            editor={editor}
+            active={active}
+          />
+          <ToolbarJump editor={editor} active={active} />
+        </>
+      )}
     </div>
   );
 }
 
 ToolbarPlugin.propTypes = {
-  user: PropTypes.string
+  user: PropTypes.any
 };
 
 export const getUserIds = (userData) => {
