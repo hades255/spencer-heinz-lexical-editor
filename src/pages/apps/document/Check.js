@@ -1,17 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import axiosServices from 'utils/axios';
-import { ReceiveInvitation } from 'layout/MainLayout/Header/HeaderContent/HandleNotification';
+import { HandleInvitation } from 'layout/MainLayout/Header/HeaderContent/HandleNotification';
 import { AvatarGroup, Box, Grid, Stack, Typography } from '@mui/material';
 import MainCard from 'components/MainCard';
 import CustomCell from 'components/customers/CustomCell';
 import UserAvatar from 'sections/apps/user/UserAvatar';
 
-const Check = ({ document, handleRefresh }) => {
+const Check = ({ user, document, handleRefresh }) => {
   const [noti, setNoti] = useState(null);
   const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
+  const searchParams = useMemo(() => new URLSearchParams(location.search), [location]);
 
   useEffect(() => {
     if (searchParams.get('notification')) {
@@ -26,13 +26,13 @@ const Check = ({ document, handleRefresh }) => {
     } else {
       setNoti({ redirect: document._id });
     }
-  }, [document]);
+  }, [document, searchParams]);
 
   const handleAction = useCallback(() => {
     setTimeout(() => {
       handleRefresh();
     }, 500);
-  }, [document]);
+  }, [handleRefresh]);
 
   return (
     <>
@@ -117,7 +117,7 @@ const Check = ({ document, handleRefresh }) => {
             minWidth: '300px'
           }}
         >
-          {noti && <ReceiveInvitation notification={noti} onCancel={handleAction} />}
+          {noti && <HandleInvitation user={user} document={document} notification={noti} onCancel={handleAction} />}
         </Box>
       </Stack>
     </>
@@ -127,6 +127,7 @@ const Check = ({ document, handleRefresh }) => {
 export default Check;
 
 Check.propTypes = {
+  user: PropTypes.any,
   document: PropTypes.any,
   handleRefresh: PropTypes.func
 };

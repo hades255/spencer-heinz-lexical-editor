@@ -37,7 +37,7 @@ const DocumentView = () => {
         (document.creator.email === user.email || document.invites.some((item) => item.email === user.email && item.reply === 'accept') ? (
           <Document user={user} document={document} />
         ) : document.invites.some((item) => item.email === user.email && item.reply === 'pending') ? (
-          <Check document={document} handleRefresh={handleRefresh} />
+          <Check user={user} document={document} handleRefresh={handleRefresh} />
         ) : (
           <Redirect />
         ))}

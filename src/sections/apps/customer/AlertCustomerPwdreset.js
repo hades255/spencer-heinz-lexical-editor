@@ -32,6 +32,7 @@ export default function AlertCustomerPwdreset({ title, userDeleteId, open, handl
       maxWidth="xs"
       aria-labelledby="column-delete-title"
       aria-describedby="column-delete-description"
+      // PaperProps={{ style: { backgroundColor: '#fcd5ce' } }}
     >
       <DialogContent sx={{ mt: 2, my: 1 }}>
         <form onSubmit={handlePwdReset}>

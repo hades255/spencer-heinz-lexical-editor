@@ -81,20 +81,7 @@ const TabPassword = () => {
   }, []);
 
   return (
-    <MainCard title="Change Password">
-      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }} style={{ marginBottom: '20px' }}>
-        <Grid item xs={12}>
-          <Typography style={{ fontSize: '12px' }}>
-            Last Logon {lastLogonTime} from {IpAddress}
-          </Typography>
-        </Grid>
-        <Grid item xs={12}>
-          <Typography style={{ fontSize: '12px' }}>Browser: {browser}</Typography>
-        </Grid>
-        <Grid item xs={12}>
-          <Typography style={{ fontSize: '12px' }}>Last Password Changed on {pwdResetAt}</Typography>
-        </Grid>
-      </Grid>
+    <Grid item xs={12}>
       <Formik
         initialValues={{
           old: '',
@@ -152,164 +139,175 @@ const TabPassword = () => {
       >
         {({ errors, handleBlur, handleChange, handleSubmit, touched, values }) => (
           <form noValidate onSubmit={handleSubmit}>
-            <Grid container spacing={3}>
-              <Grid item container spacing={3} xs={12} sm={6}>
+            <MainCard
+              title="Change Password"
+              secondary={
+                <Button size="small" variant="contained">
+                  Change Password
+                </Button>
+              }
+            >
+              <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }} style={{ marginBottom: '20px' }}>
                 <Grid item xs={12}>
-                  <Stack spacing={1.25}>
-                    <InputLabel htmlFor="password-old">Old Password</InputLabel>
-                    <OutlinedInput
-                      id="password-old"
-                      placeholder="Enter Old Password"
-                      type={showOldPassword ? 'text' : 'password'}
-                      value={values.old}
-                      name="old"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      endAdornment={
-                        <InputAdornment position="end">
-                          <IconButton
-                            aria-label="toggle password visibility"
-                            onClick={handleClickShowOldPassword}
-                            onMouseDown={handleMouseDownPassword}
-                            edge="end"
-                            size="large"
-                            color="secondary"
-                          >
-                            {showOldPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-                          </IconButton>
-                        </InputAdornment>
-                      }
-                      inputProps={{}}
-                    />
-                    {touched.old && errors.old && (
-                      <FormHelperText error id="password-old-helper">
-                        {errors.old}
-                      </FormHelperText>
-                    )}
-                  </Stack>
+                  <Typography style={{ fontSize: '12px' }}>
+                    Last Logon {lastLogonTime} from {IpAddress}
+                  </Typography>
                 </Grid>
                 <Grid item xs={12}>
-                  <Stack spacing={1.25}>
-                    <InputLabel htmlFor="password-password">New Password</InputLabel>
-                    <OutlinedInput
-                      id="password-password"
-                      placeholder="Enter New Password"
-                      type={showNewPassword ? 'text' : 'password'}
-                      value={values.password}
-                      name="password"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      endAdornment={
-                        <InputAdornment position="end">
-                          <IconButton
-                            aria-label="toggle password visibility"
-                            onClick={handleClickShowNewPassword}
-                            onMouseDown={handleMouseDownPassword}
-                            edge="end"
-                            size="large"
-                            color="secondary"
-                          >
-                            {showNewPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-                          </IconButton>
-                        </InputAdornment>
-                      }
-                      inputProps={{}}
-                    />
-                    {touched.password && errors.password && (
-                      <FormHelperText error id="password-password-helper">
-                        {errors.password}
-                      </FormHelperText>
-                    )}
-                  </Stack>
+                  <Typography style={{ fontSize: '12px' }}>Browser: {browser}</Typography>
                 </Grid>
                 <Grid item xs={12}>
-                  <Stack spacing={1.25}>
-                    <InputLabel htmlFor="password-confirm">Confirm Password</InputLabel>
-                    <OutlinedInput
-                      id="password-confirm"
-                      placeholder="Enter Confirm Password"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      value={values.confirm}
-                      name="confirm"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      endAdornment={
-                        <InputAdornment position="end">
-                          <IconButton
-                            aria-label="toggle password visibility"
-                            onClick={handleClickShowConfirmPassword}
-                            onMouseDown={handleMouseDownPassword}
-                            edge="end"
-                            size="large"
-                            color="secondary"
-                          >
-                            {showConfirmPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-                          </IconButton>
-                        </InputAdornment>
-                      }
-                      inputProps={{}}
-                    />
-                    {touched.confirm && errors.confirm && (
-                      <FormHelperText error id="password-confirm-helper">
-                        {errors.confirm}
-                      </FormHelperText>
-                    )}
-                  </Stack>
+                  <Typography style={{ fontSize: '12px' }}>Last Password Changed on {pwdResetAt}</Typography>
                 </Grid>
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <Box sx={{ p: { xs: 0, sm: 2, md: 4, lg: 5 } }}>
-                  <Typography variant="h5">New Password must contain:</Typography>
-                  <List sx={{ p: 0, mt: 1 }}>
-                    <ListItem divider>
-                      <ListItemIcon sx={{ color: minLength(values.password) ? 'success.main' : 'inherit' }}>
-                        {minLength(values.password) ? <CheckOutlined /> : <LineOutlined />}
-                      </ListItemIcon>
-                      <ListItemText primary="At least 8 characters" />
-                    </ListItem>
-                    <ListItem divider>
-                      <ListItemIcon sx={{ color: isLowercaseChar(values.password) ? 'success.main' : 'inherit' }}>
-                        {isLowercaseChar(values.password) ? <CheckOutlined /> : <LineOutlined />}
-                      </ListItemIcon>
-                      <ListItemText primary="At least 1 lower letter (a-z)" />
-                    </ListItem>
-                    <ListItem divider>
-                      <ListItemIcon sx={{ color: isUppercaseChar(values.password) ? 'success.main' : 'inherit' }}>
-                        {isUppercaseChar(values.password) ? <CheckOutlined /> : <LineOutlined />}
-                      </ListItemIcon>
-                      <ListItemText primary="At least 1 uppercase letter (A-Z)" />
-                    </ListItem>
-                    <ListItem divider>
-                      <ListItemIcon sx={{ color: isNumber(values.password) ? 'success.main' : 'inherit' }}>
-                        {isNumber(values.password) ? <CheckOutlined /> : <LineOutlined />}
-                      </ListItemIcon>
-                      <ListItemText primary="At least 1 number (0-9)" />
-                    </ListItem>
-                    <ListItem>
-                      <ListItemIcon sx={{ color: isSpecialChar(values.password) ? 'success.main' : 'inherit' }}>
-                        {isSpecialChar(values.password) ? <CheckOutlined /> : <LineOutlined />}
-                      </ListItemIcon>
-                      <ListItemText primary="At least 1 special characters" />
-                    </ListItem>
-                  </List>
-                </Box>
+              <Grid container spacing={3}>
+                <Grid item container spacing={3} xs={12} sm={6}>
+                  <Grid item xs={12}>
+                    <Stack spacing={1.25}>
+                      <InputLabel htmlFor="password-old">Old Password</InputLabel>
+                      <OutlinedInput
+                        id="password-old"
+                        placeholder="Enter Old Password"
+                        type={showOldPassword ? 'text' : 'password'}
+                        value={values.old}
+                        name="old"
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                        endAdornment={
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="toggle password visibility"
+                              onClick={handleClickShowOldPassword}
+                              onMouseDown={handleMouseDownPassword}
+                              edge="end"
+                              size="large"
+                              color="secondary"
+                            >
+                              {showOldPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                            </IconButton>
+                          </InputAdornment>
+                        }
+                        inputProps={{}}
+                      />
+                      {touched.old && errors.old && (
+                        <FormHelperText error id="password-old-helper">
+                          {errors.old}
+                        </FormHelperText>
+                      )}
+                    </Stack>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Stack spacing={1.25}>
+                      <InputLabel htmlFor="password-password">New Password</InputLabel>
+                      <OutlinedInput
+                        id="password-password"
+                        placeholder="Enter New Password"
+                        type={showNewPassword ? 'text' : 'password'}
+                        value={values.password}
+                        name="password"
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                        endAdornment={
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="toggle password visibility"
+                              onClick={handleClickShowNewPassword}
+                              onMouseDown={handleMouseDownPassword}
+                              edge="end"
+                              size="large"
+                              color="secondary"
+                            >
+                              {showNewPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                            </IconButton>
+                          </InputAdornment>
+                        }
+                        inputProps={{}}
+                      />
+                      {touched.password && errors.password && (
+                        <FormHelperText error id="password-password-helper">
+                          {errors.password}
+                        </FormHelperText>
+                      )}
+                    </Stack>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Stack spacing={1.25}>
+                      <InputLabel htmlFor="password-confirm">Confirm Password</InputLabel>
+                      <OutlinedInput
+                        id="password-confirm"
+                        placeholder="Enter Confirm Password"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        value={values.confirm}
+                        name="confirm"
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                        endAdornment={
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="toggle password visibility"
+                              onClick={handleClickShowConfirmPassword}
+                              onMouseDown={handleMouseDownPassword}
+                              edge="end"
+                              size="large"
+                              color="secondary"
+                            >
+                              {showConfirmPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                            </IconButton>
+                          </InputAdornment>
+                        }
+                        inputProps={{}}
+                      />
+                      {touched.confirm && errors.confirm && (
+                        <FormHelperText error id="password-confirm-helper">
+                          {errors.confirm}
+                        </FormHelperText>
+                      )}
+                    </Stack>
+                  </Grid>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Box sx={{ p: { xs: 0, sm: 2, md: 4, lg: 5 } }}>
+                    <Typography variant="h5">New Password must contain:</Typography>
+                    <List sx={{ p: 0, mt: 1 }}>
+                      <ListItem divider>
+                        <ListItemIcon sx={{ color: minLength(values.password) ? 'success.main' : 'inherit' }}>
+                          {minLength(values.password) ? <CheckOutlined /> : <LineOutlined />}
+                        </ListItemIcon>
+                        <ListItemText primary="At least 8 characters" />
+                      </ListItem>
+                      <ListItem divider>
+                        <ListItemIcon sx={{ color: isLowercaseChar(values.password) ? 'success.main' : 'inherit' }}>
+                          {isLowercaseChar(values.password) ? <CheckOutlined /> : <LineOutlined />}
+                        </ListItemIcon>
+                        <ListItemText primary="At least 1 lower letter (a-z)" />
+                      </ListItem>
+                      <ListItem divider>
+                        <ListItemIcon sx={{ color: isUppercaseChar(values.password) ? 'success.main' : 'inherit' }}>
+                          {isUppercaseChar(values.password) ? <CheckOutlined /> : <LineOutlined />}
+                        </ListItemIcon>
+                        <ListItemText primary="At least 1 uppercase letter (A-Z)" />
+                      </ListItem>
+                      <ListItem divider>
+                        <ListItemIcon sx={{ color: isNumber(values.password) ? 'success.main' : 'inherit' }}>
+                          {isNumber(values.password) ? <CheckOutlined /> : <LineOutlined />}
+                        </ListItemIcon>
+                        <ListItemText primary="At least 1 number (0-9)" />
+                      </ListItem>
+                      <ListItem>
+                        <ListItemIcon sx={{ color: isSpecialChar(values.password) ? 'success.main' : 'inherit' }}>
+                          {isSpecialChar(values.password) ? <CheckOutlined /> : <LineOutlined />}
+                        </ListItemIcon>
+                        <ListItemText primary="At least 1 special characters" />
+                      </ListItem>
+                    </List>
+                  </Box>
+                </Grid>
               </Grid>
-              <Grid item xs={12}>
-                <Stack direction="row" justifyContent="flex-end" alignItems="center" spacing={2}>
-                  <Button variant="outlined" color="secondary">
-                    Cancel
-                  </Button>
-                  {/* <Button disabled={isSubmitting || Object.keys(errors).length !== 0} type="submit" variant="contained"> */}
-                  <Button disabled={Object.keys(errors).length !== 0} type="submit" variant="contained">
-                    Update Profile
-                  </Button>
-                </Stack>
-              </Grid>
-            </Grid>
+            </MainCard>
           </form>
         )}
       </Formik>
-    </MainCard>
+    </Grid>
   );
 };
 

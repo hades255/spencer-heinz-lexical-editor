@@ -53,52 +53,52 @@ const JWTContext = createContext(null);
 export const JWTProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  useEffect(() => {
-    const init = async () => {
-      try {
-        const serviceToken = window.localStorage.getItem('serviceToken');
-        if (serviceToken && verifyToken(serviceToken)) {
-          setSession(serviceToken);
-          const response = await axios.get('/auth/me');
+  const init = async () => {
+    try {
+      const serviceToken = window.localStorage.getItem('serviceToken');
+      if (serviceToken && verifyToken(serviceToken)) {
+        setSession(serviceToken);
+        const response = await axios.get('/auth/me');
 
-          const { code } = response.data;
-          if (code === 'success') {
-            const { user } = response.data.data;
-            dispatch({
-              type: LOGIN,
-              payload: {
-                isLoggedIn: true,
-                user
-              }
-            });
-          } else {
-            const { message } = response.data;
-            const { status } = response.data.data;
-            dispatch_(
-              openSnackbar({
-                open: true,
-                message: message ?? LOGIN_ERROR_MESSAGES[status].message,
-                variant: 'alert',
-                alert: {
-                  color: message ? 'error' : LOGIN_ERROR_MESSAGES[status].color
-                },
-                close: true
-              })
-            );
-          }
-        } else {
+        const { code } = response.data;
+        if (code === 'success') {
+          const { user } = response.data.data;
           dispatch({
-            type: LOGOUT
+            type: LOGIN,
+            payload: {
+              isLoggedIn: true,
+              user
+            }
           });
+        } else {
+          const { message } = response.data;
+          const { status } = response.data.data;
+          dispatch_(
+            openSnackbar({
+              open: true,
+              message: message ?? LOGIN_ERROR_MESSAGES[status].message,
+              variant: 'alert',
+              alert: {
+                color: message ? 'error' : LOGIN_ERROR_MESSAGES[status].color
+              },
+              close: true
+            })
+          );
         }
-      } catch (err) {
-        console.error(err);
+      } else {
         dispatch({
           type: LOGOUT
         });
       }
-    };
+    } catch (err) {
+      console.error(err);
+      dispatch({
+        type: LOGOUT
+      });
+    }
+  };
 
+  useEffect(() => {
     init();
   }, []);
 
@@ -215,7 +215,7 @@ export const JWTProvider = ({ children }) => {
   }
 
   return (
-    <JWTContext.Provider value={{ ...state, setUser, login, logout, register, resetPassword, forgetPassword, updateProfile }}>
+    <JWTContext.Provider value={{ ...state, setUser, login, init, logout, register, resetPassword, forgetPassword, updateProfile }}>
       {children}
     </JWTContext.Provider>
   );

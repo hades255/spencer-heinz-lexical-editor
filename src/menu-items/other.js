@@ -23,7 +23,6 @@ import {
   UnorderedListOutlined
 } from '@ant-design/icons';
 
-
 // icons
 const icons = {
   ChromeOutlined,
@@ -120,7 +119,7 @@ const other = {
           url: '/profiles/billing',
           icon: icons.WalletOutlined,
           breadcrumbs: true
-        },
+        }
       ]
     },
     {
@@ -168,9 +167,9 @@ const other = {
           url: '/settings/history',
           icon: icons.UnorderedListOutlined,
           breadcrumbs: true
-        },
+        }
       ]
-    },
+    }
   ]
 };
 

@@ -24,6 +24,7 @@ import CustomCell from 'components/customers/CustomCell';
 import AddContributor from 'sections/apps/document/AddContributor';
 import MainCard from 'components/MainCard';
 import { StepWrapper } from 'sections/apps/document/AddDocument';
+import AddTeamLeaders from './AddTeamLeaders';
 
 const steps = ['Title', 'Descriptions', 'Contributors', 'Team'];
 
@@ -32,6 +33,7 @@ const DocumentCreate = () => {
   const user = useContext(AuthContext).user;
   const [activeStep, setActiveStep] = useState(0);
   const [contributors, setContributors] = useState([]);
+  const [leaders, setLeaders] = useState([]);
   const users = useSelector((state) => state.user.lists);
   const nextBtn = useRef(null);
   const firstinput = useRef(null);
@@ -59,14 +61,14 @@ const DocumentCreate = () => {
   useEffect(() => {
     if (user) {
       setContributors([user.email]);
-      if (firstinput) firstinput.current.focus();
+      if (firstinput) firstinput.current?.focus();
     }
   }, [user]);
 
   useEffect(() => {
     switch (activeStep) {
       case 0:
-        firstinput.current.focus();
+        firstinput.current?.focus();
         break;
       case 1:
         secondinput.current.focus();
@@ -115,24 +117,31 @@ const DocumentCreate = () => {
               description: Yup.string().max(1024).required('Document description is required')
             })}
             onSubmit={async (values, { setStatus, setSubmitting }) => {
+              const leaderEmails = leaders.map((item) => item.email);
               dispatch(
                 postDocumentCreate(
                   {
                     ...values,
-                    invites: users
-                      .filter((item) => item.email !== user.email && contributors.includes(item.email))
-                      .map(({ _id, name, email, avatar, status, role, mobilePhone, workPhone }) => ({
-                        _id,
-                        name,
-                        email,
-                        avatar,
-                        status,
-                        role,
-                        mobilePhone,
-                        workPhone,
-                        team: values.defaultTeam || !values.team ? 'Authoring' : values.team,
-                        reply: 'pending'
-                      }))
+                    invites: [
+                      ...users
+                        .filter(
+                          (item) => item.email !== user.email && contributors.includes(item.email) && !leaderEmails.includes(item.email)
+                        )
+                        .map(({ _id, name, email, avatar, status, role, mobilePhone, workPhone }) => ({
+                          _id,
+                          name,
+                          email,
+                          avatar,
+                          status,
+                          role,
+                          mobilePhone,
+                          workPhone,
+                          team: values.defaultTeam || !values.team ? 'authoring' : values.team,
+                          reply: 'pending'
+                        })),
+                      ...leaders
+                    ],
+                    team: values.defaultTeam || !values.team ? 'authoring' : values.team
                   },
                   navigate
                 )
@@ -248,36 +257,32 @@ const DocumentCreate = () => {
                             }
                             label={'Use default Team name "authoring"'}
                           />
-                          <TextField
-                            id="name-team"
-                            value={values.team}
-                            name="team"
-                            onBlur={handleBlur}
-                            onChange={handleChange}
-                            placeholder="Name of Team"
-                            label="Type name of Team"
-                            variant="standard"
-                            sx={{ minWidth: 300, width: '50%', visibility: values.defaultTeam ? 'hidden' : 'visible' }}
+                          <Box>
+                            <TextField
+                              id="name-team"
+                              value={values.team}
+                              name="team"
+                              onBlur={handleBlur}
+                              onChange={handleChange}
+                              placeholder="Name of Team"
+                              label="Type name of Team"
+                              variant="standard"
+                              sx={{ minWidth: 300, width: '50%', display: values.defaultTeam ? 'none' : 'block' }}
+                            />
+                            {touched.team && errors.team && (
+                              <FormHelperText error id="helper-text-team-doc">
+                                {errors.team}
+                              </FormHelperText>
+                            )}
+                          </Box>
+                          <AddTeamLeaders
+                            me={user}
+                            contributors={contributors}
+                            allUsers={users}
+                            defaultTeam={values.defaultTeam ? 'authoring' : values.team}
+                            leaders={leaders}
+                            setLeaders={setLeaders}
                           />
-                          {touched.team && errors.team && (
-                            <FormHelperText error id="helper-text-team-doc">
-                              {errors.team}
-                            </FormHelperText>
-                          )}
-                        </Stack>
-                        <Stack spacing={0.3} sx={{ mt: 2 }}>
-                          <Stack direction={'row'} alignItems={'center'} spacing={0.3}>
-                            <Typography sx={{ width: 100, flexShrink: 0 }}>Team Leader</Typography>
-                            <CustomCell user={user} />
-                          </Stack>
-                          <Stack direction={'row'} alignItems={'center'} spacing={0.3}>
-                            <Typography sx={{ width: 100, flexShrink: 0 }}>Members</Typography>
-                            {users
-                              .filter((item) => item.email !== user.email && contributors.includes(item.email))
-                              .map((item, key) => (
-                                <CustomCell key={key} user={item} />
-                              ))}
-                          </Stack>
                         </Stack>
                       </>
                     )}

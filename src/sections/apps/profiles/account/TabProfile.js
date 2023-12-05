@@ -20,7 +20,6 @@ import { PatternFormat } from 'react-number-format';
 // project import
 import MainCard from 'components/MainCard';
 import Avatar from 'components/@extended/Avatar';
-import LinearWithLabel from 'components/@extended/progress/LinearWithLabel';
 
 // assets
 import { AimOutlined, EnvironmentOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';

@@ -46,12 +46,12 @@ export const NewNotificationDlg = ({ notifications, open, handleClose, redirect 
       >
         <CloseIcon />
       </IconButton>
-      {/* <Tooltip title="Mark as all read" sx={{ position: 'absolute', top: 11, right: 40 }}>
+      <Tooltip title="Mark all as read" sx={{ position: 'absolute', top: 11, right: 40 }}>
         <IconButton color="success" size="small" onClick={handleSetRead}>
           <CheckCircleOutlined style={{ fontSize: '1.15rem' }} />
         </IconButton>
-      </Tooltip> */}
-      <DialogTitle>You have new notifications</DialogTitle>
+      </Tooltip>
+      <DialogTitle>{notifications.length ? 'You have new notifications' : 'You have no new notifications'}</DialogTitle>
       <Divider />
       <DialogContent sx={{ p: 2.5 }}>
         <Grid container spacing={3}>
@@ -86,5 +86,5 @@ NewNotificationDlg.propTypes = {
   notifications: PropTypes.any,
   handleClose: PropTypes.func,
   redirect: PropTypes.func,
-  open: PropTypes.bool
+  open: PropTypes.any
 };

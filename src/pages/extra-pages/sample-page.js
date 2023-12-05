@@ -45,11 +45,10 @@ import '../../Plugins/styles/editor.css';
 import { MentionNode } from 'Plugins/components/mention-node';
 import { ParagraphNode, TextNode } from 'lexical';
 import { createPortal } from 'react-dom';
-import { useEffect, useRef, useState } from 'react';
-import { isEmpty, isFunction, max, min, trim, uniqueId } from 'lodash';
+import { useRef, useState } from 'react';
+import { isEmpty, trim, uniqueId } from 'lodash';
 import { MailFilled } from '@ant-design/icons';
 import MentionPlugin from 'Plugins/mention-plugin';
-import { USER_OPTIONS } from 'Plugins/constants';
 import { UserTextNode } from 'Plugins/components/user-text-node';
 import { LocalStoragePlugin } from 'Plugins/localstorage-plugin';
 import { UserParagraphNode } from 'Plugins/components/user-paragraph-node';
@@ -58,7 +57,6 @@ import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 import { BlackOutNode } from 'Plugins/components/black-out-node';
 import { $getRoot, $createParagraphNode, $createTextNode } from 'lexical';
-import { random } from 'lodash';
 import useAuth from 'hooks/useAuth';
 
 export const EDITOR_NAMESPACE = 'lexical-editor';
@@ -500,14 +498,14 @@ export const LexicalEditor = (props) => {
   );
 };
 
-function initialEditorState(editor) {
+function initialEditorState() {
   const root = $getRoot();
   const paragraph = $createParagraphNode();
   const text = $createTextNode('Welcome to collab!');
   paragraph.append(text);
   root.append(paragraph);
 }
-
+/*
 function LexicalEditor1({ config, currentUser }) {
   const { historyState } = useEditorHistoryState();
   const [comments, setComments] = useState([]);
@@ -613,3 +611,4 @@ function LexicalEditor1({ config, currentUser }) {
     </LexicalComposer>
   );
 }
+*/

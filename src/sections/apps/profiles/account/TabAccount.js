@@ -1,8 +1,7 @@
-import { useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 
 // material-ui
 import {
-  Box,
   Button,
   Grid,
   InputLabel,
@@ -10,92 +9,371 @@ import {
   ListItem,
   ListItemText,
   MenuItem,
+  OutlinedInput,
   Select,
   Stack,
   Switch,
-  TextField,
-  Typography
+  TextField
 } from '@mui/material';
+import * as Yup from 'yup';
 
 // project import
 import MainCard from 'components/MainCard';
-
-// styles & constant
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-  PaperProps: {
-    style: {
-      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP
-    }
-  }
-};
+import AuthContext from 'contexts/JWTContext';
+import useAuth from 'hooks/useAuth';
+import { UserItem } from 'pages/apps/document/TeamManagement';
+import { useSelector } from 'store';
+import { dispatch } from 'store';
+import { getUserLists } from 'store/reducers/user';
+import axiosServices from 'utils/axios';
+import { openSnackbar } from 'store/reducers/snackbar';
+import TabPassword from './TabPassword';
+import DeleteAccount from './DeleteAccount';
 
 // ==============================|| ACCOUNT PROFILE - MY ACCOUNT ||============================== //
 
+const validator = Yup.object().shape({
+  name: Yup.string().max(255).required('Name is required'),
+  email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
+  mobilePhone: Yup.number()
+    .test('len', 'Contact should be exactly 10 digit', (val) => val?.toString().length === 10)
+    .required('Mobile Phone number is required'),
+  workPhone: Yup.number()
+    .test('len', 'Contact should be exactly 10 digit', (val) => val?.toString().length === 10)
+    .required('Mobile Phone number is required')
+});
+
 const TabAccount = () => {
-  const [signing, setSigning] = useState('facebook');
+  const user = useContext(AuthContext).user;
+  const users = useSelector((state) => state.user.lists);
+  const [loading, setLoading] = useState(true);
+  const { init } = useAuth();
 
-  const handleChange = (event) => {
-    setSigning(event.target.value);
-  };
-
-  const [checked, setChecked] = useState(['sb', 'ln', 'la']);
-
-  const handleToggle = (value) => () => {
-    const currentIndex = checked.indexOf(value);
-    const newChecked = [...checked];
-
-    if (currentIndex === -1) {
-      newChecked.push(value);
-    } else {
-      newChecked.splice(currentIndex, 1);
+  useEffect(() => {
+    if (loading) {
+      setLoading(false);
+      init();
     }
+  }, [init, loading]);
 
-    setChecked(newChecked);
-  };
+  useEffect(() => {
+    dispatch(getUserLists());
+  }, []);
+
+  // console.log(user);
+  const { name, email, favourite, setting, countryCode, mobilePhone, workPhone, company } = user;
+  const [state, setState] = useState({ name, email, countryCode, mobilePhone, workPhone, company });
+  const [favUsers, setFavUsers] = useState(favourite || []);
+
+  const [checked, setChecked] = useState({ ...setting });
+
+  const handleSetChangedSetting = useCallback(
+    (data) => {
+      (async () => {
+        try {
+          await axiosServices.put('/user/' + user._id + '/setting', data);
+          dispatch(
+            openSnackbar({
+              open: true,
+              message: `Setting changed successfully.`,
+              variant: 'alert',
+              alert: {
+                color: 'success'
+              },
+              close: true
+            })
+          );
+        } catch (error) {
+          console.log(error);
+          dispatch(
+            openSnackbar({
+              open: true,
+              message: `Server connection error. Try again later.`,
+              variant: 'alert',
+              alert: {
+                color: 'error'
+              },
+              close: true
+            })
+          );
+        }
+      })();
+    },
+    [user]
+  );
+
+  const handleToggle = useCallback(
+    ({ target: { name, checked: check } }) => {
+      setChecked({ ...checked, [name]: check });
+      handleSetChangedSetting({ [name]: check });
+    },
+    [checked, handleSetChangedSetting]
+  );
+
+  const handleInputChange = useCallback(
+    ({ target: { name, value } }) => {
+      setState({ ...state, [name]: value });
+    },
+    [state]
+  );
+
+  const handleSetFavourites = useCallback(
+    (email, flag) => {
+      if (!window.confirm('Are you sure to delete this user from the favorite list?')) return;
+      (async () => {
+        try {
+          const res = await axiosServices.put('/user/favourite', { email, flag });
+          const { email: _email, flag: _flag } = res.data.data;
+          const f = favUsers.filter((item) => item !== _email);
+          setFavUsers(_flag ? [...f, _email] : f);
+          dispatch(
+            openSnackbar({
+              open: true,
+              message: `Setting changed successfully.`,
+              variant: 'alert',
+              alert: {
+                color: 'success'
+              },
+              close: true
+            })
+          );
+        } catch (error) {
+          console.log(error);
+          dispatch(
+            openSnackbar({
+              open: true,
+              message: `Server connection error. Try again later.`,
+              variant: 'alert',
+              alert: {
+                color: 'error'
+              },
+              close: true
+            })
+          );
+        }
+      })();
+    },
+    [favUsers]
+  );
+
+  const handleSubmitState = useCallback(() => {
+    (async () => {
+      try {
+        await validator.validate(state);
+        await axiosServices.put('/user/' + user._id + '/info', state);
+        init();
+        dispatch(
+          openSnackbar({
+            open: true,
+            message: `Setting changed successfully.`,
+            variant: 'alert',
+            alert: {
+              color: 'success'
+            },
+            close: true
+          })
+        );
+      } catch (error) {
+        if (error.name === 'ValidationError') {
+          dispatch(
+            openSnackbar({
+              open: true,
+              message: error.message,
+              variant: 'alert',
+              alert: {
+                color: 'error'
+              },
+              close: true
+            })
+          );
+        } else {
+          dispatch(
+            openSnackbar({
+              open: true,
+              message: `Server connection error. Try again later.`,
+              variant: 'alert',
+              alert: {
+                color: 'error'
+              },
+              close: true
+            })
+          );
+        }
+      }
+    })();
+  }, [state, user, init]);
 
   return (
     <Grid container spacing={3}>
       <Grid item xs={12}>
-        <MainCard title="General Settings">
+        <MainCard
+          title="General Settings"
+          secondary={
+            <Button size="small" variant="contained" onClick={handleSubmitState}>
+              Update Account
+            </Button>
+          }
+        >
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6}>
               <Stack spacing={1.25}>
                 <InputLabel htmlFor="my-account-username">Username</InputLabel>
-                <TextField fullWidth defaultValue="Asoka_Tana_16" id="my-account-username" placeholder="Username" autoFocus />
+                <TextField
+                  fullWidth
+                  defaultValue={state.name}
+                  name="name"
+                  onChange={handleInputChange}
+                  id="my-account-username"
+                  placeholder="Username"
+                  autoFocus
+                />
               </Stack>
             </Grid>
             <Grid item xs={12} sm={6}>
               <Stack spacing={1.25}>
                 <InputLabel htmlFor="my-account-email">Account Email</InputLabel>
-                <TextField fullWidth defaultValue="user@tana.com" id="my-account-email" placeholder="Account Email" />
+                <TextField
+                  fullWidth
+                  defaultValue={state.email}
+                  name="email"
+                  onChange={handleInputChange}
+                  id="my-account-email"
+                  placeholder="Account Email"
+                  disabled={true}
+                />
               </Stack>
             </Grid>
             <Grid item xs={12} sm={6}>
               <Stack spacing={1.25}>
-                <InputLabel htmlFor="my-account-lang">Language</InputLabel>
-                <TextField fullWidth defaultValue="New York" id="my-account-lang" placeholder="Language" />
+                <InputLabel htmlFor="mobilePhone-signup">Mobile Phone Number</InputLabel>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
+                  <Select value={state.countryCode} name="countryCode" onChange={handleInputChange}>
+                    <MenuItem value="+91">+91</MenuItem>
+                    <MenuItem value="1-671">1-671</MenuItem>
+                    <MenuItem value="+36">+36</MenuItem>
+                    <MenuItem value="(225)">(255)</MenuItem>
+                    <MenuItem value="+39">+39</MenuItem>
+                    <MenuItem value="1-876">1-876</MenuItem>
+                    <MenuItem value="+7">+7</MenuItem>
+                    <MenuItem value="(254)">(254)</MenuItem>
+                    <MenuItem value="(373)">(373)</MenuItem>
+                    <MenuItem value="1-664">1-664</MenuItem>
+                    <MenuItem value="+95">+95</MenuItem>
+                    <MenuItem value="(264)">(264)</MenuItem>
+                  </Select>
+                  <OutlinedInput
+                    fullWidth
+                    id="mobilePhone-signup"
+                    type="mobilePhone"
+                    value={state.mobilePhone}
+                    name="mobilePhone"
+                    onChange={handleInputChange}
+                    placeholder="Mobile Phone Number"
+                    inputProps={{}}
+                  />
+                </Stack>
               </Stack>
             </Grid>
             <Grid item xs={12} sm={6}>
               <Stack spacing={1.25}>
-                <InputLabel htmlFor="my-account-signing">Signing Using</InputLabel>
-                <Select fullWidth id="my-account-signing" value={signing} onChange={handleChange} MenuProps={MenuProps}>
-                  <MenuItem value="form">Basic Form</MenuItem>
-                  <MenuItem value="firebase">Firebase - Auth</MenuItem>
-                  <MenuItem value="facebook">Facebook</MenuItem>
-                  <MenuItem value="twitter">Twitter</MenuItem>
-                  <MenuItem value="gmail">Gmail</MenuItem>
-                  <MenuItem value="jwt">JWT</MenuItem>
-                  <MenuItem value="auth0">AUTH0</MenuItem>
-                </Select>
+                <InputLabel htmlFor="workPhone-signup">Work Phone Number</InputLabel>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
+                  <Select value={state.countryCode} name="countryCode" onChange={handleInputChange}>
+                    <MenuItem value="+91">+91</MenuItem>
+                    <MenuItem value="1-671">1-671</MenuItem>
+                    <MenuItem value="+36">+36</MenuItem>
+                    <MenuItem value="(225)">(255)</MenuItem>
+                    <MenuItem value="+39">+39</MenuItem>
+                    <MenuItem value="1-876">1-876</MenuItem>
+                    <MenuItem value="+7">+7</MenuItem>
+                    <MenuItem value="(254)">(254)</MenuItem>
+                    <MenuItem value="(373)">(373)</MenuItem>
+                    <MenuItem value="1-664">1-664</MenuItem>
+                    <MenuItem value="+95">+95</MenuItem>
+                    <MenuItem value="(264)">(264)</MenuItem>
+                  </Select>
+                  <OutlinedInput
+                    fullWidth
+                    id="workPhone-signup"
+                    type="workPhone"
+                    value={state.workPhone}
+                    name="workPhone"
+                    onChange={handleInputChange}
+                    placeholder="Work Phone Number"
+                    inputProps={{}}
+                  />
+                </Stack>
+              </Stack>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Stack spacing={1.25}>
+                <InputLabel htmlFor="company-signup">Company</InputLabel>
+                <OutlinedInput
+                  fullWidth
+                  id="company-signup"
+                  value={state.company}
+                  name="company"
+                  onChange={handleInputChange}
+                  placeholder="Demo Inc."
+                  inputProps={{}}
+                />
               </Stack>
             </Grid>
           </Grid>
         </MainCard>
       </Grid>
       <Grid item xs={12} sm={6}>
+        <MainCard title="Advance Settings" content={false}>
+          <List sx={{ p: 0 }}>
+            <ListItem divider>
+              <ListItemText
+                id="switch-list-label-ln"
+                primary="Login Notifications"
+                secondary="Notify when login attempted from other place"
+              />
+              <Switch
+                edge="end"
+                name="loginNotification"
+                onChange={handleToggle}
+                checked={checked.loginNotification}
+                inputProps={{
+                  'aria-labelledby': 'switch-list-label-ln'
+                }}
+              />
+            </ListItem>
+            <ListItem divider>
+              <ListItemText
+                id="switch-list-label-sh"
+                primary="Secure Searching"
+                secondary="Don't show you when others searching in document"
+              />
+              <Switch
+                edge="end"
+                name="hide"
+                onChange={handleToggle}
+                checked={checked.hide}
+                inputProps={{
+                  'aria-labelledby': 'switch-list-label-sh'
+                }}
+              />
+            </ListItem>
+          </List>
+        </MainCard>
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <MainCard title="Favourite Users" content={false}>
+          <List sx={{ p: 0, maxHeight: 300, overflowY: 'scroll' }}>
+            {users
+              .filter((item) => favUsers.includes(item.email))
+              .map((item, key) => (
+                <UserItem key={key} user={item} favourites={favUsers} makeTeam={false} setFavourites={handleSetFavourites} />
+              ))}
+          </List>
+        </MainCard>
+      </Grid>
+      <TabPassword />
+      <DeleteAccount />
+      {/* <Grid item xs={12} sm={6}>
         <MainCard title="Advance Settings" content={false}>
           <List sx={{ p: 0 }}>
             <ListItem divider>
@@ -186,16 +464,7 @@ const TabAccount = () => {
             </ListItem>
           </List>
         </MainCard>
-      </Grid>
-
-      <Grid item xs={12}>
-        <Stack direction="row" justifyContent="flex-end" alignItems="center" spacing={2}>
-          <Button variant="outlined" color="secondary">
-            Cancel
-          </Button>
-          <Button variant="contained">Update Profile</Button>
-        </Stack>
-      </Grid>
+      </Grid> */}
     </Grid>
   );
 };

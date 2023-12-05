@@ -130,8 +130,60 @@ export function getUserDelete(uniqueId) {
     try {
       await axiosServices.post('/user/deleteUser', { uniqueId });
       dispatch(deleteUser({ uniqueId }));
+      dispatch(
+        openSnackbar({
+          open: true,
+          message: 'Your account deleted successfully.',
+          variant: 'alert',
+          alert: {
+            color: 'success'
+          },
+          close: true
+        })
+      );
     } catch (error) {
-      dispatch(hasError(error));
+      dispatch(
+        openSnackbar({
+          open: true,
+          message: 'Server connection error. Try later.',
+          variant: 'alert',
+          alert: {
+            color: 'error'
+          },
+          close: true
+        })
+      );
+    }
+  };
+}
+
+export function deleteMe(uniqueId) {
+  return async () => {
+    try {
+      await axiosServices.delete('/user/' + uniqueId);
+      dispatch(
+        openSnackbar({
+          open: true,
+          message: 'Your account deleted successfully.',
+          variant: 'alert',
+          alert: {
+            color: 'success'
+          },
+          close: true
+        })
+      );
+    } catch (error) {
+      dispatch(
+        openSnackbar({
+          open: true,
+          message: 'Server connection error. Try later.',
+          variant: 'alert',
+          alert: {
+            color: 'error'
+          },
+          close: true
+        })
+      );
     }
   };
 }

@@ -65,6 +65,7 @@ export default function AlertCustomerDelete({ title, userDeleteId, open, handleC
       maxWidth="xs"
       aria-labelledby="column-delete-title"
       aria-describedby="column-delete-description"
+      // PaperProps={{ style: { backgroundColor: '#d5bdaf' } }}
     >
       <DialogContent sx={{ mt: 2, my: 1 }}>
         <form onSubmit={handleDelete}>
@@ -82,7 +83,7 @@ export default function AlertCustomerDelete({ title, userDeleteId, open, handleC
                   {' '}
                   &quot;{title}&quot;{' '}
                 </Typography>
-                document, all data related to this document will also be deleted.
+                , all data related to this document will also be deleted.
               </Typography>
             </Stack>
 

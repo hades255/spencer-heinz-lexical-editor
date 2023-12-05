@@ -114,11 +114,11 @@ const Team = ({ socket }) => {
   const activeTeam = useSelector((state) => state.document.activeTeam);
   const leaderEmails = leaders.map((item) => item.email);
   const users = useSelector((state) => state.user.lists).filter(
-    (item) => !item.hide && !leaderEmails.includes(item.email) && item.email !== document.creator?.email
+    (item) => !item.setting?.hide && !leaderEmails.includes(item.email) && item.email !== document.creator?.email
   );
   const [favourites, setFavourites] = useState([]);
   const [showStars, setShowStars] = useState(false);
-  const [value, setValue] = useState('tab-1');
+  const [value, setValue] = useState('tab-2');
   const [newTeamLeader, setNewTeamLeader] = useState(users[0]?.email);
 
   const handleShowStars = useCallback(() => {
@@ -314,10 +314,22 @@ const Team = ({ socket }) => {
   );
 };
 
-const LeaderItem = ({ user, me, creator = {}, team, activeTeam, removeTeam, setActiveTeam, favourites, setFavourites }) => {
+export const LeaderItem = ({
+  user,
+  me,
+  creator = {},
+  team,
+  activeTeam,
+  removeTeam,
+  setActiveTeam,
+  favourites,
+  setFavourites,
+  edit = true
+}) => {
   const handleRemoveTeam = useCallback(() => {
-    removeTeam(user.team, user._id === me._id ? team : me.team);
-  }, [user, me, team, removeTeam]);
+    if (edit) removeTeam(user.team, user._id === me._id ? team : me.team);
+    else removeTeam(user._id);
+  }, [user, me, team, removeTeam, edit]);
 
   const handleSetActiveTeam = useCallback(() => {
     setActiveTeam(user.team);
@@ -328,7 +340,7 @@ const LeaderItem = ({ user, me, creator = {}, team, activeTeam, removeTeam, setA
   }, [setFavourites, favourites, user]);
 
   return (
-    <ListItemButton sx={{ borderBottom: '1px solid', borderColor: 'divider' }}>
+    <ListItemButton sx={{ borderBottom: '1px solid', borderColor: 'divider' }} divider>
       <ListItemIcon>
         <IconButton onClick={handleClickStar} sx={{ borderRadius: 20 }}>
           {favourites.includes(user.email) ? (
@@ -351,21 +363,21 @@ const LeaderItem = ({ user, me, creator = {}, team, activeTeam, removeTeam, setA
                 </IconButton>
               </Tooltip>
             )}
-            {me.team === user.team && (
+            {edit && me.team === user.team && (
               <Tooltip title="Your Team">
                 <IconButton size="small" color="primary">
                   <BackgroundLetterAvatar name={'M'} sx={{ width: 24, height: 24, background: '#efe', color: '#777' }} />
                 </IconButton>
               </Tooltip>
             )}
-            {((creator._id === me._id && !user.invitor) || user.invitor === me._id) && (
+            {edit && ((creator._id === me._id && !user.invitor) || user.invitor === me._id) && (
               <Tooltip title="Team you have created">
                 <IconButton size="small" color="primary">
                   <BackgroundLetterAvatar name={'Y'} sx={{ width: 24, height: 24, background: '#eef', color: '#777' }} />
                 </IconButton>
               </Tooltip>
             )}
-            {user.team === activeTeam && (
+            {edit && user.team === activeTeam && (
               <Tooltip title="Active Team">
                 <IconButton size="small" color="primary">
                   <BackgroundLetterAvatar name={'A'} sx={{ width: 24, height: 24, background: '#edf', color: '#777' }} />
@@ -381,7 +393,7 @@ const LeaderItem = ({ user, me, creator = {}, team, activeTeam, removeTeam, setA
                 </IconButton>
               </Tooltip>
             )}
-            {user.team !== activeTeam && me.leader && (me.team === activeTeam || me._id === creator._id) && (
+            {edit && user.team !== activeTeam && me.leader && (me.team === activeTeam || me._id === creator._id) && (
               <Tooltip title="Set Active Team">
                 <IconButton color="primary" onClick={handleSetActiveTeam}>
                   <CheckOutlined />
@@ -410,7 +422,7 @@ const LeaderItem = ({ user, me, creator = {}, team, activeTeam, removeTeam, setA
   );
 };
 
-const UserItem = ({ user, favourites, setFavourites, setLeader }) => {
+export const UserItem = ({ user, favourites = [], setFavourites, setLeader, makeTeam = true }) => {
   const [show, setShow] = useState(false);
 
   const handleMouseEnter = useCallback(() => {
@@ -434,7 +446,7 @@ const UserItem = ({ user, favourites, setFavourites, setLeader }) => {
   );
 
   return (
-    <ListItemButton role="listitem" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+    <ListItemButton role="listitem" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} divider>
       <ListItemIcon>
         <IconButton onClick={handleClickStar} sx={{ borderRadius: 20 }}>
           {favourites.includes(user.email) ? (
@@ -461,24 +473,26 @@ const UserItem = ({ user, favourites, setFavourites, setLeader }) => {
                 <PatternFormat displayType="text" format=" +1 (###) ###-####" mask="_" defaultValue={user.workPhone} />
               </Typography>
             </Stack>
-            <Box
-              sx={{
-                position: 'absolute',
-                right: '20px',
-                top: '10px',
-                visibility: show ? 'visible' : 'hidden',
-                width: 20,
-                height: 20,
-                borderRadius: 10
-              }}
-              onClick={handleClickStar}
-            >
-              <Tooltip title="Add new Team with this user">
-                <IconButton sx={{ borderRadius: 20 }} onClick={handleSetTeamLeader}>
-                  <ArrowRightOutlined style={{ fontSize: 20 }} />
-                </IconButton>
-              </Tooltip>
-            </Box>
+            {makeTeam && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  right: '20px',
+                  top: '10px',
+                  visibility: show ? 'visible' : 'hidden',
+                  width: 20,
+                  height: 20,
+                  borderRadius: 10
+                }}
+                onClick={handleClickStar}
+              >
+                <Tooltip title="Add new Team with this user">
+                  <IconButton sx={{ borderRadius: 20 }} onClick={handleSetTeamLeader}>
+                    <ArrowRightOutlined style={{ fontSize: 20 }} />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            )}
           </Stack>
         }
       />
@@ -613,7 +627,7 @@ const NewTeam = ({ socket, favourites, users, newTeamLeader }) => {
   );
 };
 
-const TeamLeaderItem = ({ user = {} }) => {
+export const TeamLeaderItem = ({ user = {} }) => {
   return (
     <Stack direction="row" spacing={2}>
       <UserAvatar
@@ -669,6 +683,7 @@ TeamLeaderItem.propTypes = {
 
 UserItem.propTypes = {
   user: PropTypes.any,
+  makeTeam: PropTypes.any,
   favourites: PropTypes.any,
   setFavourites: PropTypes.func,
   setLeader: PropTypes.func
@@ -676,6 +691,7 @@ UserItem.propTypes = {
 
 LeaderItem.propTypes = {
   user: PropTypes.any,
+  edit: PropTypes.any,
   creator: PropTypes.any,
   me: PropTypes.any,
   activeTeam: PropTypes.any,

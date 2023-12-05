@@ -12,7 +12,6 @@ const AddNewInviteConfirmDlg = ({ open, onClose }) => {
   const confirmBtn = useRef(null);
 
   const handleFocus = useCallback(() => {
-    console.log(confirmBtn);
     confirmBtn?.current?.focus();
   }, []);
 

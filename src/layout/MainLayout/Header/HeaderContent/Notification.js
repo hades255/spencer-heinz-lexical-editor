@@ -33,6 +33,9 @@ import NotificationItem from './NotificationItem';
 import AuthContext from 'contexts/JWTContext';
 import { HandleNotificationDlg } from './HandleNotification';
 import { NewNotificationDlg } from './NewNotificationDlg';
+import { RELOAD_REQUIRED_NOTIFICATION_TYPES } from 'config/constants';
+import useAuth from 'hooks/useAuth';
+import { openSnackbar } from 'store/reducers/snackbar';
 
 // sx styles
 export const avatarSX = {
@@ -57,13 +60,14 @@ const Notification = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const user = useContext(AuthContext).user;
+  const { logout } = useAuth();
   const matchesXs = useMediaQuery(theme.breakpoints.down('md'));
 
   const notifications = useSelector((state) => state.notification.list);
 
   const anchorRef = useRef(null);
   const [open, setOpen] = useState(false);
-  const [firstShow, setFirstShow] = useState(true);
+  const [firstShow, setFirstShow] = useState(user.setting?.loginNotification || false);
 
   const [notiHandle, setNotiHandle] = useState(null);
   const [openHandle, setOpenHandle] = useState(false);
@@ -107,28 +111,34 @@ const Notification = () => {
 
   useEffect(() => {
     if (!user) return;
+    let flag = true;
     const ws = new WebSocket(process.env.REACT_APP_NOTIFICATION_WEBSOCKET_URL || 'ws://localhost:8000/notification/socket');
-    // console.log('opening');
     ws.onopen = () => {
-      // console.log('opened');
       ws.send(JSON.stringify({ _id: user._id, role: user.role }));
       // setSocket({ ws, opened: true });
     };
 
     ws.onmessage = (event) => {
-      // console.log('received');
       const data = JSON.parse(event.data);
+      if (flag) flag = false;
+      else {
+        const requireRefreshNotifications = data.notifications.filter((item) => RELOAD_REQUIRED_NOTIFICATION_TYPES.includes(item.type));
+        if (requireRefreshNotifications?.length !== 0) {
+          dispatch(
+            openSnackbar({
+              open: true,
+              message: 'Admin changed your status. You have to login again.',
+              variant: 'alert',
+              alert: {
+                color: 'info'
+              },
+              close: true
+            })
+          );
+          logout();
+        }
+      }
       if (data) {
-        // let refreshDoc = null;
-        // for (let item of data.notifications) {
-        //   if (item.redirect && window.location.pathname === '/document/' + item.redirect) {
-        //     refreshDoc = item.redirect;
-        //   }
-        // }
-        // if (refreshDoc) {
-        //   // console.log('refresh');
-        //   dispatch(getDocumentSingleList(refreshDoc));
-        // }
         dispatch(addLists(data.notifications));
         dispatch(addMessageLists(data.messages));
       }
@@ -136,14 +146,12 @@ const Notification = () => {
 
     ws.onclose = () => {
       // setSocket({ ws: null, opened: false });
-      // console.log('closed');
     };
 
     return () => {
-      // console.log('closing');
       ws.close();
     };
-  }, [user]);
+  }, [user, logout]);
 
   const handleClose = useCallback(
     (event) => {
@@ -258,7 +266,7 @@ const Notification = () => {
       <HandleNotificationDlg user={user} notification={notiHandle} open={openHandle} handleClose={handleCloseRedirect} />
       <NewNotificationDlg
         notifications={notifications?.filter((item) => item.status === 'unread')}
-        open={firstShow && notifications?.filter((item) => item.status === 'unread').length !== 0}
+        open={firstShow}
         handleClose={setFirstShow}
         redirect={handleRedirect}
       />

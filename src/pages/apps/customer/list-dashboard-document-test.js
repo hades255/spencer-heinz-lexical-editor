@@ -3,11 +3,8 @@ import Loadable from 'components/Loadable';
 
 const WidgetData = Loadable(lazy(() => import('pages/widget/data')));
 
-
 const DashboardDocumentPage = () => {
-    return (
-        <WidgetData></WidgetData>
-    );
+  return <WidgetData></WidgetData>;
 };
 
 export default DashboardDocumentPage;

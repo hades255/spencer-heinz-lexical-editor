@@ -150,16 +150,21 @@ export default function CommentPlugin({ user }) {
         }
         // ! @topbot 2023/09/11 #filter comments created by current user if blacked out
         const _comments = isBlackedOutNode(_commentNode, user) ? filteredComments : _commentNode.getComments();
-        console.log(_comments);
-        console.log(me.team);
+        //  show comment
         setComments(
-          _comments.map((item) => ({
-            ...item,
-            commentor:
-              me.team === item.commentor.team || item.commentor.leader
-                ? item.commentor
-                : leaders.find((_item) => _item.team === item.commentor.team && _item.leader) || item.commentor
-          })) ?? []
+          _comments
+            .filter(
+              (item) =>
+                users.find((u) => u._id === item.assignee) &&
+                (me.team === item.commentor.team || me._id === item.commentor._id || me._id === item.assignee)
+            )
+            .map((item) => ({
+              ...item,
+              commentor:
+                me.team === item.commentor.team || item.commentor.leader
+                  ? item.commentor
+                  : leaders.find((_item) => _item.team === item.commentor.team && _item.leader) || item.commentor
+            }))
         );
         // check suppressedComments in localstorage and do update
         const storedValue = window.localStorage.getItem('suppressedComments');

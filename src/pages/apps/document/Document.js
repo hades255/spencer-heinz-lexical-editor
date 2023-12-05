@@ -66,9 +66,6 @@ const Document = ({ user, document }) => {
           dispatch(setDocEmails(data.emails)); //  all emails in this doc
           dispatch(setDocMe(data.users.find((item) => item._id === user._id))); //  me
           dispatch(setDocActiveTeam(data.active)); //  active status team
-          setTimeout(() => {
-            setLoad(true);
-          }, 300);
           break;
         default:
           break;
@@ -87,7 +84,9 @@ const Document = ({ user, document }) => {
   }, [user, document]);
 
   useEffect(() => {
-    if (!socket) handleSetSocket();
+    if (socket) {
+      setLoad(true);
+    } else handleSetSocket();
 
     return () => {
       if (socket) socket.close();

@@ -53,6 +53,7 @@ export default function AlertCustomerLock({ title, userDeleteId, open, handleClo
       maxWidth="xs"
       aria-labelledby="column-delete-title"
       aria-describedby="column-delete-description"
+      // PaperProps={{ style: { backgroundColor: '#e3d5ca' } }}
     >
       <DialogContent sx={{ mt: 2, my: 1 }}>
         <form onSubmit={handleLock}>
