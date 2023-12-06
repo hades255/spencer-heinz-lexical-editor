@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -52,3 +53,16 @@ export default function LockUserDialog({
     </Dialog>
   );
 }
+
+LockUserDialog.propTypes({
+  lockedUsers: PropTypes.any,
+  setLockedUsers: PropTypes.any,
+  unlockedUsers: PropTypes.any,
+  setUnlockedUsers: PropTypes.any,
+  isLockingUser: PropTypes.any,
+  setIsLockingUser: PropTypes.any,
+  parentUnlockedUsers: PropTypes.any,
+  lockNode: PropTypes.any,
+  currentUser: PropTypes.any,
+  isLocked: PropTypes.any
+});

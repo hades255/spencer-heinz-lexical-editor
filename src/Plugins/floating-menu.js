@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { $isLinkNode } from '@lexical/link';
 import { COMMAND_PRIORITY_LOW, $getPreviousSelection, $getSelection, $setSelection, createCommand, UNDO_COMMAND } from 'lexical';
@@ -34,7 +34,7 @@ function FloatingMenu({ show, ...props }) {
   const [mouseSelecting, setMouseSelecting] = useState(false);
 
   const nativeSel = window.getSelection();
-  const lastPoint = { x: null, y: null, travel: 0 };
+  const lastPoint = useMemo(() => ({ x: null, y: null, travel: 0 }), []);
 
   useEffect(() => {
     document.addEventListener('mousemove', (event) => {
@@ -52,7 +52,7 @@ function FloatingMenu({ show, ...props }) {
     document.addEventListener('mouseup', () => {
       setMouseSelecting(false);
     });
-  }, []);
+  }, [lastPoint]);
 
   useEffect(() => {
     setStep(0);
@@ -90,7 +90,7 @@ function FloatingMenu({ show, ...props }) {
     } else {
       setPos({ x: mousePos.x + left - 10, y: activeReactY + top - 20 });
     }
-  }, [show, nativeSel, nativeSel?.anchorOffset]);
+  }, [show, nativeSel, nativeSel?.anchorOffset, mousePos, pos, props]);
 
   useEffect(() => {
     const isCollapsed = nativeSel?.rangeCount === 0 || nativeSel?.isCollapsed;
@@ -127,7 +127,7 @@ function FloatingMenu({ show, ...props }) {
 
     if (isMouseInRect && (!mouseSelecting || props.isDropDownActive)) {
       if ((mouseToMenu || props.isDropDownActive) && pos?.x && pos?.y) {
-        return () => { };
+        return () => {};
       } else {
         clearTimeout(setPosTimeout);
         if (isUndefined(pos?.x) || isUndefined(pos?.y)) {
@@ -223,162 +223,165 @@ export function FloatingMenuPlugin({ currentUser }) {
     }
   }, [isDialogOpen]);
 
-  const placeComment = useCallback((payload) => {
-    const { carModel, color, currentUser } = payload;
-    const selection = $getPreviousSelection().clone();
-    editor.focus();
-    $setSelection(selection);
+  const placeComment = useCallback(
+    (payload) => {
+      const { carModel, color, currentUser } = payload;
+      const selection = $getPreviousSelection().clone();
+      editor.focus();
+      $setSelection(selection);
 
-    const anchorNode = selection.anchor.getNode();
-    const focusNode = selection.focus.getNode();
-    let firstNode = anchorNode;
-    let lastNode = focusNode;
+      const anchorNode = selection.anchor.getNode();
+      const focusNode = selection.focus.getNode();
+      let firstNode = anchorNode;
+      let lastNode = focusNode;
 
-    const nodes = selection.extract();
-    const isBackward = selection.isBackward();
+      const nodes = selection.extract();
+      const isBackward = selection.isBackward();
 
-    if (isBackward) {
-      firstNode = focusNode;
-      lastNode = anchorNode;
-    }
-
-    nodes.forEach((_node) => {
-      const newMention = {
-        car: carModel,
-        color: color,
-        comment: commentRef.current.value,
-        commentor: currentUser,
-        replies: [],
-        date: new Date().toISOString()
-      };
-
-      const node = _node.getLatest();
-
-      if (anchorNode.is(focusNode) && nodes.length === 1) {
-        console.log('single node');
-        // check if one whole node is selected
-        if (anchorNode.isDirty() && node.getNextSibling()) {
-          // check if anchorNode has default comments
-          const writable = node.getNextSibling().getLatest().getWritable();
-          if (!isEmpty(anchorNode?.getComments())) {
-            if (node.getNextSibling() && $isUserTextNode(node.getNextSibling())) {
-              writable.setComments(anchorNode.getComments());
-            } else {
-              // next sibling is not UserTextNode
-            }
-          }
-          writable.setLocked(anchorNode.isLocked());
-          writable.setLockedTime(anchorNode.getLockedTime());
-          writable.setUsers(anchorNode.getUsers());
-          const newUniqueId = uuidv4()
-          writable.setUniqueId(newUniqueId);
-        }
-        if ($isUserTextNode(anchorNode)) {
-          const writable = node.getWritable();
-          writable.setComments(anchorNode.getComments());
-          writable.addComment(newMention);
-          writable.setLocked(anchorNode.isLocked());
-          writable.setLockedTime(anchorNode.getLockedTime());
-          writable.setUsers(anchorNode.getUsers());
-          // change this node uniqueid
-          const newUniqueId = uuidv4()
-          writable.setUniqueId(newUniqueId);
-        } else {
-          // if this node is not UserTextNode
-        }
-
-        return false;
+      if (isBackward) {
+        firstNode = focusNode;
+        lastNode = anchorNode;
       }
 
-      if (node.is(firstNode)) {
-        console.log('first node');
-        if ($isUserTextNode(node)) {
-          if ($isUserTextNode(firstNode)) {
-            const writable = node.getWritable();
-            writable.setComments(firstNode.getComments());
-            writable.addComment(newMention);
-            writable.setLocked(firstNode.isLocked());
-            writable.setLockedTime(firstNode.getLockedTime());
-            writable.setUsers(firstNode.getUsers());
-            writable.setUniqueId(firstNode.getUniqueId());
-          } else {
-            // if first node is not UserTextNode
+      nodes.forEach((_node) => {
+        const newMention = {
+          car: carModel,
+          color: color,
+          comment: commentRef.current.value,
+          commentor: currentUser,
+          replies: [],
+          date: new Date().toISOString()
+        };
+
+        const node = _node.getLatest();
+
+        if (anchorNode.is(focusNode) && nodes.length === 1) {
+          console.log('single node');
+          // check if one whole node is selected
+          if (anchorNode.isDirty() && node.getNextSibling()) {
+            // check if anchorNode has default comments
+            const writable = node.getNextSibling().getLatest().getWritable();
+            if (!isEmpty(anchorNode?.getComments())) {
+              if (node.getNextSibling() && $isUserTextNode(node.getNextSibling())) {
+                writable.setComments(anchorNode.getComments());
+              } else {
+                // next sibling is not UserTextNode
+              }
+            }
+            writable.setLocked(anchorNode.isLocked());
+            writable.setLockedTime(anchorNode.getLockedTime());
+            writable.setUsers(anchorNode.getUsers());
+            const newUniqueId = uuidv4();
+            writable.setUniqueId(newUniqueId);
           }
-        } else {
-          // if this node is not UserTextNode
-        }
-      } else if (node.getPreviousSibling()?.is(firstNode)) {
-        console.log('first');
-        if ($isUserTextNode(firstNode)) {
-          if ($isUserTextNode(firstNode)) {
+          if ($isUserTextNode(anchorNode)) {
             const writable = node.getWritable();
-            writable.setComments(firstNode.getComments());
+            writable.setComments(anchorNode.getComments());
             writable.addComment(newMention);
-            writable.setLocked(firstNode.isLocked());
-            writable.setLockedTime(firstNode.getLockedTime());
-            writable.setUsers(firstNode.getUsers());
+            writable.setLocked(anchorNode.isLocked());
+            writable.setLockedTime(anchorNode.getLockedTime());
+            writable.setUsers(anchorNode.getUsers());
+            // change this node uniqueid
+            const newUniqueId = uuidv4();
+            writable.setUniqueId(newUniqueId);
+          } else {
+            // if this node is not UserTextNode
+          }
+
+          return false;
+        }
+
+        if (node.is(firstNode)) {
+          console.log('first node');
+          if ($isUserTextNode(node)) {
+            if ($isUserTextNode(firstNode)) {
+              const writable = node.getWritable();
+              writable.setComments(firstNode.getComments());
+              writable.addComment(newMention);
+              writable.setLocked(firstNode.isLocked());
+              writable.setLockedTime(firstNode.getLockedTime());
+              writable.setUsers(firstNode.getUsers());
+              writable.setUniqueId(firstNode.getUniqueId());
+            } else {
+              // if first node is not UserTextNode
+            }
+          } else {
+            // if this node is not UserTextNode
+          }
+        } else if (node.getPreviousSibling()?.is(firstNode)) {
+          console.log('first');
+          if ($isUserTextNode(firstNode)) {
+            if ($isUserTextNode(firstNode)) {
+              const writable = node.getWritable();
+              writable.setComments(firstNode.getComments());
+              writable.addComment(newMention);
+              writable.setLocked(firstNode.isLocked());
+              writable.setLockedTime(firstNode.getLockedTime());
+              writable.setUsers(firstNode.getUsers());
+              const newUniqueId = uuidv4();
+              writable.setUniqueId(newUniqueId);
+            } else {
+              // if first node is not UserTextNode
+            }
+          } else {
+            // if this node is not mention or userText
+          }
+        } else if (node.is(lastNode)) {
+          console.log('last');
+          if ($isUserTextNode(lastNode)) {
+            // check if last whole node is selected
+            if (focusNode.isDirty() && node.getNextSibling()) {
+              // check if anchorNode has default comments
+              const writable = node.getNextSibling().getLatest().getWritable();
+              if (!isEmpty(lastNode.getComments())) {
+                if (node.getNextSibling() && $isUserTextNode(node.getNextSibling())) {
+                  writable.setComments(lastNode.getComments());
+                } else {
+                  // next sibling is not UserTextNode
+                }
+              }
+              writable.setLocked(lastNode.isLocked());
+              writable.setLockedTime(lastNode.getLockedTime());
+              writable.setUsers(lastNode.getUsers());
+              writable.setUniqueId(lastNode.getUniqueId());
+            }
+            const writable = node.getWritable();
+            writable.setComments(lastNode.getComments());
+            writable.addComment(newMention);
+            writable.setLocked(lastNode.isLocked());
+            writable.setLockedTime(lastNode.getLockedTime());
+            writable.setUsers(lastNode.getUsers());
             const newUniqueId = uuidv4();
             writable.setUniqueId(newUniqueId);
           } else {
             // if first node is not UserTextNode
           }
         } else {
-          // if this node is not mention or userText
-        }
-      } else if (node.is(lastNode)) {
-        console.log('last');
-        if ($isUserTextNode(lastNode)) {
-          // check if last whole node is selected
-          if (focusNode.isDirty() && node.getNextSibling()) {
-            // check if anchorNode has default comments
-            const writable = node.getNextSibling().getLatest().getWritable();
-            if (!isEmpty(lastNode.getComments())) {
-              if (node.getNextSibling() && $isUserTextNode(node.getNextSibling())) {
-                writable.setComments(lastNode.getComments());
-              } else {
-                // next sibling is not UserTextNode
-              }
-            }
-            writable.setLocked(lastNode.isLocked());
-            writable.setLockedTime(lastNode.getLockedTime());
-            writable.setUsers(lastNode.getUsers());
-            writable.setUniqueId(lastNode.getUniqueId());
-          }
-          const writable = node.getWritable();
-          writable.setComments(lastNode.getComments());
-          writable.addComment(newMention);
-          writable.setLocked(lastNode.isLocked());
-          writable.setLockedTime(lastNode.getLockedTime());
-          writable.setUsers(lastNode.getUsers());
-          const newUniqueId = uuidv4()
-          writable.setUniqueId(newUniqueId);
-        } else {
-          // if first node is not UserTextNode
-        }
-      } else {
-        console.log('middle');
-        if ($isUserTextNode(node)) {
+          console.log('middle');
           if ($isUserTextNode(node)) {
-            const writable = node.getWritable();
-            writable.setComments(node.getComments());
-            writable.addComment(newMention);
-            writable.setUniqueId(node.getUniqueId());
-            // writable.setLocked(node.isLocked());
-            // writable.setLockedTime(node.getLockedTime());
-            // writable.setUsers(node.getUsers());
+            if ($isUserTextNode(node)) {
+              const writable = node.getWritable();
+              writable.setComments(node.getComments());
+              writable.addComment(newMention);
+              writable.setUniqueId(node.getUniqueId());
+              // writable.setLocked(node.isLocked());
+              // writable.setLockedTime(node.getLockedTime());
+              // writable.setUsers(node.getUsers());
+            } else {
+              // if first node is not UserTextNode
+            }
           } else {
-            // if first node is not UserTextNode
+            // if it is natural text node
           }
-        } else {
-          // if it is natural text node
         }
-      }
-    });
+      });
 
-    commentRef.current.value = '';
-    setCarModel('');
-    setColor('');
-  }, [editor, carModel])
+      commentRef.current.value = '';
+      setCarModel('');
+      setColor('');
+    },
+    [editor, carModel]
+  );
 
   useEffect(() => {
     return mergeRegister(

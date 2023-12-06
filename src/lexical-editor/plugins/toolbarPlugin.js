@@ -101,7 +101,7 @@ export default function ToolbarPlugin({ user }) {
 
   return (
     <div className="toolbar" ref={toolbarRef}>
-      <UserFilter users={users.filter((item) => item.team === me.team || (me.team && item.leader))} me={me} editor={editor} />
+      <UserFilter users={users} me={me} editor={editor} />
       <>
         <IconButton
           size="large"
@@ -177,18 +177,8 @@ export default function ToolbarPlugin({ user }) {
       </>
       {vipRoles.includes(creator.role) && (
         <>
-          <ToolbarLock
-            users={users.filter((item) => item.team === me.team || (me.team && item.leader))}
-            user={user._id}
-            editor={editor}
-            active={active}
-          />
-          <ToolbarBlackout
-            users={users.filter((item) => item.team === me.team || (me.team && item.leader))}
-            user={user._id}
-            editor={editor}
-            active={active}
-          />
+          <ToolbarLock users={users} user={user._id} editor={editor} active={active} />
+          <ToolbarBlackout users={users} user={user._id} editor={editor} active={active} />
           <ToolbarJump editor={editor} active={active} />
         </>
       )}

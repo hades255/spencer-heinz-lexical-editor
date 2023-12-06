@@ -37,7 +37,7 @@ const Check = ({ user, document, handleRefresh }) => {
   return (
     <>
       <Grid item xs={12}>
-        <Typography variant="h5">About Document</Typography>
+        <Typography variant="h5">Document Details</Typography>
         <MainCard
           content={false}
           sx={{

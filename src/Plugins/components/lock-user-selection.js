@@ -1,4 +1,5 @@
 import * as React from 'react';
+import PropTypes from 'prop-types';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -148,3 +149,13 @@ export default function UserLockList({
     </Grid>
   );
 }
+
+UserLockList.propTypes = {
+  lockedUsers: PropTypes.any,
+  setLockedUsers: PropTypes.any,
+  unlockedUsers: PropTypes.any,
+  setUnlockedUsers: PropTypes.any,
+  currentUser: PropTypes.any,
+  isLocked: PropTypes.any,
+  parentUnlockedUsers: PropTypes.any
+};

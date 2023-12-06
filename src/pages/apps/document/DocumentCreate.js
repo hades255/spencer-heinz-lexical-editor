@@ -6,7 +6,7 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import { Checkbox, DialogContent, FormControlLabel, FormHelperText, Stack, TextField } from '@mui/material';
+import { DialogContent, Stack } from '@mui/material';
 
 import { postDocumentCreate } from 'store/reducers/document';
 
@@ -16,15 +16,13 @@ import { Formik } from 'formik';
 
 // project import
 import { dispatch } from 'store';
-import StyledTextarea from 'components/form/StyledTextarea';
 import AuthContext from 'contexts/JWTContext';
 import { useSelector } from 'store';
 import { getUserLists } from 'store/reducers/user';
 import CustomCell from 'components/customers/CustomCell';
 import AddContributor from 'sections/apps/document/AddContributor';
 import MainCard from 'components/MainCard';
-import { StepWrapper } from 'sections/apps/document/AddDocument';
-import AddTeamLeaders from './AddTeamLeaders';
+import { DocumentDescStep, DocumentNameStep, DocumentTeamStep, StepWrapper } from 'sections/apps/document/AddDocument';
 
 const steps = ['Title', 'Descriptions', 'Contributors', 'Team'];
 
@@ -71,7 +69,7 @@ const DocumentCreate = () => {
         firstinput.current?.focus();
         break;
       case 1:
-        secondinput.current.focus();
+        secondinput.current?.focus();
         break;
       default:
         break;
@@ -193,45 +191,25 @@ const DocumentCreate = () => {
                 ) : (
                   <StepWrapper activeStep={activeStep} handleBack={handleBack} handleNext={handleNext} nextBtn={nextBtn}>
                     {activeStep === 0 && (
-                      <>
-                        <StyledTextarea
-                          id="name-doc"
-                          value={values.name}
-                          name="name"
-                          onBlur={handleBlur}
-                          onChange={handleChange}
-                          placeholder="Document Title"
-                          maxRows={30}
-                          minRows={15}
-                          ref={firstinput}
-                        />
-                        {touched.name && errors.name && (
-                          <FormHelperText error id="helper-text-name-doc">
-                            {errors.name}
-                          </FormHelperText>
-                        )}
-                      </>
+                      <DocumentNameStep
+                        values={values}
+                        handleBlur={handleBlur}
+                        handleChange={handleChange}
+                        firstinput={firstinput}
+                        touched={touched}
+                        errors={errors}
+                      />
                     )}
                     {activeStep === 1 && (
-                      <>
-                        <StyledTextarea
-                          id="description-doc"
-                          value={values.description}
-                          name="description"
-                          onKeyDown={handleKeyDown}
-                          onBlur={handleBlur}
-                          onChange={handleChange}
-                          placeholder="Document Description"
-                          maxRows={30}
-                          minRows={15}
-                          ref={secondinput}
-                        />
-                        {touched.description && errors.description && (
-                          <FormHelperText error id="helper-text-description-doc">
-                            {errors.description}
-                          </FormHelperText>
-                        )}
-                      </>
+                      <DocumentDescStep
+                        values={values}
+                        handleBlur={handleBlur}
+                        handleChange={handleChange}
+                        handleKeyDown={handleKeyDown}
+                        secondinput={secondinput}
+                        touched={touched}
+                        errors={errors}
+                      />
                     )}
                     {activeStep === 2 && (
                       <AddContributor
@@ -249,42 +227,18 @@ const DocumentCreate = () => {
                       />
                     )}
                     {activeStep === 3 && (
-                      <>
-                        <Stack>
-                          <FormControlLabel
-                            control={
-                              <Checkbox checked={values.defaultTeam} onChange={handleChange} id="default-name-team" name="defaultTeam" />
-                            }
-                            label={'Use default Team name "authoring"'}
-                          />
-                          <Box>
-                            <TextField
-                              id="name-team"
-                              value={values.team}
-                              name="team"
-                              onBlur={handleBlur}
-                              onChange={handleChange}
-                              placeholder="Name of Team"
-                              label="Type name of Team"
-                              variant="standard"
-                              sx={{ minWidth: 300, width: '50%', display: values.defaultTeam ? 'none' : 'block' }}
-                            />
-                            {touched.team && errors.team && (
-                              <FormHelperText error id="helper-text-team-doc">
-                                {errors.team}
-                              </FormHelperText>
-                            )}
-                          </Box>
-                          <AddTeamLeaders
-                            me={user}
-                            contributors={contributors}
-                            allUsers={users}
-                            defaultTeam={values.defaultTeam ? 'authoring' : values.team}
-                            leaders={leaders}
-                            setLeaders={setLeaders}
-                          />
-                        </Stack>
-                      </>
+                      <DocumentTeamStep
+                        values={values}
+                        handleBlur={handleBlur}
+                        handleChange={handleChange}
+                        touched={touched}
+                        errors={errors}
+                        user={user}
+                        contributors={contributors}
+                        users={users}
+                        leaders={leaders}
+                        setLeaders={setLeaders}
+                      />
                     )}
                   </StepWrapper>
                 )}

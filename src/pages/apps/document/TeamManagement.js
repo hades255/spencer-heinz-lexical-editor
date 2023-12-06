@@ -119,7 +119,7 @@ const Team = ({ socket }) => {
   const [favourites, setFavourites] = useState([]);
   const [showStars, setShowStars] = useState(false);
   const [value, setValue] = useState('tab-2');
-  const [newTeamLeader, setNewTeamLeader] = useState(users[0]?.email);
+  const [newTeamLeader, setNewTeamLeader] = useState('');
 
   const handleShowStars = useCallback(() => {
     setShowStars(!showStars);
@@ -166,7 +166,7 @@ const Team = ({ socket }) => {
             dispatch(
               openSnackbar({
                 open: true,
-                message: `Add team successfully.`,
+                message: `Deletion of Team successfull.`,
                 variant: 'alert',
                 alert: {
                   color: 'success'
@@ -506,7 +506,7 @@ const NewTeam = ({ socket, favourites, users, newTeamLeader }) => {
   const emails = useSelector((state) => state.document.emails);
   const [error, setError] = useState({ teamName: '' });
   const [teamName, setTeamName] = useState('');
-  const [teamLeader, setTeamLeader] = useState(users[0]?.email);
+  const [teamLeader, setTeamLeader] = useState('');
 
   useEffect(() => {
     setTeamLeader(newTeamLeader);
@@ -597,7 +597,7 @@ const NewTeam = ({ socket, favourites, users, newTeamLeader }) => {
           autoHighlight
           id="team-leader-email-select"
           sx={{ minWidth: 300, width: '50%', mt: 2 }}
-          options={users.map((item) => item.email)}
+          options={['', ...users.map((item) => item.email)]}
           renderInput={(params) => <TextField {...params} label="Select Team Leader" />}
           value={teamLeader}
           onChange={(e, v) => setTeamLeader(v)}

@@ -228,6 +228,7 @@ export const HandleInvitation = ({ user, document, notification, onCancel }) => 
 
 HandleInvitation.propTypes = {
   user: PropTypes.object,
+  document: PropTypes.object,
   notification: PropTypes.object,
   onCancel: PropTypes.func
 };

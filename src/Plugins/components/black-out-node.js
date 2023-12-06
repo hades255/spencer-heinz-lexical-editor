@@ -1,4 +1,4 @@
-import { $applyNodeReplacement, ElementNode } from "lexical";
+import { $applyNodeReplacement, ElementNode } from 'lexical';
 
 /**
  * @class black-out element node class

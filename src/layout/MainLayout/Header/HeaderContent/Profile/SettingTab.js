@@ -13,7 +13,7 @@ const SettingTab = ({ onClose }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const navigation = useNavigate();
   const handleListItemClick = (event, index) => {
-    switch(index) {
+    switch (index) {
       case 0:
         navigation('/settings/support');
         break;

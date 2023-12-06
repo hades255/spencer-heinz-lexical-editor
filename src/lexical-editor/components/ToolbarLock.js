@@ -29,7 +29,7 @@ const ToolbarLock = ({ user, users, editor, active }) => {
   useEffect(() => {
     setLockedUsers(getUserIds(users));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [users]);
 
   const updateLockbar = useCallback(() => {
     const selection = $getSelection();
@@ -61,7 +61,7 @@ const ToolbarLock = ({ user, users, editor, active }) => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editor]);
+  }, [editor, locker, timestamp, users]);
 
   useEffect(() => {
     return mergeRegister(
@@ -83,7 +83,7 @@ const ToolbarLock = ({ user, users, editor, active }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor, updateLockbar]);
 
-  const unlockNode = () => {
+  const unlockNode = useCallback(() => {
     if (unlockedUsers.indexOf(user) === -1) {
       dispatch(
         openSnackbar({
@@ -100,22 +100,22 @@ const ToolbarLock = ({ user, users, editor, active }) => {
     }
 
     editor.dispatchCommand(UNLOCK_COMMAND);
-  };
+  }, [editor, unlockedUsers, user]);
 
   /**
    *
    * @description lock selected nodes
    * @Todo check and reinforce properties should be preserved
    */
-  const lockNode = () => {
+  const lockNode = useCallback(() => {
     editor.dispatchCommand(LOCK_COMMAND, { users: unlockedUsers });
     return false;
-  };
+  }, [editor, unlockedUsers]);
 
-  const showLockedNodes = () => {
+  const showLockedNodes = useCallback(() => {
     setIsLockedShow((prev) => !prev);
     return false;
-  };
+  }, []);
 
   return (
     <>

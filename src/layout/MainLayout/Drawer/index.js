@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';

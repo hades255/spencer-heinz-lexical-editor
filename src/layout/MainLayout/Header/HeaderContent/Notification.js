@@ -174,7 +174,7 @@ const Notification = () => {
         }
       });
     }
-  }, [notifications, flag]);
+  }, [notifications, flag, handleAfterReceiveNotification]);
 
   useEffect(() => {
     if (!user) return;

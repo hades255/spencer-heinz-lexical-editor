@@ -94,13 +94,13 @@ const AuthRegister = ({ redirect = true, onCancel = null, customer = null }) => 
             const response = await register(values);
             if (scriptedRef.current) {
               setSubmitting(false);
-              if (response.code === 'error') {
+              if (response.code === 'error' || response.error) {
                 setStatus({ success: false });
                 setErrors({ submit: response.message });
                 dispatch(
                   openSnackbar({
                     open: true,
-                    message: 'Your registration has not been successfully completed.',
+                    message: response.message || 'Your registration has not been successfully completed.',
                     variant: 'alert',
                     alert: {
                       color: 'error'
@@ -133,6 +133,17 @@ const AuthRegister = ({ redirect = true, onCancel = null, customer = null }) => 
             }
           } catch (err) {
             console.error(err);
+            dispatch(
+              openSnackbar({
+                open: true,
+                message: err.message || 'Your registration has not been successfully completed.',
+                variant: 'alert',
+                alert: {
+                  color: 'error'
+                },
+                close: true
+              })
+            );
             if (scriptedRef.current) {
               setStatus({ success: false });
               setErrors({ submit: err.message });

@@ -462,13 +462,17 @@ const SearchInput = ({ searchVal, toggleOpenCDlg, users, setSearchVal, onSearch,
           toggleOpenCDlg(true);
         }}
         filterOptions={(options, params) => {
-          const filtered = filter(options, params);
-          if (users.map((item) => item.email).includes(searchVal) || !searchVal || !searchVal.includes('@') || !searchVal.includes('.'))
-            return filtered;
-          filtered.push({
-            inputValue: searchVal,
-            title: `Add "${searchVal}"`
-          });
+          let filtered = filter(options, params);
+          if (
+            searchVal &&
+            searchVal.includes('@') &&
+            searchVal.includes('.') &&
+            !users.map((item) => item.email.toLowerCase()).includes(searchVal.toLowerCase())
+          )
+            filtered.push({
+              inputValue: searchVal,
+              title: `Add "${searchVal}"`
+            });
           return filtered;
         }}
         onInputChange={(e, v) => {

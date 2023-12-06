@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 // material-ui
@@ -12,7 +12,6 @@ import { dispatch } from 'store';
 import DocumentTable from '../document/document-table';
 import AddDocument from 'sections/apps/document/AddDocument';
 import CheckPremium from 'sections/apps/user/CheckPremium';
-import CustomerView from 'sections/apps/customer/CustomerView';
 import MainCard from 'components/MainCard';
 import ScrollX from 'components/ScrollX';
 import { PopupTransition } from 'components/@extended/Transitions';
@@ -45,7 +44,7 @@ const DocumentListPage = () => {
 
   const handleAdd = () => {
     if (!add) {
-      if (!['super admin', 'admin', 'creator', 'craetor-vip'].includes(user.role)) {
+      if (!['super admin', 'admin', 'creator', 'creator-vip'].includes(user.role)) {
         setCheckPremium(true);
         return;
       }
@@ -74,6 +73,10 @@ const DocumentListPage = () => {
         accessor: 'createdAt'
       },
       {
+        Header: 'team',
+        accessor: 'team'
+      },
+      {
         Header: 'Last Updated',
         accessor: 'updatedAt'
       },
@@ -92,7 +95,7 @@ const DocumentListPage = () => {
       {
         Header: 'Contributors',
         accessor: 'invites',
-        Cell: InvitesCell,
+        Cell: ({ row }) => InvitesCell({ row, user }),
         disableSortBy: true
       }
     ],
@@ -100,18 +103,10 @@ const DocumentListPage = () => {
     [theme]
   );
 
-  const renderRowSubComponent = useCallback(({ row }) => <CustomerView data={data[row.id]} />, [data]);
-
   return (
     <MainCard content={false}>
       <ScrollX>
-        <DocumentTable
-          columns={columns}
-          data={data}
-          handleAdd={handleAdd}
-          getHeaderProps={(column) => column.getSortByToggleProps()}
-          renderRowSubComponent={renderRowSubComponent}
-        />
+        <DocumentTable columns={columns} data={data} handleAdd={handleAdd} getHeaderProps={(column) => column.getSortByToggleProps()} />
       </ScrollX>
       <Dialog
         maxWidth="md"

@@ -265,7 +265,7 @@ const RoleCell = ({ row, value, handleUpdateRole, role }) => {
 
   const handleClick = (event) => {
     event.stopPropagation();
-    setAnchorEl(event.currentTarget);
+    if (value !== role) setAnchorEl(event.currentTarget);
   };
 
   const handleClose = (event) => {
@@ -304,7 +304,7 @@ const RoleCell = ({ row, value, handleUpdateRole, role }) => {
         }
         size="small"
         variant="light"
-        color={value === 'admin' ? 'success' : value.includes('creator') ? 'primary' : 'info'}
+        color={value === role ? 'secondary' : value === 'admin' ? 'success' : value.includes('creator') ? 'primary' : 'info'}
       />
       <Menu id="roles-menu" anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>
         {role === 'super admin' && (

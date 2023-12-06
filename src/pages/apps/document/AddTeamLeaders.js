@@ -31,7 +31,7 @@ const AddTeamLeaders = ({ me, allUsers, defaultTeam, leaders, setLeaders }) => {
   const [favourites, setFavourites] = useState([]);
   const [showStars, setShowStars] = useState(false);
   const [value, setValue] = useState('tab-1');
-  const [newTeamLeader, setNewTeamLeader] = useState(users[0]?.email);
+  const [newTeamLeader, setNewTeamLeader] = useState('');
 
   const handleShowStars = useCallback(() => {
     setShowStars(!showStars);
@@ -71,9 +71,9 @@ const AddTeamLeaders = ({ me, allUsers, defaultTeam, leaders, setLeaders }) => {
   const handleNewTeam = useCallback(
     (team, leader) => {
       setLeaders([...leaders, { ...leader, leader: true, team, invitor: me._id, reply: 'pending' }]);
-      setNewTeamLeader(users[0]?.email);
+      setNewTeamLeader('');
     },
-    [leaders, me, setLeaders, users]
+    [leaders, me, setLeaders]
   );
 
   const handleRemoveTeam = useCallback(
@@ -182,7 +182,7 @@ export default AddTeamLeaders;
 const NewTeam = ({ favourites, users, newTeamLeader, leaders, addTeam }) => {
   const [error, setError] = useState({ teamName: '' });
   const [teamName, setTeamName] = useState('');
-  const [teamLeader, setTeamLeader] = useState(users[0]?.email);
+  const [teamLeader, setTeamLeader] = useState('');
 
   useEffect(() => {
     setTeamLeader(newTeamLeader);
@@ -232,7 +232,7 @@ const NewTeam = ({ favourites, users, newTeamLeader, leaders, addTeam }) => {
           autoHighlight
           id="team-leader-email-select"
           sx={{ minWidth: 300, width: '50%', mt: 2 }}
-          options={users.map((item) => item.email)}
+          options={['', ...users.map((item) => item.email)]}
           renderInput={(params) => <TextField {...params} label="Select Team Leader" />}
           value={teamLeader}
           onChange={(e, v) => setTeamLeader(v)}

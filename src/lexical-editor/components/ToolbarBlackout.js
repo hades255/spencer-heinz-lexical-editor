@@ -28,7 +28,7 @@ const ToolbarBlackout = ({ user, users, editor, active }) => {
   useEffect(() => {
     setLockedUsers(getUserIds(users));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [users]);
 
   const updateBlackoutbar = useCallback(() => {
     const selection = $getSelection();
@@ -66,7 +66,7 @@ const ToolbarBlackout = ({ user, users, editor, active }) => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editor]);
+  }, [editor, users]);
 
   useEffect(() => {
     return mergeRegister(

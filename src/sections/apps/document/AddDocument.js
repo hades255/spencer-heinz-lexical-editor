@@ -22,6 +22,7 @@ import { useSelector } from 'store';
 import { getUserLists } from 'store/reducers/user';
 import CustomCell from 'components/customers/CustomCell';
 import AddContributor from './AddContributor';
+import AddTeamLeaders from 'pages/apps/document/AddTeamLeaders';
 
 const steps = ['Title', 'Descriptions', 'Contributors', 'Team'];
 
@@ -29,6 +30,7 @@ const AddDocument = ({ user }) => {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [contributors, setContributors] = useState([]);
+  const [leaders, setLeaders] = useState([]);
   const users = useSelector((state) => state.user.lists);
   const nextBtn = useRef(null);
   const firstinput = useRef(null);
@@ -54,17 +56,19 @@ const AddDocument = ({ user }) => {
   }, []);
 
   useEffect(() => {
-    if (user) setContributors([user.email]);
-    firstinput.current.focus();
+    if (user) {
+      setContributors([user.email]);
+      if (firstinput) firstinput.current?.focus();
+    }
   }, [user]);
 
   useEffect(() => {
     switch (activeStep) {
       case 0:
-        firstinput.current.focus();
+        firstinput.current?.focus();
         break;
       case 1:
-        secondinput.current.focus();
+        secondinput.current?.focus();
         break;
       default:
         break;
@@ -112,24 +116,31 @@ const AddDocument = ({ user }) => {
               description: Yup.string().max(1024).required('Document description is required')
             })}
             onSubmit={async (values, { setStatus, setSubmitting }) => {
+              const leaderEmails = leaders.map((item) => item.email);
               dispatch(
                 postDocumentCreate(
                   {
                     ...values,
-                    invites: users
-                      .filter((item) => item.email !== user.email && contributors.includes(item.email))
-                      .map(({ _id, name, email, avatar, status, role, mobilePhone, workPhone }) => ({
-                        _id,
-                        name,
-                        email,
-                        avatar,
-                        status,
-                        role,
-                        mobilePhone,
-                        workPhone,
-                        team: values.defaultTeam || !values.team ? 'Authoring' : values.team,
-                        reply: 'pending'
-                      }))
+                    invites: [
+                      ...users
+                        .filter(
+                          (item) => item.email !== user.email && contributors.includes(item.email) && !leaderEmails.includes(item.email)
+                        )
+                        .map(({ _id, name, email, avatar, status, role, mobilePhone, workPhone }) => ({
+                          _id,
+                          name,
+                          email,
+                          avatar,
+                          status,
+                          role,
+                          mobilePhone,
+                          workPhone,
+                          team: values.defaultTeam || !values.team ? 'authoring' : values.team,
+                          reply: 'pending'
+                        })),
+                      ...leaders
+                    ],
+                    team: values.defaultTeam || !values.team ? 'authoring' : values.team
                   },
                   navigate
                 )
@@ -186,45 +197,25 @@ const AddDocument = ({ user }) => {
                 ) : (
                   <StepWrapper activeStep={activeStep} handleBack={handleBack} handleNext={handleNext} nextBtn={nextBtn}>
                     {activeStep === 0 && (
-                      <>
-                        <StyledTextarea
-                          id="name-doc"
-                          value={values.name}
-                          name="name"
-                          onBlur={handleBlur}
-                          onChange={handleChange}
-                          placeholder="Document Title"
-                          maxRows={30}
-                          minRows={15}
-                          ref={firstinput}
-                        />
-                        {touched.name && errors.name && (
-                          <FormHelperText error id="helper-text-name-doc">
-                            {errors.name}
-                          </FormHelperText>
-                        )}
-                      </>
+                      <DocumentNameStep
+                        values={values}
+                        handleBlur={handleBlur}
+                        handleChange={handleChange}
+                        firstinput={firstinput}
+                        touched={touched}
+                        errors={errors}
+                      />
                     )}
                     {activeStep === 1 && (
-                      <>
-                        <StyledTextarea
-                          id="description-doc"
-                          value={values.description}
-                          name="description"
-                          onKeyDown={handleKeyDown}
-                          onBlur={handleBlur}
-                          onChange={handleChange}
-                          placeholder="Document Description"
-                          maxRows={30}
-                          minRows={15}
-                          ref={secondinput}
-                        />
-                        {touched.description && errors.description && (
-                          <FormHelperText error id="helper-text-description-doc">
-                            {errors.description}
-                          </FormHelperText>
-                        )}
-                      </>
+                      <DocumentDescStep
+                        values={values}
+                        handleBlur={handleBlur}
+                        handleChange={handleChange}
+                        handleKeyDown={handleKeyDown}
+                        secondinput={secondinput}
+                        touched={touched}
+                        errors={errors}
+                      />
                     )}
                     {activeStep === 2 && (
                       <AddContributor
@@ -242,46 +233,18 @@ const AddDocument = ({ user }) => {
                       />
                     )}
                     {activeStep === 3 && (
-                      <>
-                        <Stack>
-                          <FormControlLabel
-                            control={
-                              <Checkbox checked={values.defaultTeam} onChange={handleChange} id="default-name-team" name="defaultTeam" />
-                            }
-                            label={'Use default Team name "authoring"'}
-                          />
-                          <TextField
-                            id="name-team"
-                            value={values.team}
-                            name="team"
-                            onBlur={handleBlur}
-                            onChange={handleChange}
-                            placeholder="Name of Team"
-                            label="Type name of Team"
-                            variant="standard"
-                            sx={{ minWidth: 300, width: '50%', visibility: values.defaultTeam ? 'hidden' : 'visible' }}
-                          />
-                          {touched.team && errors.team && (
-                            <FormHelperText error id="helper-text-team-doc">
-                              {errors.team}
-                            </FormHelperText>
-                          )}
-                        </Stack>
-                        <Stack spacing={0.3} sx={{ mt: 2 }}>
-                          <Stack direction={'row'} alignItems={'center'} spacing={0.3}>
-                            <Typography sx={{ width: 100, flexShrink: 0 }}>Team Leader</Typography>
-                            <CustomCell user={user} />
-                          </Stack>
-                          <Stack direction={'row'} alignItems={'center'} spacing={0.3}>
-                            <Typography sx={{ width: 100, flexShrink: 0 }}>Members</Typography>
-                            {users
-                              .filter((item) => item.email !== user.email && contributors.includes(item.email))
-                              .map((item, key) => (
-                                <CustomCell key={key} user={item} />
-                              ))}
-                          </Stack>
-                        </Stack>
-                      </>
+                      <DocumentTeamStep
+                        values={values}
+                        handleBlur={handleBlur}
+                        handleChange={handleChange}
+                        touched={touched}
+                        errors={errors}
+                        user={user}
+                        contributors={contributors}
+                        users={users}
+                        leaders={leaders}
+                        setLeaders={setLeaders}
+                      />
                     )}
                   </StepWrapper>
                 )}
@@ -328,3 +291,121 @@ StepWrapper.propTypes = {
 };
 
 export default AddDocument;
+
+export const DocumentNameStep = ({ values, handleBlur, handleChange, firstinput, touched, errors }) => {
+  return (
+    <>
+      <StyledTextarea
+        id="name-doc"
+        value={values.name}
+        name="name"
+        onBlur={handleBlur}
+        onChange={handleChange}
+        placeholder="Document Title"
+        maxRows={30}
+        minRows={15}
+        ref={firstinput}
+      />
+      {touched.name && errors.name && (
+        <FormHelperText error id="helper-text-name-doc">
+          {errors.name}
+        </FormHelperText>
+      )}
+    </>
+  );
+};
+
+export const DocumentDescStep = ({ values, handleBlur, handleChange, handleKeyDown, secondinput, touched, errors }) => {
+  return (
+    <>
+      <StyledTextarea
+        id="description-doc"
+        value={values.description}
+        name="description"
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        onChange={handleChange}
+        placeholder="Document Description"
+        maxRows={30}
+        minRows={15}
+        ref={secondinput}
+      />
+      {touched.description && errors.description && (
+        <FormHelperText error id="helper-text-description-doc">
+          {errors.description}
+        </FormHelperText>
+      )}
+    </>
+  );
+};
+
+export const DocumentTeamStep = ({ values, handleChange, handleBlur, touched, errors, user, contributors, users, leaders, setLeaders }) => {
+  return (
+    <>
+      <Stack>
+        <FormControlLabel
+          control={<Checkbox checked={values.defaultTeam} onChange={handleChange} id="default-name-team" name="defaultTeam" />}
+          label={'Use default Team name "authoring"'}
+        />
+        <Box>
+          <TextField
+            id="name-team"
+            value={values.team}
+            name="team"
+            onBlur={handleBlur}
+            onChange={handleChange}
+            placeholder="Name of Team"
+            label="Type name of Team"
+            variant="standard"
+            sx={{ minWidth: 300, width: '50%', display: values.defaultTeam ? 'none' : 'block' }}
+          />
+          {touched.team && errors.team && (
+            <FormHelperText error id="helper-text-team-doc">
+              {errors.team}
+            </FormHelperText>
+          )}
+        </Box>
+        <AddTeamLeaders
+          me={user}
+          contributors={contributors}
+          allUsers={users}
+          defaultTeam={values.defaultTeam ? 'authoring' : values.team}
+          leaders={leaders}
+          setLeaders={setLeaders}
+        />
+      </Stack>
+    </>
+  );
+};
+
+DocumentNameStep.propTypes = {
+  values: PropTypes.any,
+  handleBlur: PropTypes.any,
+  handleChange: PropTypes.any,
+  firstinput: PropTypes.any,
+  touched: PropTypes.any,
+  errors: PropTypes.any
+};
+
+DocumentDescStep.propTypes = {
+  values: PropTypes.any,
+  handleBlur: PropTypes.any,
+  handleKeyDown: PropTypes.any,
+  handleChange: PropTypes.any,
+  secondinput: PropTypes.any,
+  touched: PropTypes.any,
+  errors: PropTypes.any
+};
+
+DocumentTeamStep.propTypes = {
+  values: PropTypes.any,
+  handleChange: PropTypes.any,
+  handleBlur: PropTypes.any,
+  touched: PropTypes.any,
+  errors: PropTypes.any,
+  user: PropTypes.any,
+  contributors: PropTypes.any,
+  users: PropTypes.any,
+  leaders: PropTypes.any,
+  setLeaders: PropTypes.any
+};

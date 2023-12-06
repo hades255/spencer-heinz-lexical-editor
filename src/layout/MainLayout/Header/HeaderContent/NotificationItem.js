@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 // import { BellOutlined, CheckCircleOutlined, GiftOutlined, MessageOutlined, SettingOutlined } from '@ant-design/icons';
-import { Avatar, Divider, ListItemButton, ListItemAvatar, ListItemText, ListItemSecondaryAction, Typography } from '@mui/material';
+import { Avatar, Divider, ListItemButton, ListItemAvatar, ListItemText, Typography } from '@mui/material';
 import { NOTIFICATION_ITEM } from 'config/constants';
 import { dispatch } from 'store';
 import { setNotificationRead } from 'store/reducers/notification';

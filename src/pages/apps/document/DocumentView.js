@@ -1,13 +1,12 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import AuthContext from 'contexts/JWTContext';
 import Check from './Check';
 import Document from './Document';
 import { Button, Grid, Stack, Typography } from '@mui/material';
-import axiosServices from 'utils/axios';
 import { dispatch } from 'store';
-import { getDocumentSingleList, getSingleList } from 'store/reducers/document';
+import { getDocumentSingleList } from 'store/reducers/document';
 import { useSelector } from 'store';
 
 const DocumentView = () => {
