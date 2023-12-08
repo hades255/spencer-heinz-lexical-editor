@@ -3,23 +3,29 @@ import PropTypes from 'prop-types';
 import {
   ArrowRightOutlined,
   CheckOutlined,
+  CloseCircleOutlined,
   DeleteOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
   MobileOutlined,
   PhoneOutlined,
   SaveOutlined,
   StarFilled
 } from '@ant-design/icons';
 import {
-  Autocomplete,
+  Avatar,
   Box,
   Button,
   ButtonGroup,
   Dialog,
   DialogContent,
+  DialogTitle,
   FormControl,
   Grid,
   IconButton,
   List,
+  ListItem,
+  ListItemAvatar,
   ListItemButton,
   ListItemIcon,
   ListItemText,
@@ -31,6 +37,7 @@ import {
   useMediaQuery,
   useTheme
 } from '@mui/material';
+import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import CloseIcon from '@mui/icons-material/Close';
 import { PopupTransition } from 'components/@extended/Transitions';
 import MainCard from 'components/MainCard';
@@ -46,6 +53,9 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { getUserLists } from 'store/reducers/user';
 import axiosServices from 'utils/axios';
 import { StarOutline } from '@mui/icons-material';
+import AddNewInviteConfirmDlg from 'sections/apps/document/AddNewInviteConfirmDlg';
+import AddNewInviteDlg from 'sections/apps/document/AddNewInviteDlg';
+const filter = createFilterOptions();
 
 const TeamManagement = ({ socket }) => {
   const theme = useTheme();
@@ -112,14 +122,19 @@ const Team = ({ socket }) => {
   const me = useSelector((state) => state.document.me);
   const document = useSelector((state) => state.document.document);
   const activeTeam = useSelector((state) => state.document.activeTeam);
+  const blocked = useSelector((state) => state.document.blockTeams);
   const leaderEmails = leaders.map((item) => item.email);
+  const allUsers = useSelector((state) => state.user.lists);
   const users = useSelector((state) => state.user.lists).filter(
     (item) => !item.setting?.hide && !leaderEmails.includes(item.email) && item.email !== document.creator?.email
   );
   const [favourites, setFavourites] = useState([]);
   const [showStars, setShowStars] = useState(false);
+  const [openDeleteDlg, setOpenDeleteDlg] = useState(false);
   const [value, setValue] = useState('tab-2');
   const [newTeamLeader, setNewTeamLeader] = useState('');
+  const [newTeam, setNewTeam] = useState('');
+  const [oldTeam, setOldTeam] = useState('');
 
   const handleShowStars = useCallback(() => {
     setShowStars(!showStars);
@@ -156,44 +171,88 @@ const Team = ({ socket }) => {
     setValue(newValue);
   };
 
-  const handleRemoveTeam = useCallback(
-    (oldTeam, newTeam) => {
-      if (!window.confirm(`Do you really want to delete team ${oldTeam} and put all its members into team ${newTeam}?`)) return;
-      (async () => {
+  const handlePerformRemoveTeam = useCallback(
+    (res) => {
+      if (res === 0) {
+        setOpenDeleteDlg(false);
+      } else if (res === 1 || res === 2) {
         (async () => {
-          try {
-            socket.send(JSON.stringify({ type: 'remove-team', oldTeam, newTeam }));
-            dispatch(
-              openSnackbar({
-                open: true,
-                message: `Deletion of Team successfull.`,
-                variant: 'alert',
-                alert: {
-                  color: 'success'
-                },
-                close: true
-              })
-            );
-          } catch (error) {
-            console.log(error);
-            dispatch(
-              openSnackbar({
-                open: true,
-                message: `Connection Error! Please refresh page and try again.`,
-                variant: 'alert',
-                alert: {
-                  color: 'error'
-                },
-                close: true
-              })
-            );
-          }
+          (async () => {
+            try {
+              socket.send(JSON.stringify({ type: res === 1 ? 'remove-team' : 'delete-team', oldTeam, newTeam, me }));
+              dispatch(
+                openSnackbar({
+                  open: true,
+                  message: `Deletion of Team successfull.`,
+                  variant: 'alert',
+                  alert: {
+                    color: 'success'
+                  },
+                  close: true
+                })
+              );
+              setOpenDeleteDlg(false);
+            } catch (error) {
+              console.log(error);
+              dispatch(
+                openSnackbar({
+                  open: true,
+                  message: `Connection Error! Please refresh page and try again.`,
+                  variant: 'alert',
+                  alert: {
+                    color: 'error'
+                  },
+                  close: true
+                })
+              );
+            }
+          })();
         })();
+      }
+    },
+    [socket, oldTeam, newTeam, me]
+  );
+
+  const handleRemoveTeam = useCallback((_oldTeam, _newTeam) => {
+    setOldTeam(_oldTeam);
+    setNewTeam(_newTeam);
+    setOpenDeleteDlg(true);
+  }, []);
+
+  const setBlockTeam = useCallback(
+    (team, flag) => {
+      (async () => {
+        try {
+          socket.send(JSON.stringify({ type: (flag ? 'set' : 'remove') + '-block', team }));
+          dispatch(
+            openSnackbar({
+              open: true,
+              message: `${flag ? 'Set' : 'Remove'} team block successfully.`,
+              variant: 'alert',
+              alert: {
+                color: 'success'
+              },
+              close: true
+            })
+          );
+        } catch (error) {
+          console.log(error);
+          dispatch(
+            openSnackbar({
+              open: true,
+              message: `Error.`,
+              variant: 'alert',
+              alert: {
+                color: 'error'
+              },
+              close: true
+            })
+          );
+        }
       })();
     },
     [socket]
   );
-
   const handlesetActiveTeam = useCallback(
     (team) => {
       (async () => {
@@ -240,75 +299,87 @@ const Team = ({ socket }) => {
   return (
     <>
       {activeTeam && (
-        <DialogContent>
-          <Stack direction={'row'} justifyContent={'center'}>
-            Teams
-          </Stack>
-          <MainCard sx={{ mt: 2 }}>
-            <Grid container justifyContent={'center'} spacing={2}>
-              <Grid item xs={10} sm={6}>
-                <TabContext value={value}>
-                  <Stack
-                    sx={{ borderBottom: 1, borderColor: 'divider' }}
-                    direction={'row'}
-                    alignItems={'center'}
-                    justifyContent={'space-between'}
-                  >
-                    <TabList onChange={handleChange}>
-                      <Tab label="Available Users" value={'tab-1'} />
-                      <Tab label="Teams" value={'tab-2'} />
-                    </TabList>
-                    <Box>
-                      <Tooltip title={`${showStars ? 'Hide' : 'Show'} favorite users`}>
-                        <IconButton onClick={handleShowStars} sx={{ borderRadius: 20 }}>
-                          <StarFilled style={{ transition: 'ease-in-out 0.2s', color: showStars ? 'gold' : 'grey' }} />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  </Stack>
-                  <TabPanel value={'tab-1'} sx={{ p: 0, pt: 1 }}>
-                    <List sx={{ height: 400, width: '100%', overflowY: 'scroll' }}>
-                      {users
-                        .filter((item) => (showStars ? favourites.includes(item.email) : true))
-                        .map((item, key) => (
-                          <UserItem
-                            user={item}
-                            key={key}
-                            favourites={favourites}
-                            setFavourites={setFavouriteUser}
-                            setLeader={setNewTeamLeader}
-                          />
-                        ))}
-                    </List>
-                  </TabPanel>
-                  <TabPanel value={'tab-2'} sx={{ p: 0, pt: 1 }}>
-                    <List sx={{ height: 400, width: '100%', overflowY: 'scroll' }}>
-                      {leaders
-                        .filter((item) => (showStars ? favourites.includes(item.email) : true))
-                        .map((item, key) => (
-                          <LeaderItem
-                            key={key}
-                            user={item}
-                            me={me}
-                            team={document?.team}
-                            creator={document?.creator}
-                            activeTeam={activeTeam}
-                            removeTeam={handleRemoveTeam}
-                            setActiveTeam={handlesetActiveTeam}
-                            favourites={favourites}
-                            setFavourites={setFavouriteUser}
-                          />
-                        ))}
-                    </List>
-                  </TabPanel>
-                </TabContext>
+        <>
+          <DialogContent>
+            <Stack direction={'row'} justifyContent={'center'}>
+              Teams
+            </Stack>
+            <MainCard sx={{ mt: 2 }}>
+              <Grid container justifyContent={'center'} spacing={2}>
+                <Grid item xs={10} sm={6}>
+                  <TabContext value={value}>
+                    <Stack
+                      sx={{ borderBottom: 1, borderColor: 'divider' }}
+                      direction={'row'}
+                      alignItems={'center'}
+                      justifyContent={'space-between'}
+                    >
+                      <TabList onChange={handleChange}>
+                        <Tab label="Available Users" value={'tab-1'} />
+                        <Tab label="Teams" value={'tab-2'} />
+                      </TabList>
+                      <Box>
+                        <Tooltip title={`${showStars ? 'Hide' : 'Show'} favorite users`}>
+                          <IconButton onClick={handleShowStars} sx={{ borderRadius: 20 }}>
+                            <StarFilled style={{ transition: 'ease-in-out 0.2s', color: showStars ? 'gold' : 'grey' }} />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </Stack>
+                    <TabPanel value={'tab-1'} sx={{ p: 0, pt: 1 }}>
+                      <List sx={{ height: 400, width: '100%', overflowY: 'scroll' }}>
+                        {users
+                          .filter((item) => (showStars ? favourites.includes(item.email) : true))
+                          .map((item, key) => (
+                            <UserItem
+                              user={item}
+                              key={key}
+                              favourites={favourites}
+                              setFavourites={setFavouriteUser}
+                              setLeader={setNewTeamLeader}
+                            />
+                          ))}
+                      </List>
+                    </TabPanel>
+                    <TabPanel value={'tab-2'} sx={{ p: 0, pt: 1 }}>
+                      <List sx={{ height: 400, width: '100%', overflowY: 'scroll' }}>
+                        {leaders
+                          .filter((item) => (showStars ? favourites.includes(item.email) : true))
+                          .map((item, key) => (
+                            <LeaderItem
+                              key={key}
+                              user={item}
+                              me={me}
+                              team={document?.team}
+                              creator={document?.creator}
+                              activeTeam={activeTeam}
+                              blocked={blocked}
+                              removeTeam={handleRemoveTeam}
+                              setActiveTeam={handlesetActiveTeam}
+                              favourites={favourites}
+                              setFavourites={setFavouriteUser}
+                              setBlockTeam={setBlockTeam}
+                            />
+                          ))}
+                      </List>
+                    </TabPanel>
+                  </TabContext>
+                </Grid>
+                <Grid item xs={10} sm={6}>
+                  <NewTeam
+                    socket={socket}
+                    users={users}
+                    allUsers={allUsers}
+                    favourites={favourites}
+                    newTeamLeader={newTeamLeader}
+                    showStars={showStars}
+                  />
+                </Grid>
               </Grid>
-              <Grid item xs={10} sm={6}>
-                <NewTeam socket={socket} users={users} favourites={favourites} newTeamLeader={newTeamLeader} />
-              </Grid>
-            </Grid>
-          </MainCard>
-        </DialogContent>
+            </MainCard>
+          </DialogContent>
+          <DeleteDialog open={openDeleteDlg} handleClose={handlePerformRemoveTeam} newTeam={newTeam} oldTeam={oldTeam} />
+        </>
       )}
     </>
   );
@@ -320,10 +391,12 @@ export const LeaderItem = ({
   creator = {},
   team,
   activeTeam,
+  blocked,
   removeTeam,
   setActiveTeam,
   favourites,
   setFavourites,
+  setBlockTeam,
   edit = true
 }) => {
   const handleRemoveTeam = useCallback(() => {
@@ -334,6 +407,14 @@ export const LeaderItem = ({
   const handleSetActiveTeam = useCallback(() => {
     setActiveTeam(user.team);
   }, [user, setActiveTeam]);
+
+  const handleSetBlockTeam = useCallback(() => {
+    if (creator._id === me._id) setBlockTeam(user.team, true);
+  }, [user, setBlockTeam, creator, me]);
+
+  const handleRemoveBlockTeam = useCallback(() => {
+    if (creator._id === me._id) setBlockTeam(user.team, false);
+  }, [user, setBlockTeam, creator, me]);
 
   const handleClickStar = useCallback(() => {
     setFavourites(user.email, !favourites.includes(user.email));
@@ -386,7 +467,7 @@ export const LeaderItem = ({
             )}
           </Stack>
           <ButtonGroup variant="text">
-            {((creator._id !== user._id && me.leader && user.team !== activeTeam) || user.invitor === me._id) && (
+            {user.team !== activeTeam && ((creator._id !== user._id && me.leader) || user.invitor === me._id) && (
               <Tooltip title="Remove Team">
                 <IconButton color="error" onClick={handleRemoveTeam}>
                   <DeleteOutlined />
@@ -398,6 +479,19 @@ export const LeaderItem = ({
                 <IconButton color="primary" onClick={handleSetActiveTeam}>
                   <CheckOutlined />
                 </IconButton>
+              </Tooltip>
+            )}
+            {edit && user.team !== activeTeam && creator._id !== user._id && (
+              <Tooltip title="Show/Hide document contents">
+                {blocked.includes(user.team) ? (
+                  <IconButton color="warning" onClick={handleRemoveBlockTeam}>
+                    <EyeInvisibleOutlined />
+                  </IconButton>
+                ) : (
+                  <IconButton color="info" onClick={handleSetBlockTeam}>
+                    <EyeOutlined />
+                  </IconButton>
+                )}
               </Tooltip>
             )}
           </ButtonGroup>
@@ -500,13 +594,29 @@ export const UserItem = ({ user, favourites = [], setFavourites, setLeader, make
   );
 };
 
-const NewTeam = ({ socket, favourites, users, newTeamLeader }) => {
+const NewTeam = ({ socket, allUsers, favourites, users, newTeamLeader, showStars }) => {
   const me = useSelector((state) => state.document.me);
   const leaders = useSelector((state) => state.document.leaders);
   const emails = useSelector((state) => state.document.emails);
   const [error, setError] = useState({ teamName: '' });
   const [teamName, setTeamName] = useState('');
   const [teamLeader, setTeamLeader] = useState('');
+  const [teamLeaderInputValue, setTeamLeaderInputValue] = useState('');
+
+  const [openDlg, toggleOpenDlg] = useState(false);
+  const [openCDlg, toggleOpenCDlg] = useState(false);
+
+  const handleCloseCDlg = useCallback((res = false) => {
+    toggleOpenCDlg(false);
+    toggleOpenDlg(res);
+  }, []);
+
+  const handleCloseDlg = useCallback((email = '') => {
+    toggleOpenDlg(false);
+    if (email) {
+      setTeamLeader(email);
+    }
+  }, []);
 
   useEffect(() => {
     setTeamLeader(newTeamLeader);
@@ -597,20 +707,49 @@ const NewTeam = ({ socket, favourites, users, newTeamLeader }) => {
           autoHighlight
           id="team-leader-email-select"
           sx={{ minWidth: 300, width: '50%', mt: 2 }}
-          options={['', ...users.map((item) => item.email)]}
+          options={['', ...users.filter((item) => (showStars ? favourites.includes(item.email) : true)).map((item) => item.email)]}
           renderInput={(params) => <TextField {...params} label="Select Team Leader" />}
           value={teamLeader}
-          onChange={(e, v) => setTeamLeader(v)}
-          renderOption={(props, option, { selected }, { options }) =>
-            options.includes(option) ? (
-              <ListItemButton {...props}>
-                <ListItemIcon>{favourites.includes(option) && <StarFilled style={{ fontSize: 15, color: 'gold' }} />}</ListItemIcon>
-                <ListItemText>{option}</ListItemText>
-              </ListItemButton>
-            ) : (
-              <></>
+          onChange={(event, v, reason) => {
+            setTeamLeader(v);
+            console.log(v);
+            if (
+              (event.type === 'keydown' && event.key === 'Backspace' && reason === 'removeOption') ||
+              (event.type === 'change' && reason === 'clear') ||
+              !v ||
+              allUsers.map((item) => item.email.toLowerCase()).includes(v.toLowerCase())
             )
-          }
+              return;
+            toggleOpenCDlg(true);
+          }}
+          onInputChange={(e, v) => {
+            setTeamLeaderInputValue(v);
+          }}
+          filterOptions={(options, params) => {
+            let filtered = filter(options, params);
+            if (
+              teamLeaderInputValue &&
+              teamLeaderInputValue.includes('@') &&
+              teamLeaderInputValue.includes('.') &&
+              !allUsers.map((item) => item.email.toLowerCase()).includes(teamLeaderInputValue.toLowerCase())
+            )
+              filtered.push(`Add "${teamLeaderInputValue}"`);
+            return filtered;
+          }}
+          renderOption={(props, option) => (
+            <ListItemButton {...props}>
+              <ListItemIcon>{favourites.includes(option) && <StarFilled style={{ fontSize: 15, color: 'gold' }} />}</ListItemIcon>
+              <ListItemText>{option}</ListItemText>
+            </ListItemButton>
+          )}
+          getOptionLabel={(option) => {
+            if (option.includes('"')) return teamLeaderInputValue;
+            return option;
+          }}
+          selectOnFocus
+          clearOnBlur
+          handleHomeEndKeys
+          freeSolo
         />
       </FormControl>
       {teamLeader && users.find((item) => item.email === teamLeader) && (
@@ -623,6 +762,8 @@ const NewTeam = ({ socket, favourites, users, newTeamLeader }) => {
           </Box>
         </Stack>
       )}
+      {openCDlg && <AddNewInviteConfirmDlg open={openCDlg} onClose={handleCloseCDlg} />}
+      {openDlg && <AddNewInviteDlg open={openDlg} email={teamLeaderInputValue} onClose={handleCloseDlg} />}
     </Stack>
   );
 };
@@ -661,15 +802,71 @@ export const TeamLeaderItem = ({ user = {} }) => {
   );
 };
 
+const DeleteDialog = ({ newTeam, oldTeam, open, handleClose }) => {
+  const handleCancel = useCallback(() => {
+    handleClose(0);
+  }, [handleClose]);
+
+  const handleRemove1 = useCallback(() => {
+    handleClose(1);
+  }, [handleClose]);
+
+  const handleRemove2 = useCallback(() => {
+    handleClose(2);
+  }, [handleClose]);
+
+  return (
+    <Dialog onClose={handleCancel} open={open}>
+      <DialogTitle>Are you sure delete &quot;{oldTeam}&quot; team?</DialogTitle>
+      <DialogContent>
+        <List sx={{ pt: 0 }}>
+          <ListItem disableGutters>
+            <ListItemButton autoFocus onClick={handleRemove1}>
+              <ListItemAvatar>
+                <Avatar>
+                  <DeleteOutlined />
+                </Avatar>
+              </ListItemAvatar>
+              <ListItemText primary={`Yes. Delete team "${oldTeam}" and put all its members into team "${newTeam}" (your team).`} />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disableGutters>
+            <ListItemButton autoFocus onClick={handleRemove2}>
+              <ListItemAvatar>
+                <Avatar>
+                  <DeleteOutlined />
+                </Avatar>
+              </ListItemAvatar>
+              <ListItemText primary={`Yes. Delete team "${oldTeam}" and remove all its members from this document.`} />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disableGutters>
+            <ListItemButton autoFocus onClick={handleCancel}>
+              <ListItemAvatar>
+                <Avatar>
+                  <CloseCircleOutlined />
+                </Avatar>
+              </ListItemAvatar>
+              <ListItemText primary={`No. Don't delete team "${oldTeam}".`} />
+            </ListItemButton>
+          </ListItem>
+        </List>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 TeamManagement.propTypes = {
   socket: PropTypes.any
 };
 
 NewTeam.propTypes = {
   socket: PropTypes.any,
+  allUsers: PropTypes.any,
   users: PropTypes.any,
   favourites: PropTypes.any,
-  newTeamLeader: PropTypes.any
+  newTeamLeader: PropTypes.any,
+  showStars: PropTypes.any
 };
 
 Team.propTypes = {
@@ -692,6 +889,7 @@ UserItem.propTypes = {
 LeaderItem.propTypes = {
   user: PropTypes.any,
   edit: PropTypes.any,
+  blocked: PropTypes.any,
   creator: PropTypes.any,
   me: PropTypes.any,
   activeTeam: PropTypes.any,
@@ -699,5 +897,13 @@ LeaderItem.propTypes = {
   setActiveTeam: PropTypes.any,
   team: PropTypes.any,
   favourites: PropTypes.any,
-  setFavourites: PropTypes.func
+  setFavourites: PropTypes.func,
+  setBlockTeam: PropTypes.func
+};
+
+DeleteDialog.propTypes = {
+  newTeam: PropTypes.any,
+  oldTeam: PropTypes.any,
+  open: PropTypes.any,
+  handleClose: PropTypes.any
 };

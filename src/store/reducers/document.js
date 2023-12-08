@@ -13,6 +13,7 @@ const initialState = {
   users: [],
   leaders: [],
   emails: [],
+  blockTeams: [],
   me: null,
   activeTeam: null,
   error: null
@@ -41,6 +42,9 @@ const document = createSlice({
     },
     setDocActiveTeam(state, action) {
       state.activeTeam = action.payload;
+    },
+    setDocBlockTeams(state, action) {
+      state.blockTeams = action.payload;
     },
 
     // get all invoice list
@@ -97,7 +101,8 @@ export const {
   setDocEmails,
   setDocUsers,
   setDocLeaders,
-  setDocActiveTeam
+  setDocActiveTeam,
+  setDocBlockTeams
 } = document.actions;
 
 export function getDocumentLists() {

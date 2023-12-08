@@ -30,7 +30,7 @@ const AddTeamLeaders = ({ me, allUsers, defaultTeam, leaders, setLeaders }) => {
   const users = allUsers.filter((item) => !item.setting?.hide && !leaderEmails.includes(item.email) && item.email !== me.email);
   const [favourites, setFavourites] = useState([]);
   const [showStars, setShowStars] = useState(false);
-  const [value, setValue] = useState('tab-1');
+  const [value, setValue] = useState('tab-2');
   const [newTeamLeader, setNewTeamLeader] = useState('');
 
   const handleShowStars = useCallback(() => {
@@ -169,7 +169,14 @@ const AddTeamLeaders = ({ me, allUsers, defaultTeam, leaders, setLeaders }) => {
             </TabContext>
           </Grid>
           <Grid item xs={10} sm={6}>
-            <NewTeam users={users} leaders={leaders} favourites={favourites} newTeamLeader={newTeamLeader} addTeam={handleNewTeam} />
+            <NewTeam
+              users={users}
+              leaders={leaders}
+              favourites={favourites}
+              newTeamLeader={newTeamLeader}
+              addTeam={handleNewTeam}
+              showStars={showStars}
+            />
           </Grid>
         </Grid>
       </MainCard>
@@ -179,7 +186,7 @@ const AddTeamLeaders = ({ me, allUsers, defaultTeam, leaders, setLeaders }) => {
 
 export default AddTeamLeaders;
 
-const NewTeam = ({ favourites, users, newTeamLeader, leaders, addTeam }) => {
+const NewTeam = ({ favourites, users, newTeamLeader, leaders, addTeam, showStars }) => {
   const [error, setError] = useState({ teamName: '' });
   const [teamName, setTeamName] = useState('');
   const [teamLeader, setTeamLeader] = useState('');
@@ -232,20 +239,16 @@ const NewTeam = ({ favourites, users, newTeamLeader, leaders, addTeam }) => {
           autoHighlight
           id="team-leader-email-select"
           sx={{ minWidth: 300, width: '50%', mt: 2 }}
-          options={['', ...users.map((item) => item.email)]}
+          options={['', ...users.filter((item) => (showStars ? favourites.includes(item.email) : true)).map((item) => item.email)]}
           renderInput={(params) => <TextField {...params} label="Select Team Leader" />}
           value={teamLeader}
           onChange={(e, v) => setTeamLeader(v)}
-          renderOption={(props, option, { selected }, { options }) =>
-            options.includes(option) ? (
-              <ListItemButton {...props}>
-                <ListItemIcon>{favourites.includes(option) && <StarFilled style={{ fontSize: 15, color: 'gold' }} />}</ListItemIcon>
-                <ListItemText>{option}</ListItemText>
-              </ListItemButton>
-            ) : (
-              <></>
-            )
-          }
+          renderOption={(props, option) => (
+            <ListItemButton {...props}>
+              <ListItemIcon>{favourites.includes(option) && <StarFilled style={{ fontSize: 15, color: 'gold' }} />}</ListItemIcon>
+              <ListItemText>{option}</ListItemText>
+            </ListItemButton>
+          )}
         />
       </FormControl>
       {teamLeader && users.find((item) => item.email === teamLeader) && (
@@ -275,5 +278,6 @@ NewTeam.propTypes = {
   leaders: PropTypes.any,
   favourites: PropTypes.any,
   newTeamLeader: PropTypes.any,
-  addTeam: PropTypes.func
+  addTeam: PropTypes.func,
+  showStars: PropTypes.any
 };

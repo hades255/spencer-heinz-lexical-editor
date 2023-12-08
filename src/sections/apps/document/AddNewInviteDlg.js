@@ -319,7 +319,16 @@ const AddNewInviteDlg = ({ open, email, onClose }) => {
                         <Stack direction="row" spacing={2} alignItems="center">
                           <Grid item xs={6}>
                             <AnimateButton>
-                              <Button disableElevation onClick={onClose} fullWidth size="large" variant="contained" color="secondary">
+                              <Button
+                                disableElevation
+                                onClick={() => {
+                                  onClose();
+                                }}
+                                fullWidth
+                                size="large"
+                                variant="contained"
+                                color="secondary"
+                              >
                                 Cancel
                               </Button>
                             </AnimateButton>

@@ -13,7 +13,8 @@ import SimpleBar from 'simplebar-react';
 import UsersList from 'sections/apps/document/UsersList';
 import TeamManagement from './TeamManagement';
 import { dispatch } from 'store';
-import { setDocActiveTeam, setDocEmails, setDocLeaders, setDocMe, setDocUsers } from 'store/reducers/document';
+import { setDocActiveTeam, setDocBlockTeams, setDocEmails, setDocLeaders, setDocMe, setDocUsers } from 'store/reducers/document';
+import { useSelector } from 'store';
 
 const drawerWidth = 320;
 
@@ -46,6 +47,8 @@ const Document = ({ user, document }) => {
 
   const [socket, setSocket] = useState(null);
   const [load, setLoad] = useState(false);
+  const blocked = useSelector((state) => state.document.blockTeams.includes(state.document.me?.team));
+  console.log(blocked);
 
   const handleSetSocket = useCallback(() => {
     const ws = new WebSocket(process.env.REACT_APP_DEFAULT_WEBSOCKET_URL + 'userrooms/' + document._id + '?userId=' + user._id);
@@ -60,12 +63,16 @@ const Document = ({ user, document }) => {
         case 'active-team':
           dispatch(setDocActiveTeam(data.active)); //  active status team
           break;
+        case 'block-team':
+          dispatch(setDocBlockTeams(data.blocked)); //  active status team
+          break;
         case 'userslistWithTeam':
           dispatch(setDocLeaders(data.leaders)); //  all leaders of each team
           dispatch(setDocUsers(data.users)); //  users in my team
           dispatch(setDocEmails(data.emails)); //  all emails in this doc
           dispatch(setDocMe(data.users.find((item) => item._id === user._id))); //  me
           dispatch(setDocActiveTeam(data.active)); //  active status team
+          dispatch(setDocBlockTeams(data.blocked || [])); //  active blocked team
           break;
         default:
           break;
@@ -189,7 +196,11 @@ const Document = ({ user, document }) => {
                             minHeight: 420
                           }}
                         >
-                          {load && (
+                          {load && blocked ? (
+                            <Stack direction={'row'} justifyContent={'center'}>
+                              <Typography>Your team is blocked. You cannot see the document.</Typography>
+                            </Stack>
+                          ) : (
                             <EditorHistoryStateContext>
                               <LexicalEditor uniqueId={document._id} user={user} />
                             </EditorHistoryStateContext>

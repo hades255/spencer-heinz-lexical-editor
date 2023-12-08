@@ -144,10 +144,14 @@ export const HandleInvitation = ({ user, document, notification, onCancel }) => 
   const navigate = useNavigate();
   const me = document.invites?.find((item) => item._id === user._id);
   const team = me.team || document.team;
-  const leader = me.team
+
+  const leader = me.leader
+    ? me.invitor || document.creator._id
+    : me.team
     ? [{ ...document.creator, team: document.team, leader: true }, ...document.invites].find((item) => item.team === team && item.leader)
         ._id
     : document.creator._id;
+
   console.log(leader);
   const handleAccept = useCallback(() => {
     onCancel();
