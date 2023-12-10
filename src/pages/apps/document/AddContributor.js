@@ -21,6 +21,7 @@ import { StarOutline } from '@mui/icons-material';
 import axiosServices from 'utils/axios';
 import AddNewInviteConfirmDlg from 'sections/apps/document/AddNewInviteConfirmDlg';
 import AddNewInviteDlg from 'sections/apps/document/AddNewInviteDlg';
+import Invitation from './Invitation';
 const filter = createFilterOptions();
 
 export const ReplyCell = ({ value }) => {
@@ -119,12 +120,13 @@ ListCell.propTypes = {
   reply: PropTypes.string
 };
 
-export default function AddContributor({ users, value, onChange, exist = [], user, initEmails = [], document }) {
+export default function AddContributor({ users, value, onChange, exist = [], user, initEmails = [], document, children }) {
   const [emails, setEmails] = useState(initEmails);
   const [checked, setChecked] = useState([]);
   const [searchVal, setSearchVal] = useState('');
   const [search, setSearch] = useState('');
   const [openDlg, toggleOpenDlg] = useState(false);
+  const [openInvitation, setOpenInvitation] = useState(false);
   const [openCDlg, toggleOpenCDlg] = useState(false);
   const inputRef = useRef(null);
   const [showStars, setShowStars] = useState(false);
@@ -254,6 +256,10 @@ export default function AddContributor({ users, value, onChange, exist = [], use
     setShowStars(!showStars);
   }, [showStars]);
 
+  const handleOpenInvitationDlg = useCallback(() => {
+    setOpenInvitation(true);
+  }, []);
+
   const customList = useCallback(
     (title, items) => {
       const ids = items.filter((item) => user.email !== item.email && document.creator.email !== item.email).map((item) => item.email);
@@ -373,15 +379,30 @@ export default function AddContributor({ users, value, onChange, exist = [], use
   );
 
   return (
-    <Stack sx={{ m: 1 }}>
-      <SearchInput
-        searchVal={searchVal}
-        toggleOpenCDlg={toggleOpenCDlg}
-        users={users}
-        setSearchVal={setSearchVal}
-        onSearch={onSearch}
-        inputRef={inputRef}
-      />
+    <Stack sx={{ mx: 2 }}>
+      <Grid container direction={'row'} justifyContent={'space-between'} wrap="wrap">
+        <Grid item xs={12} sm={6} sx={{ display: { xs: 'block', sm: 'none' }, mb: 2 }}>
+          <Box>{children}</Box>
+        </Grid>
+        <Grid item xs={12} sm={6} sx={{ mb: 2 }}>
+          <Button sx={{ mb: 1 }} onClick={handleOpenInvitationDlg}>
+            Invite people to this Document
+          </Button>
+          <Stack direction={'row'} justifyContent={'center'}>
+            <SearchInput
+              searchVal={searchVal}
+              toggleOpenCDlg={toggleOpenCDlg}
+              users={users}
+              setSearchVal={setSearchVal}
+              onSearch={onSearch}
+              inputRef={inputRef}
+            />
+          </Stack>
+        </Grid>
+        <Grid item xs={12} sm={6} sx={{ display: { xs: 'none', sm: 'block' }, mb: 2 }}>
+          <Box>{children}</Box>
+        </Grid>
+      </Grid>
       <Grid container spacing={2} justifyContent="center" alignItems="center">
         <Grid item>
           {customList(
@@ -426,6 +447,7 @@ export default function AddContributor({ users, value, onChange, exist = [], use
       </Grid>
       {openCDlg && <AddNewInviteConfirmDlg open={openCDlg} onClose={handleCloseCDlg} />}
       {openDlg && <AddNewInviteDlg open={openDlg} email={searchVal} onClose={handleCloseDlg} />}
+      {openInvitation && <Invitation open={openInvitation} onClose={setOpenInvitation} user={user} docId={document._id} />}
     </Stack>
   );
 }
@@ -437,7 +459,8 @@ AddContributor.propTypes = {
   initEmails: PropTypes.any,
   exist: PropTypes.any,
   document: PropTypes.any,
-  onChange: PropTypes.func
+  onChange: PropTypes.func,
+  children: PropTypes.any
 };
 
 const SearchInput = ({ searchVal, toggleOpenCDlg, users, setSearchVal, onSearch, inputRef }) => {
@@ -448,8 +471,9 @@ const SearchInput = ({ searchVal, toggleOpenCDlg, users, setSearchVal, onSearch,
   }, [inputRef]);
 
   return (
-    <Grid container spacing={2} justifyContent="center" alignItems="center">
+    <Box>
       <Autocomplete
+        sx={{ width: 300 }}
         value={searchVal}
         onChange={(event, newValue, reason) => {
           if (
@@ -508,9 +532,8 @@ const SearchInput = ({ searchVal, toggleOpenCDlg, users, setSearchVal, onSearch,
             inputRef={inputRef}
           />
         )}
-        sx={{ width: 300 }}
       />
-    </Grid>
+    </Box>
   );
 };
 

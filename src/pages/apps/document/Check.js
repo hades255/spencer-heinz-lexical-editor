@@ -1,17 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import axiosServices from 'utils/axios';
 import { HandleInvitation } from 'layout/MainLayout/Header/HeaderContent/HandleNotification';
-import { AvatarGroup, Box, Grid, Stack, Typography } from '@mui/material';
+import { Box, Grid, Stack, Typography } from '@mui/material';
 import MainCard from 'components/MainCard';
 import CustomCell from 'components/customers/CustomCell';
-import UserAvatar from 'sections/apps/user/UserAvatar';
 
-const Check = ({ user, document, handleRefresh }) => {
+const Check = ({ user, document, handleRefresh, searchParams }) => {
   const [noti, setNoti] = useState(null);
-  const location = useLocation();
-  const searchParams = useMemo(() => new URLSearchParams(location.search), [location]);
 
   useEffect(() => {
     if (searchParams.get('notification')) {
@@ -59,14 +55,17 @@ const Check = ({ user, document, handleRefresh }) => {
                 <Grid item xs={12} sm={8}>
                   <Stack direction="row" alignItems="center" spacing={1}>
                     {document && (
-                      <CustomCell
-                        user={{
-                          online_status: 'none',
-                          avatar: document.creator.avatar,
-                          name: document.creator.name,
-                          email: document.creator.email
-                        }}
-                      />
+                      <Box>
+                        Creator:
+                        <CustomCell
+                          user={{
+                            online_status: 'none',
+                            avatar: document.creator.avatar,
+                            name: document.creator.name,
+                            email: document.creator.email
+                          }}
+                        />
+                      </Box>
                     )}
                     <Typography variant="h4">{document?.name}</Typography>
                   </Stack>
@@ -74,21 +73,8 @@ const Check = ({ user, document, handleRefresh }) => {
                 <Grid item xs={12} sm={4}>
                   <Stack direction={'row'} alignItems="center" justifyContent={'end'}>
                     <Typography variant="subtitle1" sx={{ mr: 2 }}>
-                      Contributors:{' '}
+                      {document?.invites.length} Contributors
                     </Typography>
-                    <AvatarGroup max={6}>
-                      {document?.invites.map((item, key) => (
-                        <UserAvatar
-                          key={key}
-                          user={{
-                            online_status: 'none',
-                            avatar: item.avatar,
-                            name: item.name,
-                            email: item.email
-                          }}
-                        />
-                      ))}
-                    </AvatarGroup>
                   </Stack>
                 </Grid>
               </Grid>
@@ -103,6 +89,7 @@ const Check = ({ user, document, handleRefresh }) => {
                 pb: 2
               }}
             >
+              Description:
               <Typography variant="subtitle1" color="textSecondary">
                 {document?.description}
               </Typography>
@@ -128,6 +115,7 @@ export default Check;
 
 Check.propTypes = {
   user: PropTypes.any,
+  searchParams: PropTypes.any,
   document: PropTypes.any,
   handleRefresh: PropTypes.func
 };

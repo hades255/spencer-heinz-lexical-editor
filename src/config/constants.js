@@ -6,7 +6,8 @@ export const LOGIN_ERROR_MESSAGES = {
 };
 
 export const MESSAGE_TYPES = {
-  DOCUMENT_INVITE_RESOLVE: '@document/invite/resolve/nonactive-users'
+  DOCUMENT_INVITE_RESOLVE: '@document/invite/resolve/nonactive-users',
+  DOCUMENT_INVITATION_SEND: '@document/invitation/send'
 };
 
 export const NOTIFICATION_TYPES = {
@@ -15,6 +16,7 @@ export const NOTIFICATION_TYPES = {
   DOCUMENT_INVITE_ACCEPT: '@document/invite/accept',
   DOCUMENT_INVITE_REJECT: '@document/invite/reject',
   DOCUMENT_INVITE_DELETE: '@document/invite/delete',
+  // DOCUMENT_INVITATION_SEND: '@document/invitation/send',
   DOCUMENT_CREATE_NEW: '@document/new',
   USER_SETTING_ROLE: '@user/setting/role',
   USER_SETTING_STATUS: '@user/setting/status',
@@ -32,61 +34,67 @@ export const NOTIFICATION_ITEM = {
   [NOTIFICATION_TYPES.DOCUMENT_INVITE_SEND]: {
     color: 'primary',
     bgcolor: 'primary',
-    avatar: (data) => data.data[0].text[0],
+    avatar: () => 'I S',
     title: 'Invitation'
   },
   [NOTIFICATION_TYPES.DOCUMENT_INVITE_RECEIVE]: {
     color: 'info',
     bgcolor: 'info',
-    avatar: (data) => data.data[0].text[0],
+    avatar: () => 'I R',
     title: 'Invitation'
   },
   [NOTIFICATION_TYPES.DOCUMENT_INVITE_ACCEPT]: {
     color: 'success',
     bgcolor: 'success',
-    avatar: (data) => data.data[0].text[0],
+    avatar: () => 'I A',
     title: 'Invitation'
   },
   [NOTIFICATION_TYPES.DOCUMENT_INVITE_REJECT]: {
     color: 'error',
     bgcolor: 'error',
-    avatar: (data) => data.data[0].text[0],
+    avatar: () => 'I R',
     title: 'Invitation'
   },
   [NOTIFICATION_TYPES.DOCUMENT_INVITE_DELETE]: {
     color: 'warning',
     bgcolor: 'warning',
-    avatar: (data) => data.data[0].text[0],
+    avatar: () => 'I D',
     title: 'Invitation'
   },
+  // [NOTIFICATION_TYPES.DOCUMENT_INVITATION_SEND]: {
+  //   color: 'info',
+  //   bgcolor: 'info',
+  //   avatar: () => 'I',
+  //   title: 'Invitation'
+  // },
   [NOTIFICATION_TYPES.DOCUMENT_CREATE_NEW]: {
     color: 'info',
     bgcolor: 'info',
-    avatar: () => 'D',
+    avatar: () => 'D N',
     title: 'New Document'
   },
   [NOTIFICATION_TYPES.USER_SETTING_ROLE]: {
     color: 'error',
     bgcolor: 'error',
-    avatar: (data) => data.data[0].text[0],
+    avatar: () => 'U R',
     title: 'User Role'
   },
   [NOTIFICATION_TYPES.USER_SETTING_STATUS]: {
     color: 'error',
     bgcolor: 'error',
-    avatar: (data) => data.data[0].text[0],
+    avatar: () => 'U S',
     title: 'User Status'
   },
   [NOTIFICATION_TYPES.USER_RESET_PASSWORD]: {
     color: 'error',
     bgcolor: 'error',
-    avatar: (data) => data.data[0].text[0],
+    avatar: () => 'U P',
     title: 'Reset Password'
   },
   [NOTIFICATION_TYPES.USER_CREATE_NEW]: {
     color: 'warning',
     bgcolor: 'warning',
-    avatar: () => 'U',
+    avatar: () => 'U N',
     title: 'New User'
   }
 };

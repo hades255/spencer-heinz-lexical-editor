@@ -1,11 +1,14 @@
-import { useEffect, useState } from 'react';
-import { Grid, Stack, Typography } from '@mui/material';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button, Grid, Stack, Typography } from '@mui/material';
 import MainCard from 'components/MainCard';
 import { useParams } from 'react-router-dom';
 import axiosServices from 'utils/axios';
 import AdminHandleInvites from './message/AdminHandleInvites';
+import { MESSAGE_TYPES } from 'config/constants';
 
 const MessageView = () => {
+  const navigate = useNavigate();
   const msgId = useParams().uniqueId;
   const [message, setMessage] = useState(null);
 
@@ -19,6 +22,12 @@ const MessageView = () => {
       }
     })();
   }, [msgId]);
+
+  const handleRedirect = useCallback(() => {
+    const url = new URL(message.redirect);
+    // console.log(url.searchParams.get("invitation"))
+    navigate(url.pathname + url.search);
+  }, [message, navigate]);
 
   return (
     <>
@@ -56,13 +65,11 @@ const MessageView = () => {
                       pt: 5
                     }}
                   >
-                    <Typography component="span" variant="subtitle2">
-                      Message:
-                    </Typography>
-                    {'  '}
                     {message.data.map((text, key) => (
                       <span key={key}>
-                        {text.variant ? (
+                        {text.text === '<br/>' ? (
+                          <br />
+                        ) : text.variant ? (
                           <Typography component="span" variant={text.variant}>
                             {text.text}
                           </Typography>
@@ -72,7 +79,24 @@ const MessageView = () => {
                       </span>
                     ))}
                   </Typography>
-                  {message.attachment && <AdminHandleInvites items={JSON.parse(message.attachment)} />}
+                  {message.attachment && (
+                    <>
+                      {message.type === MESSAGE_TYPES.DOCUMENT_INVITE_RESOLVE && (
+                        <AdminHandleInvites items={JSON.parse(message.attachment)} />
+                      )}
+                    </>
+                  )}
+                  {message.redirect && (
+                    <>
+                      {message.type === MESSAGE_TYPES.DOCUMENT_INVITATION_SEND && (
+                        <Stack direction={'row'} justifyContent={'center'}>
+                          <Button onClick={handleRedirect} sx={{ width: 300 }} variant="contained">
+                            Go Document
+                          </Button>
+                        </Stack>
+                      )}
+                    </>
+                  )}
                 </Grid>
               )}
             </Stack>

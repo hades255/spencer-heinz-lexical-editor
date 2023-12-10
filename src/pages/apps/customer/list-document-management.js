@@ -15,7 +15,7 @@ import { PopupTransition } from 'components/@extended/Transitions';
 // assets
 import { CloseOutlined, EyeTwoTone, EditTwoTone, DeleteTwoTone } from '@ant-design/icons';
 import { DOCUMENT_STATUS } from 'Plugins/constants';
-import { documentDelete, getDocumentLists, getLists } from 'store/reducers/document';
+import { documentDelete, getDocumentLists } from 'store/reducers/document';
 import { useSelector } from 'react-redux';
 import { dispatch } from 'store';
 import DocumentTable from '../document/document-table';

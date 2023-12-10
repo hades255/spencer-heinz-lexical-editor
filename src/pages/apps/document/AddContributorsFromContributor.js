@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
 // material-ui
-import { Box, Stack, Typography, Dialog, DialogContent, Button } from '@mui/material';
+import { Stack, Typography, Dialog, DialogContent, Button } from '@mui/material';
 // project import
 import MainCard from 'components/MainCard';
 
@@ -109,18 +109,9 @@ export default function AddContributorsFromContributor({ open: openThis = false,
     >
       <DialogContent>
         <MainCard sx={{ minHeight: '50vh' }}>
-          <Box>
-            <Stack direction={'row'} justifyContent={'space-between'} sx={{ mb: '20px' }}>
-              <Stack>
-                {users.filter((item) => value.includes(item.email) && item.status !== 'active' && item.status !== 'invited').length !==
-                  0 && (
-                  <Typography sx={{ color: 'red' }} variant="subtitle1">
-                    * Some contributors will not receive an invitation until
-                    <br /> admin resolves Locked/Deleted status.
-                  </Typography>
-                )}
-              </Stack>
-              <Stack alignItems="center">
+          {openThis && (
+            <AddContributor user={me} users={users} value={value} onChange={setValue} exist={exist} initEmails={emails} document={document}>
+              <Stack alignItems="end">
                 <Stack direction={'row'} justifyContent={'space-between'}>
                   <Button
                     size="small"
@@ -146,18 +137,16 @@ export default function AddContributorsFromContributor({ open: openThis = false,
                   </Button>
                 </Stack>
               </Stack>
-            </Stack>
-          </Box>
-          {openThis && (
-            <AddContributor
-              user={me}
-              users={users}
-              value={value}
-              onChange={setValue}
-              exist={exist}
-              initEmails={emails}
-              document={document}
-            />
+              <Stack>
+                {users.filter((item) => value.includes(item.email) && item.status !== 'active' && item.status !== 'invited').length !==
+                  0 && (
+                  <Typography sx={{ color: 'red' }} variant="subtitle1">
+                    * Some contributors will not receive an invitation until
+                    <br /> admin resolves Locked/Deleted status.
+                  </Typography>
+                )}
+              </Stack>
+            </AddContributor>
           )}
         </MainCard>
       </DialogContent>

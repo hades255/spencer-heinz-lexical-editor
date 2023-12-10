@@ -11,7 +11,6 @@ import {
   ListItemButton,
   ListItemAvatar,
   ListItemText,
-  ListItemSecondaryAction,
   Paper,
   Popper,
   Typography,
@@ -31,7 +30,6 @@ import { MailOutlined, CloseOutlined } from '@ant-design/icons';
 import { useSelector } from 'store';
 import moment from 'moment';
 import BackgroundLetterAvatar from 'components/@extended/BackgroundLetterAvatar';
-import { MESSAGE_TYPES } from 'config/constants';
 import { dispatch } from 'store';
 import { setMessageRead, setMessagesRead } from 'store/reducers/message';
 
@@ -196,9 +194,7 @@ export default Message;
 export const MessageItem = ({ message, navigate, setOpen = null }) => {
   const handleClick = useCallback(() => {
     dispatch(setMessageRead(message));
-    if (message.type === MESSAGE_TYPES.DOCUMENT_INVITE_RESOLVE) {
-      navigate('/message/' + message._id);
-    }
+    navigate('/message/' + message._id);
     if (setOpen) setOpen(false);
   }, [message, navigate, setOpen]);
   return (
@@ -211,9 +207,9 @@ export const MessageItem = ({ message, navigate, setOpen = null }) => {
           primary={
             <>
               <Typography variant="h6">
-                <Typography component="span" variant="subtitle1">
+                {/* <Typography component="span" variant="subtitle1">
                   {message.from.name}
-                </Typography>
+                </Typography> */}
                 {'  '}
                 <Typography component="span" variant="subtitle2">
                   {message.from.email}
@@ -222,7 +218,9 @@ export const MessageItem = ({ message, navigate, setOpen = null }) => {
               <Typography variant="h6">
                 {message.data.map((text, key) => (
                   <span key={key}>
-                    {text.variant ? (
+                    {text.text === '<br/>' ? (
+                      <br />
+                    ) : text.variant ? (
                       <Typography component="span" variant={text.variant}>
                         {text.text}
                       </Typography>
@@ -236,13 +234,13 @@ export const MessageItem = ({ message, navigate, setOpen = null }) => {
           }
           secondary={moment(message.createdAt).fromNow()}
         />
-        {message.createdAt !== message.updatedAt && (
+        {/* {message.createdAt !== message.updatedAt && (
           <ListItemSecondaryAction>
             <Typography variant="caption" noWrap>
               {moment(message.createdAt).format('h:mm A')}
             </Typography>
           </ListItemSecondaryAction>
-        )}
+        )} */}
       </ListItemButton>
       <Divider />
     </>

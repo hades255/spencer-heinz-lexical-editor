@@ -48,7 +48,6 @@ const Document = ({ user, document }) => {
   const [socket, setSocket] = useState(null);
   const [load, setLoad] = useState(false);
   const blocked = useSelector((state) => state.document.blockTeams.includes(state.document.me?.team));
-  console.log(blocked);
 
   const handleSetSocket = useCallback(() => {
     const ws = new WebSocket(process.env.REACT_APP_DEFAULT_WEBSOCKET_URL + 'userrooms/' + document._id + '?userId=' + user._id);
