@@ -6,7 +6,7 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import { DialogContent, Stack } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, Divider, FormControl, FormControlLabel, Radio, RadioGroup, Stack } from '@mui/material';
 
 import { postDocumentCreate } from 'store/reducers/document';
 
@@ -108,7 +108,8 @@ const DocumentCreate = () => {
               name: '',
               description: ``,
               team: '',
-              defaultTeam: true
+              defaultTeam: true,
+              emailMethod: ''
             }}
             validationSchema={Yup.object().shape({
               name: Yup.string().max(255).required('Document title is required'),
@@ -176,7 +177,20 @@ const DocumentCreate = () => {
                             <CustomCell key={key} user={item} />
                           ))}
                       </Stack>
+                      <Stack sx={{ my: 2 }} direction={'row'} alignItems={'center'}>
+                        <Typography>Emails will be sended {values.emailMethod}.</Typography>-
+                        <Button
+                          color={'secondary'}
+                          onClick={() => {
+                            handleChange({ target: { name: 'emailMethod', value: '' } });
+                            handleBack();
+                          }}
+                        >
+                          Edit
+                        </Button>
+                      </Stack>
                     </Stack>
+                    <Divider />
                     <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
                       <Button color="inherit" disabled={activeStep === 0} onClick={handleBack} sx={{ mr: 1 }}>
                         Back
@@ -227,18 +241,42 @@ const DocumentCreate = () => {
                       />
                     )}
                     {activeStep === 3 && (
-                      <DocumentTeamStep
-                        values={values}
-                        handleBlur={handleBlur}
-                        handleChange={handleChange}
-                        touched={touched}
-                        errors={errors}
-                        user={user}
-                        contributors={contributors}
-                        users={users}
-                        leaders={leaders}
-                        setLeaders={setLeaders}
-                      />
+                      <>
+                        <DocumentTeamStep
+                          values={values}
+                          handleBlur={handleBlur}
+                          handleChange={handleChange}
+                          touched={touched}
+                          errors={errors}
+                          user={user}
+                          contributors={contributors}
+                          users={users}
+                          leaders={leaders}
+                          setLeaders={setLeaders}
+                        />
+                        <Dialog open={!values.emailMethod} onClose={handleBack}>
+                          <DialogTitle>Select sending Email methods</DialogTitle>
+                          <DialogContent>
+                            <Stack direction={'row'} justifyContent={'center'}>
+                              <FormControl>
+                                <RadioGroup
+                                  aria-labelledby="demo-radio-buttons-group-label"
+                                  value={values.emailMethod}
+                                  name="emailMethod"
+                                  onChange={handleChange}
+                                  required
+                                >
+                                  <FormControlLabel value="automatic" control={<Radio />} label="Automated email notification" />
+                                  <FormControlLabel value="manual" control={<Radio />} label="Manual email notification" />
+                                </RadioGroup>
+                              </FormControl>
+                            </Stack>
+                            <Stack direction={'row'} justifyContent={'center'}>
+                              <Button onClick={handleBack}>Back</Button>
+                            </Stack>
+                          </DialogContent>
+                        </Dialog>
+                      </>
                     )}
                   </StepWrapper>
                 )}

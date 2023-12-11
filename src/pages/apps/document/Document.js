@@ -13,7 +13,15 @@ import SimpleBar from 'simplebar-react';
 import UsersList from 'sections/apps/document/UsersList';
 import TeamManagement from './TeamManagement';
 import { dispatch } from 'store';
-import { setDocActiveTeam, setDocBlockTeams, setDocEmails, setDocLeaders, setDocMe, setDocUsers } from 'store/reducers/document';
+import {
+  setDocActiveTeam,
+  setDocBlockTeams,
+  setDocEmails,
+  setDocInvitedUsers,
+  setDocLeaders,
+  setDocMe,
+  setDocUsers
+} from 'store/reducers/document';
 import { useSelector } from 'store';
 
 const drawerWidth = 320;
@@ -72,6 +80,7 @@ const Document = ({ user, document }) => {
           dispatch(setDocMe(data.users.find((item) => item._id === user._id))); //  me
           dispatch(setDocActiveTeam(data.active)); //  active status team
           dispatch(setDocBlockTeams(data.blocked || [])); //  active blocked team
+          dispatch(setDocInvitedUsers(data.invitedUsers));
           break;
         default:
           break;

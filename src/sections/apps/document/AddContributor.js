@@ -372,7 +372,7 @@ export default function AddContributor({ users, value, onChange, exist = [], min
   );
 
   return (
-    <Stack sx={{ m: 1 }}>
+    <Stack sx={{ m: 1, mt: 3 }}>
       {!team && (
         <SearchInput
           searchVal={searchVal}

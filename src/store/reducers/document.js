@@ -14,6 +14,7 @@ const initialState = {
   leaders: [],
   emails: [],
   blockTeams: [],
+  invitedUsers: [],
   me: null,
   activeTeam: null,
   error: null
@@ -30,6 +31,9 @@ const document = createSlice({
     },
     setDocUsers(state, action) {
       state.users = action.payload;
+    },
+    setDocInvitedUsers(state, action) {
+      state.invitedUsers = action.payload;
     },
     setDocLeaders(state, action) {
       state.leaders = action.payload;
@@ -98,6 +102,7 @@ export const {
   updateDocument,
   deleteDocument,
   setDocMe,
+  setDocInvitedUsers,
   setDocEmails,
   setDocUsers,
   setDocLeaders,

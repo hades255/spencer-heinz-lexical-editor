@@ -136,9 +136,7 @@ const Team = ({ socket }) => {
   const [newTeam, setNewTeam] = useState('');
   const [oldTeam, setOldTeam] = useState('');
 
-  const handleShowStars = useCallback(() => {
-    setShowStars(!showStars);
-  }, [showStars]);
+  const handleShowStars = useCallback(() => setShowStars(!showStars), [showStars]);
 
   const getFavouriteUsers = useCallback(() => {
     (async () => {

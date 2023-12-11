@@ -11,7 +11,7 @@ import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import CustomCell from 'components/customers/CustomCell';
-import { Box, Chip, IconButton, Stack, TextField } from '@mui/material';
+import { Box, Chip, IconButton, Stack, TextField, Typography } from '@mui/material';
 import { StatusCell } from 'pages/apps/customer/list';
 import { useAsyncDebounce } from 'react-table';
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
@@ -385,9 +385,12 @@ export default function AddContributor({ users, value, onChange, exist = [], use
           <Box>{children}</Box>
         </Grid>
         <Grid item xs={12} sm={6} sx={{ mb: 2 }}>
-          <Button sx={{ mb: 1 }} onClick={handleOpenInvitationDlg}>
+          {/* <Button sx={{ mb: 1 }} onClick={handleOpenInvitationDlg}>
             Invite people to this Document
-          </Button>
+          </Button> */}
+          <Typography sx={{ mb: 1 }}>
+            You can send Email to the new contributors <b>{document.emailMethod}</b>.
+          </Typography>
           <Stack direction={'row'} justifyContent={'center'}>
             <SearchInput
               searchVal={searchVal}

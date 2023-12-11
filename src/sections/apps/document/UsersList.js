@@ -1,11 +1,12 @@
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
 import {
   Avatar,
+  Badge,
   Box,
   Chip,
   Drawer,
@@ -22,7 +23,15 @@ import {
   Typography,
   useMediaQuery
 } from '@mui/material';
-import { CheckCircleFilled, ClockCircleFilled, MinusCircleFilled, RightOutlined, SearchOutlined, SettingOutlined } from '@ant-design/icons';
+import {
+  CheckCircleFilled,
+  ClockCircleFilled,
+  MailOutlined,
+  MinusCircleFilled,
+  RightOutlined,
+  SearchOutlined,
+  SettingOutlined
+} from '@ant-design/icons';
 
 // project imports
 import MainCard from 'components/MainCard';
@@ -33,12 +42,14 @@ import UserAvatar from '../user/UserAvatar';
 import { ThemeMode } from 'config';
 import AddContributorsFromContributor from 'pages/apps/document/AddContributorsFromContributor';
 import { useSelector } from 'store';
+import ShowEmailSending from './ShowEmailSending';
 
 // ==============================|| CHAT DRAWER ||============================== //
 
 function UsersList({ openDrawer, handleDrawerOpen, socket, document }) {
   const users = useSelector((state) => state.document.users);
   const user = useSelector((state) => state.document.me);
+  const invitedUsers = useSelector((state) => state.document.invitedUsers);
 
   const theme = useTheme();
   const [addContributorDlg, setAddContributorDlg] = useState(false);
@@ -48,26 +59,29 @@ function UsersList({ openDrawer, handleDrawerOpen, socket, document }) {
 
   // show menu to set current user status
   const [anchorEl, setAnchorEl] = useState();
-  const handleClickRightMenu = (event) => {
-    setAnchorEl(event?.currentTarget);
-  };
+  const handleClickRightMenu = useCallback((event) => setAnchorEl(event?.currentTarget), []);
 
-  const handleCloseRightMenu = () => {
-    setAnchorEl(null);
-  };
+  const handleCloseRightMenu = useCallback(() => setAnchorEl(null), []);
 
   // set user status on status menu click
   const [status, setStatus] = useState('available');
-  const handleRightMenuItemClick = (userStatus) => () => {
-    setStatus(userStatus);
-    handleCloseRightMenu();
-  };
+  const handleRightMenuItemClick = useCallback(
+    (userStatus) => () => {
+      setStatus(userStatus);
+      handleCloseRightMenu();
+    },
+    [handleCloseRightMenu]
+  );
 
   const [search, setSearch] = useState('');
-  const handleSearch = async (event) => {
+  const handleSearch = useCallback((event) => {
     const newString = event?.target.value;
     setSearch(newString);
-  };
+  }, []);
+
+  const [openEmailDlg, setOpenEmailDlg] = useState(false);
+  const handleOpenEmailSendingDlg = useCallback(() => setOpenEmailDlg(true), []);
+  const handleCloseEmailSendingDlg = useCallback(() => setOpenEmailDlg(false), []);
 
   return (
     <>
@@ -129,6 +143,11 @@ function UsersList({ openDrawer, handleDrawerOpen, socket, document }) {
                     +
                   </Avatar>
                 </Stack>
+                <IconButton onClick={handleOpenEmailSendingDlg}>
+                  <Badge badgeContent={invitedUsers.filter((item) => !item.mailStatus).length} color="primary">
+                    <MailOutlined color="action" />
+                  </Badge>
+                </IconButton>
               </Stack>
 
               <OutlinedInput
@@ -172,7 +191,6 @@ function UsersList({ openDrawer, handleDrawerOpen, socket, document }) {
               </ListItemButton>
             </List>
           </Box>
-
           {user && (
             <Box sx={{ p: 3, pt: 1, pl: 5 }}>
               <Grid container>
@@ -273,6 +291,7 @@ function UsersList({ openDrawer, handleDrawerOpen, socket, document }) {
           document={document}
         />
       )}
+      {openEmailDlg && <ShowEmailSending open={openEmailDlg} onClose={handleCloseEmailSendingDlg} />}
     </>
   );
 }

@@ -64,17 +64,39 @@ const Invitation = ({ open, onClose, user, docId }) => {
 
   const handleCopyToken = useCallback(() => {
     const text = generateToken();
-    navigator.clipboard
-      .writeText(text)
-      .then(() => {
-        setShowCopied(true);
-        setTimeout(() => {
-          setShowCopied(false);
-        }, 1000);
-      })
-      .catch((error) => {
-        console.error('Failed to copy text:', error);
-      });
+    console.log(text);
+    (async () => {
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard
+            .writeText(text)
+            .then(() => {
+              console.log('Text copied to clipboard');
+              setShowCopied(true);
+              setTimeout(() => {
+                setShowCopied(false);
+              }, 1000);
+            })
+            .catch((error) => {
+              console.error('Failed to copy text to clipboard:', error);
+            });
+        } else {
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+          console.log('Text copied to clipboard');
+          setShowCopied(true);
+          setTimeout(() => {
+            setShowCopied(false);
+          }, 1000);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    })();
   }, [generateToken]);
 
   const handleSendToken = useCallback(() => {
