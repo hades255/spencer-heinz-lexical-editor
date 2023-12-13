@@ -31,7 +31,7 @@ import NewPasswordConfirm from './NewPasswordConfirm';
 
 // ============================|| JWT - LOGIN ||============================ //
 
-const NewPassword = ({ GO, token, creator }) => {
+const NewPassword = ({ GO, token, creator, document, user }) => {
   const scriptedRef = useScriptRef();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -66,7 +66,7 @@ const NewPassword = ({ GO, token, creator }) => {
         })}
         onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
           try {
-            const response = await axiosServices.post('/invite/' + token, { password: values.password });
+            const response = await axiosServices.post('/invite', { password: values.password, did: document._id, uid: user._id });
             if (scriptedRef.current) {
               setStatus({ success: true });
               setSubmitting(false);
@@ -184,7 +184,8 @@ NewPassword.propTypes = {
   GO: PropTypes.func,
   token: PropTypes.string,
   document: PropTypes.object,
-  creator: PropTypes.object
+  creator: PropTypes.object,
+  user: PropTypes.object
 };
 
 export default NewPassword;

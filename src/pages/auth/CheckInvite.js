@@ -10,6 +10,8 @@ import { useCallback, useEffect, useState } from 'react';
 import axiosServices from 'utils/axios';
 import AnimateButton from 'components/@extended/AnimateButton';
 import NewPassword from './NewPassword';
+import { dispatch } from 'store';
+import { openSnackbar } from 'store/reducers/snackbar';
 
 // ================================|| LOGIN ||================================ //
 
@@ -26,7 +28,7 @@ const CheckInvite = () => {
   useEffect(() => {
     (async () => {
       try {
-        const response = await axiosServices.get('/invite/' + token);
+        const response = await axiosServices.get('/invite?token=' + token);
         setC(response.data.code);
         const { user, document, creator: creator_ } = response.data.data;
         setU(user);
@@ -34,6 +36,17 @@ const CheckInvite = () => {
         setCreator(creator_);
       } catch (error) {
         console.log(error);
+        dispatch(
+          openSnackbar({
+            open: true,
+            message: 'Server connection error.',
+            variant: 'alert',
+            alert: {
+              color: 'error'
+            },
+            close: true
+          })
+        );
       }
     })();
   }, [token, navigate]);
@@ -69,7 +82,7 @@ const CheckInvite = () => {
           </Stack>
         </Grid>
         <Grid item xs={12}>
-          {c === 'success' && <NewPassword GO={GO} token={token} document={d} creator={creator} />}
+          {c === 'success' && <NewPassword GO={GO} user={u} token={token} document={d} creator={creator} />}
           {c === 'error' && (
             <Grid container spacing={3}>
               <Grid item xs={12}>

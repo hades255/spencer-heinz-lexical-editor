@@ -5,10 +5,12 @@ import { Link } from 'react-router-dom';
 // material-ui
 import { useTheme } from '@mui/material/styles';
 import {
-  Avatar,
   Badge,
   Box,
+  Button,
   Chip,
+  Dialog,
+  DialogContent,
   Drawer,
   Grid,
   InputAdornment,
@@ -26,6 +28,7 @@ import {
 import {
   CheckCircleFilled,
   ClockCircleFilled,
+  InfoOutlined,
   MailOutlined,
   MinusCircleFilled,
   RightOutlined,
@@ -34,6 +37,7 @@ import {
 } from '@ant-design/icons';
 
 // project imports
+import Avatar from 'components/@extended/Avatar';
 import MainCard from 'components/MainCard';
 import IconButton from 'components/@extended/IconButton';
 import SimpleBar from 'components/third-party/SimpleBar';
@@ -53,6 +57,7 @@ function UsersList({ openDrawer, handleDrawerOpen, socket, document }) {
 
   const theme = useTheme();
   const [addContributorDlg, setAddContributorDlg] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
 
   const matchDownLG = useMediaQuery(theme.breakpoints.down('lg'));
   const drawerBG = theme.palette.mode === ThemeMode.DARK ? 'dark.main' : 'white';
@@ -62,6 +67,8 @@ function UsersList({ openDrawer, handleDrawerOpen, socket, document }) {
   const handleClickRightMenu = useCallback((event) => setAnchorEl(event?.currentTarget), []);
 
   const handleCloseRightMenu = useCallback(() => setAnchorEl(null), []);
+
+  const handleCloseShowPopup = useCallback(() => setShowPopup(false), []);
 
   // set user status on status menu click
   const [status, setStatus] = useState('available');
@@ -289,9 +296,32 @@ function UsersList({ openDrawer, handleDrawerOpen, socket, document }) {
           exist={users}
           me={user}
           document={document}
+          setShowPopup={setShowPopup}
         />
       )}
       {openEmailDlg && <ShowEmailSending open={openEmailDlg} onClose={handleCloseEmailSendingDlg} />}
+      <Dialog
+        open={showPopup}
+        onClose={(r) => {
+          if (r === 'escapeKeyDown') handleCloseShowPopup();
+        }}
+      >
+        <DialogContent>
+          <Stack direction={'row'} justifyContent={'center'}>
+            <Avatar color="info" sx={{ width: 72, height: 72, fontSize: '3rem' }}>
+              <InfoOutlined />
+            </Avatar>
+          </Stack>
+          <Stack sx={{ my: 3 }}>
+            <Typography>Newly added users must be invited/emailed manually</Typography>
+          </Stack>
+          <Stack>
+            <Button onClick={handleCloseShowPopup} variant="contained">
+              OK
+            </Button>
+          </Stack>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

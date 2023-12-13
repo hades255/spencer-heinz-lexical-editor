@@ -197,7 +197,7 @@ const AddDocument = ({ user }) => {
                         ))}
                     </Stack>
                     <Stack sx={{ my: 2 }} direction={'row'} alignItems={'center'}>
-                      <Typography>Emails will be sended {values.emailMethod}.</Typography>-
+                      <Typography>Emails will be sent {values.emailMethod}.</Typography>-
                       <Button
                         color={'secondary'}
                         onClick={() => {
@@ -246,12 +246,13 @@ const AddDocument = ({ user }) => {
                   )}
                   {activeStep === 2 && (
                     <AddContributor
-                      users={users.map(({ _id, name, email, avatar, status }) => ({
+                      users={users.map(({ _id, name, email, avatar, status, setting }) => ({
                         _id,
                         name,
                         email,
                         avatar,
-                        status
+                        status,
+                        setting
                       }))}
                       user={user}
                       onChange={handleAutocompleteChange}
@@ -315,7 +316,7 @@ AddDocument.propTypes = {
 export const StepWrapper = ({ children, activeStep, handleBack, handleNext, nextBtn }) => {
   return (
     <>
-      <Stack sx={{ minHeight: '30vh', maxHeight: '80vh' }}>{children}</Stack>
+      <Stack sx={{ minHeight: '30vh', maxHeight: '80vh', m: 2 }}>{children}</Stack>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', bottom: 30 }}>
         <Button color="inherit" disabled={activeStep === 0} onClick={handleBack} sx={{ mr: 1 }}>
           Back

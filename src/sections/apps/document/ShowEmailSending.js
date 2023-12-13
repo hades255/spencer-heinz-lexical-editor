@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowRightOutlined, CopyOutlined, MobileOutlined, PhoneOutlined, SendOutlined, StarFilled } from '@ant-design/icons';
-import { StarOutline } from '@mui/icons-material';
+import PropTypes from 'prop-types';
+import { CopyOutlined, MobileOutlined, PhoneOutlined, SendOutlined } from '@ant-design/icons';
 import {
   Box,
   Button,
@@ -9,6 +9,7 @@ import {
   DialogActions,
   DialogContent,
   Grid,
+  Link,
   List,
   ListItem,
   ListItemAvatar,
@@ -23,9 +24,10 @@ import CustomCell from 'components/customers/CustomCell';
 import { PatternFormat } from 'react-number-format';
 import { useSelector } from 'store';
 import axiosServices from 'utils/axios';
-import { invitationEmailToUser } from 'config/helpers';
 import { dispatch } from 'store';
 import { openSnackbar } from 'store/reducers/snackbar';
+import { invitationEmailToUser } from 'config/helpers';
+import { Setting } from 'pages/apps/document/Invitation';
 
 const ShowEmailSending = ({ open, onClose }) => {
   const invitedUsers = useSelector((state) => state.document.invitedUsers);
@@ -34,13 +36,13 @@ const ShowEmailSending = ({ open, onClose }) => {
   const [favourites, setFavourites] = useState([]);
   const [showStars, setShowStars] = useState(false);
   const [select, setSelect] = useState(null);
-  const [showCopied, setShowCopied] = useState(false);
   const [selected, setSelected] = useState([]);
-
-  const handleShowStars = useCallback(() => setShowStars(!showStars), [showStars]);
+  const [openSetting, setOpenSetting] = useState(false);
+  const [expired, setExpired] = useState(30);
 
   const handleClickUserItem = useCallback(
     (val) => {
+      setExpired(30);
       if (select?._id === val._id) {
         if (selected.includes(val._id)) {
           setSelected(selected.filter((item) => item !== val._id));
@@ -63,6 +65,7 @@ const ShowEmailSending = ({ open, onClose }) => {
 
   const handleClickToggle = useCallback(
     (val) => {
+      setExpired(30);
       if (selected.includes(val._id)) {
         setSelected(selected.filter((item) => item !== val._id));
         setSelect(null);
@@ -134,7 +137,7 @@ const ShowEmailSending = ({ open, onClose }) => {
         );
       }
     })();
-  }, [selected, invitedUsers]);
+  }, [selected, document]);
 
   const handleSendEmail = useCallback(() => {
     (async () => {
@@ -168,7 +171,16 @@ const ShowEmailSending = ({ open, onClose }) => {
         );
       }
     })();
-  }, [select]);
+  }, [select, document]);
+
+  const handleCloseSettingDlg = useCallback((val) => {
+    if (val) setExpired(val);
+    setOpenSetting(false);
+  }, []);
+
+  const handleOpenSettingDlg = useCallback(() => {
+    setOpenSetting(true);
+  }, []);
 
   useEffect(() => getFavouriteUsers(), [getFavouriteUsers]);
 
@@ -178,28 +190,29 @@ const ShowEmailSending = ({ open, onClose }) => {
   );
 
   return (
-    <Dialog
-      maxWidth="md"
-      TransitionComponent={PopupTransition}
-      keepMounted
-      fullWidth
-      onClose={(r) => {
-        if (r === 'escapeKeyDown') onClose();
-      }}
-      open={open}
-      sx={{ '& .MuiDialog-paper': { p: 0 }, transition: 'transform 225ms' }}
-      aria-describedby="alert-dialog-slide-description"
-    >
-      <DialogActions>
-        <Button onClick={handleSaveStatus} color="success" variant="contained" disabled={selected.length === 0}>
-          Save Status
-        </Button>
-        <Button onClick={onClose}>Close</Button>
-      </DialogActions>
-      <DialogContent>
-        <Grid container justifyContent={'center'} spacing={2}>
-          <Grid item xs={10} sm={6}>
-            {/* <Box>
+    <>
+      <Dialog
+        maxWidth="md"
+        TransitionComponent={PopupTransition}
+        keepMounted
+        fullWidth
+        onClose={(r) => {
+          if (r === 'escapeKeyDown') onClose();
+        }}
+        open={open}
+        sx={{ '& .MuiDialog-paper': { p: 0 }, transition: 'transform 225ms' }}
+        aria-describedby="alert-dialog-slide-description"
+      >
+        <DialogActions>
+          <Button onClick={handleSaveStatus} color="success" variant="contained" disabled={selected.length === 0}>
+            Save Status
+          </Button>
+          <Button onClick={onClose}>Close</Button>
+        </DialogActions>
+        <DialogContent>
+          <Grid container justifyContent={'center'} spacing={2}>
+            <Grid item xs={10} sm={6}>
+              {/* <Box>
               <Tooltip title={`${showStars ? 'Hide' : 'Show'} favorite users`}>
                 <IconButton onClick={handleShowStars} sx={{ borderRadius: 20 }}>
                   <StarFilled style={{ transition: 'ease-in-out 0.2s', color: showStars ? 'gold' : 'grey' }} />
@@ -207,78 +220,127 @@ const ShowEmailSending = ({ open, onClose }) => {
               </Tooltip>
               Favorite users
             </Box> */}
-            <List sx={{ height: 400, width: '100%', overflowY: 'scroll' }}>
-              {invitedUsers.length === 0 ? (
-                <ListItem>
-                  <ListItemText>You have not invited users</ListItemText>
-                </ListItem>
-              ) : (
-                invitedUsers
-                  .filter((item) => (showStars ? favourites.includes(item.email) : true))
-                  .map((item, key) => (
-                    <UserItem
-                      user={item}
-                      key={key}
-                      favourites={favourites}
-                      setFavourites={setFavouriteUser}
-                      onClick={handleClickUserItem}
-                      onClickToggle={handleClickToggle}
-                      select={select?._id}
-                      selected={selected}
-                    />
-                  ))
-              )}
-            </List>
-          </Grid>
-          <Grid item xs={10} sm={6}>
-            {select ? (
-              <Box>
-                <Stack direction={'row'} justifyContent={'space-between'} sx={{ mx: 2 }}>
-                  <Box>
-                    <Typography>Name: {select.name}</Typography>
-                    <Typography>Email: {select.email}</Typography>
-                    <Typography>Mobile Phone: {select.mobilePhone}</Typography>
-                    <Typography>Work Phone: {select.workPhone}</Typography>
-                  </Box>
-                  <Box>
-                    {!select.mailStatus && (
-                      <Tooltip title={`Send via this`}>
-                        <Button color="info" variant="outlined" onClick={handleSendEmail}>
-                          <SendOutlined />
+              <List sx={{ height: 400, width: '100%', overflowY: 'scroll' }}>
+                {invitedUsers.length === 0 ? (
+                  <ListItem>
+                    <ListItemText>You have not invited users</ListItemText>
+                  </ListItem>
+                ) : (
+                  invitedUsers
+                    .filter((item) => (showStars ? favourites.includes(item.email) : true))
+                    .map((item, key) => (
+                      <UserItem
+                        user={item}
+                        key={key}
+                        favourites={favourites}
+                        setFavourites={setFavouriteUser}
+                        onClick={handleClickUserItem}
+                        onClickToggle={handleClickToggle}
+                        select={select?._id}
+                        selected={selected}
+                      />
+                    ))
+                )}
+              </List>
+            </Grid>
+            <Grid item xs={10} sm={6}>
+              {select ? (
+                <Box>
+                  <Stack direction={'row'} justifyContent={'space-between'} sx={{ mx: 2 }}>
+                    <Box>
+                      <Typography>
+                        <b>Name:</b> {select.name}
+                      </Typography>
+                      <Typography>
+                        <b>Email:</b> {select.email}
+                      </Typography>
+                      <Typography>
+                        <b>Mobile Phone:</b> {select.mobilePhone}
+                      </Typography>
+                      <Typography>
+                        <b>Work Phone:</b> {select.workPhone}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      {!select.mailStatus && (
+                        <Tooltip title={`Send email via this`}>
+                          <Button color="info" variant="outlined" onClick={handleSendEmail}>
+                            <SendOutlined />
+                          </Button>
+                        </Tooltip>
+                      )}
+                      <CopyButton
+                        text={inviteText}
+                        title={'Copy document link'}
+                        copiedTitle={
+                          select.status === 'invited'
+                            ? expired === 100
+                              ? 'Link copied - never expires'
+                              : `Link copied - expires in ${expired} days`
+                            : 'Link copied'
+                        }
+                      />
+                    </Box>
+                  </Stack>
+                  {select.status === 'invited' && (
+                    <Stack direction={'row'} justifyContent={'end'}>
+                      <Stack direction={'row'}>
+                        <Typography color={'secondary'} sx={{ py: 1 }}>
+                          {expired === 100 ? 'Never expires -' : `Expires in ${expired} days -`}
+                        </Typography>
+                        <Button color="secondary" onClick={handleOpenSettingDlg}>
+                          Edit link setting
                         </Button>
-                      </Tooltip>
-                    )}
-                    <CopyButton text={inviteText} />
-                  </Box>
-                </Stack>
-                <Stack sx={{ m: 2 }}>
-                  <Stack direction={'row'} justifyContent={'space-between'}>
-                    <Typography>Subject: Please collaborate with me on {document.name}</Typography>
-                    <CopyButton text={`Subject: Please collaborate with me on {document.name}`} />
+                      </Stack>
+                    </Stack>
+                  )}
+                  <Stack sx={{ m: 2 }}>
+                    <Stack direction={'row'} justifyContent={'space-between'}>
+                      <Stack direction={'row'}>
+                        <Typography variant="subtitle1" sx={{ mr: 1 }}>
+                          Subject:
+                        </Typography>
+                        <Typography>Please collaborate with me on {document.name}</Typography>
+                      </Stack>
+                      <Box>
+                        <CopyButton text={`Please collaborate with me on {document.name}`} title={'Copy subject'} />
+                      </Box>
+                    </Stack>
+                    <Stack direction={'row'} justifyContent={'space-between'}>
+                      <Stack direction={'row'}>
+                        <Typography variant="subtitle1" sx={{ mr: 1 }}>
+                          Content:
+                        </Typography>
+                        <Stack sx={{ flexGrow: '1', flexWrap: 'wrap' }}>
+                          <Typography>I would like to work with you.</Typography>
+                          <Link sx={{ width: 200, wordWrap: 'break-word' }}>{inviteText}</Link>
+                        </Stack>
+                      </Stack>
+                      <Box>
+                        <CopyButton text={`I would like to work with you. ${inviteText}`} title={'Copy content'} />
+                      </Box>
+                    </Stack>
                   </Stack>
-                  <Stack direction={'row'} justifyContent={'space-between'}>
-                    <Typography>Content: I would like to work with you</Typography>
-                    <CopyButton text={`Content: I would like to work with you`} />
-                  </Stack>
-                </Stack>
-              </Box>
-            ) : (
-              <Typography sx={{ mt: 2 }}>Select a user from the users list to see details</Typography>
-            )}
+                </Box>
+              ) : (
+                <Typography sx={{ mt: 2 }}>Select a user from the users list to see details</Typography>
+              )}
+            </Grid>
           </Grid>
-        </Grid>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+      {openSetting && <Setting open={openSetting} onClose={handleCloseSettingDlg} defaultExpired={expired} />}
+    </>
   );
 };
 
-export const UserItem = ({ user, favourites = [], setFavourites, onClick, select, selected, onClickToggle }) => {
-  const handleClickStar = useCallback(() => {
-    setFavourites(user.email, !favourites.includes(user.email));
-  }, [setFavourites, favourites, user]);
+export const UserItem = ({ user, onClick, select, selected, onClickToggle }) => {
+  // const handleClickStar = useCallback(() => {
+  //   setFavourites(user.email, !favourites.includes(user.email));
+  // }, [setFavourites, favourites, user]);
 
   const handleClick = useCallback(() => onClick(user), [onClick, user]);
-  const handleToggle = useCallback((e) => onClickToggle(user), [onClickToggle, user]);
+  const handleToggle = useCallback(() => onClickToggle(user), [onClickToggle, user]);
 
   return (
     <ListItemButton role="listitem" divider onClick={handleClick} selected={user._id === select}>
@@ -319,7 +381,7 @@ export const UserItem = ({ user, favourites = [], setFavourites, onClick, select
   );
 };
 
-const CopyButton = ({ text }) => {
+export const CopyButton = ({ text, title, copiedTitle = 'Copied' }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(() => {
@@ -331,7 +393,7 @@ const CopyButton = ({ text }) => {
             setCopied(true);
             setTimeout(() => {
               setCopied(false);
-            }, 1000);
+            }, 1500);
           })
           .catch((error) => {
             console.error('Failed to copy text:', error);
@@ -343,14 +405,7 @@ const CopyButton = ({ text }) => {
   }, [text]);
 
   return (
-    <Tooltip
-      PopperProps={{ disablePortal: true }}
-      open={copied}
-      disableFocusListener
-      disableHoverListener
-      disableTouchListener
-      title={`Copied`}
-    >
+    <Tooltip title={copied ? copiedTitle : title}>
       <Button onClick={handleCopy}>
         <CopyOutlined />
       </Button>
@@ -359,6 +414,27 @@ const CopyButton = ({ text }) => {
 };
 
 export default ShowEmailSending;
+
+ShowEmailSending.propTypes = {
+  open: PropTypes.any,
+  onClose: PropTypes.any
+};
+
+UserItem.propTypes = {
+  user: PropTypes.any,
+  favourites: PropTypes.any,
+  setFavourites: PropTypes.any,
+  onClick: PropTypes.any,
+  select: PropTypes.any,
+  selected: PropTypes.any,
+  onClickToggle: PropTypes.any
+};
+
+CopyButton.propTypes = {
+  text: PropTypes.any,
+  title: PropTypes.any,
+  copiedTitle: PropTypes.any
+};
 
 /**
           {favourites.includes(user.email) ? (

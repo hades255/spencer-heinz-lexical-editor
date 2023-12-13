@@ -18,7 +18,7 @@ import { openSnackbar } from 'store/reducers/snackbar';
 import axiosServices from 'utils/axios';
 import { CloseCircleOutlined, SaveOutlined } from '@ant-design/icons';
 
-export default function AddContributorsFromContributor({ open: openThis = false, onClose, exist, me, document }) {
+export default function AddContributorsFromContributor({ open: openThis = false, onClose, exist, me, document, setShowPopup }) {
   const { uniqueId } = useParams();
   const users = useSelector((state) => state.user.lists);
   const emails = useSelector((state) => state.document.emails);
@@ -68,7 +68,7 @@ export default function AddContributorsFromContributor({ open: openThis = false,
           dispatch(
             openSnackbar({
               open: true,
-              message: 'Invitation sended successfully.',
+              message: document.emailMethod === 'manual' ? 'Add user successfully.' : 'Invitation sended successfully.',
               variant: 'alert',
               alert: {
                 color: 'success'
@@ -77,6 +77,8 @@ export default function AddContributorsFromContributor({ open: openThis = false,
             })
           );
         }
+        if (changes.B.length !== 0) setShowPopup(true);
+
         // dispatch(getDocumentSingleList(uniqueId));
         onClose(false);
       } catch (error) {
@@ -92,7 +94,7 @@ export default function AddContributorsFromContributor({ open: openThis = false,
         });
       }
     })();
-  }, [value, exist, users, me, onClose, uniqueId]);
+  }, [value, exist, users, me, onClose, uniqueId, setShowPopup, document]);
 
   return (
     <Dialog
@@ -157,6 +159,7 @@ export default function AddContributorsFromContributor({ open: openThis = false,
 AddContributorsFromContributor.propTypes = {
   open: PropTypes.bool,
   me: PropTypes.any,
+  setShowPopup: PropTypes.any,
   exist: PropTypes.any,
   onClose: PropTypes.any,
   document: PropTypes.object

@@ -178,7 +178,7 @@ const DocumentCreate = () => {
                           ))}
                       </Stack>
                       <Stack sx={{ my: 2 }} direction={'row'} alignItems={'center'}>
-                        <Typography>Emails will be sended {values.emailMethod}.</Typography>-
+                        <Typography>Emails will be sent {values.emailMethod}.</Typography>-
                         <Button
                           color={'secondary'}
                           onClick={() => {
@@ -227,12 +227,13 @@ const DocumentCreate = () => {
                     )}
                     {activeStep === 2 && (
                       <AddContributor
-                        users={users.map(({ _id, name, email, avatar, status }) => ({
+                        users={users.map(({ _id, name, email, avatar, status, setting }) => ({
                           _id,
                           name,
                           email,
                           avatar,
-                          status
+                          status,
+                          setting
                         }))}
                         onChange={handleAutocompleteChange}
                         value={contributors}

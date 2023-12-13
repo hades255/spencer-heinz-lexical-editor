@@ -1,6 +1,49 @@
 // import crypto from 'crypto';
+import base64url from 'base64url';
 
 export const invitationEmailToUser = (from, to, doc, address = '') => {
+  return to.status === 'invited'
+    ? `${address}/invite/${generateSecretString(from._id, to._id, doc._id)}`
+    : `${address}/document/${doc._id}?email=${to.email}`;
+};
+
+// const key = 'passwordpasswordpasswordpassword';
+// const algorithm = 'aes-256-cbc';
+
+export const generateSecretString = (from, to, doc, expired = 30) => {
+  const x = base64url(
+    JSON.stringify({ f: from, t: to, d: doc, x: expired === 100 ? 0 : new Date().getTime() + expired * 24 * 3600 * 1000 })
+  );
+  return x;
+};
+
+// const hash = crypto.createHash('sha256').update(secretString).digest('hex');
+// return hash;
+
+// export const decrypt = (text) => {
+//   const iv = crypto.randomBytes(16);
+//   const decipher = crypto.createDecipheriv(algorithm, key, iv);
+//   let decryptedData = decipher.update(text, 'hex', 'utf8');
+//   console.log(decryptedData);
+//   decryptedData += decipher.final('utf8');
+//   console.log(decryptedData);
+//   return decryptedData;
+// };
+
+// export const encrypt = (text) => {
+//   console.log(text);
+//   const iv = crypto.randomBytes(16);
+//   const cipher = crypto.createCipheriv(algorithm, key, iv);
+//   let encryptedData = cipher.update(text, 'utf8', 'hex');
+//   console.log(encryptedData);
+//   encryptedData += cipher.final('hex');
+//   console.log(encryptedData);
+//   console.log(decrypt(encryptedData));
+//   return encryptedData;
+// };
+
+/*
+
   return `<div style="display: flex; justify-content: center">
     <div
       style="
@@ -32,7 +75,11 @@ export const invitationEmailToUser = (from, to, doc, address = '') => {
         <div>
           Click
           <a
-            href="${address}/document/${doc._id}?email=${to.email}"
+            href="${
+              to.status === 'invited'
+                ? `${address}/invite/${generateSecretString(from.email, to.email, doc._id)}`
+                : `${address}/document/${doc._id}?email=${to.email}`
+            }"
             style="
               padding: 8px;
               background-color: #1677ff;
@@ -48,20 +95,4 @@ export const invitationEmailToUser = (from, to, doc, address = '') => {
       </div>
     </div>
   </div>`;
-};
-
-// export const generateSecretString = (...val) => {
-//   const secretString = JSON.toString({ ...val });
-//   const hash = crypto.createHash('sha256').update(secretString).digest('hex');
-//   return hash;
-// };
-
-/**
- * 
- * ${
-              to.status === 'invited'
-                ? `${address}/invites/${generateSecretString(from.email, to.email, doc._id)}`
-                : `${address}/document/${doc._id}?email=${to.email}`
-            }
- * 
- */
+  */

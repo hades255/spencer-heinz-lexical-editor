@@ -388,7 +388,7 @@ export default function AddContributor({ users, value, onChange, exist = [], min
           {customList(
             'Choices',
             users
-              .filter((item) => !value.includes(item.email) && item.email.includes(search))
+              .filter((item) => !value.includes(item.email) && item.email.includes(search) && !item.setting.hide)
               .sort((a, b) => (a.status > b.status ? 1 : a.status < b.status ? -1 : 0))
           )}
         </Grid>

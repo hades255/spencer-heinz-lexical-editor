@@ -227,7 +227,7 @@ const Invitation = ({ open, onClose, user, docId }) => {
   );
 };
 
-const Setting = ({ open, onClose, defaultExpired }) => {
+export const Setting = ({ open, onClose, defaultExpired }) => {
   const [expired, setExpired] = useState(defaultExpired);
   const [changed, setChanged] = useState(false);
 
@@ -278,7 +278,6 @@ const Setting = ({ open, onClose, defaultExpired }) => {
         </IconButton>
         <Typography variant="h4">Invitation link settings</Typography>
         <Typography>For security reasons, links must expire.</Typography>
-        <Typography>A link can be shared with up to 400 people.</Typography>
         <FormControl variant="standard" sx={{ my: 1, width: '100%' }}>
           <InputLabel id="demo-simple-select-standard-label">Link set to expire after…</InputLabel>
           <Select

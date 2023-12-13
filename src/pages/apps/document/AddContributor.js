@@ -256,9 +256,9 @@ export default function AddContributor({ users, value, onChange, exist = [], use
     setShowStars(!showStars);
   }, [showStars]);
 
-  const handleOpenInvitationDlg = useCallback(() => {
-    setOpenInvitation(true);
-  }, []);
+  // const handleOpenInvitationDlg = useCallback(() => {
+  //   setOpenInvitation(true);
+  // }, []);
 
   const customList = useCallback(
     (title, items) => {
@@ -411,7 +411,7 @@ export default function AddContributor({ users, value, onChange, exist = [], use
           {customList(
             'Choices',
             users
-              .filter((item) => !emails.includes(item.email) && item.email.includes(search))
+              .filter((item) => !emails.includes(item.email) && item.email.includes(search) && !item.setting.hide)
               .sort((a, b) => (a.status > b.status ? 1 : a.status < b.status ? -1 : 0))
           )}
         </Grid>

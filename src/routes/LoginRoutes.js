@@ -56,7 +56,7 @@ const LoginRoutes = {
           element: <AuthCodeVerification />
         },
         {
-          path: 'invites/:token',
+          path: 'invite/:token',
           element: <CheckInvite />
         }
       ]
