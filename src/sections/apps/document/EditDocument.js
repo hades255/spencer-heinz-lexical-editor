@@ -237,12 +237,13 @@ const EditDocument = ({ user, onCancel, document }) => {
                     )}
                     {activeStep === 2 && (
                       <AddContributor
-                        users={users.map(({ _id, name, email, avatar, status }) => ({
+                        users={users.map(({ _id, name, email, avatar, status, setting }) => ({
                           _id,
                           name,
                           email,
                           avatar,
-                          status
+                          status,
+                          setting
                         }))}
                         user={user}
                         onChange={handleAutocompleteChange}

@@ -126,9 +126,10 @@ const Team = ({ socket }) => {
   const leaderEmails = leaders.map((item) => item.email);
   const allUsers = useSelector((state) => state.user.lists);
   const users = useSelector((state) => state.user.lists).filter(
-    (item) => !item.setting?.hide && !leaderEmails.includes(item.email) && item.email !== document.creator?.email
+    (item) => !leaderEmails.includes(item.email) && item.email !== document.creator?.email
   );
   const [favourites, setFavourites] = useState([]);
+  const [collaborates, setCollaborates] = useState([]);
   const [showStars, setShowStars] = useState(false);
   const [openDeleteDlg, setOpenDeleteDlg] = useState(false);
   const [value, setValue] = useState('tab-2');
@@ -138,6 +139,16 @@ const Team = ({ socket }) => {
 
   const handleShowStars = useCallback(() => setShowStars(!showStars), [showStars]);
 
+  const getCollaborateUsers = useCallback(() => {
+    (async () => {
+      try {
+        const res = await axiosServices.get('/user/collaborates');
+        setCollaborates(res.data.data);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, []);
   const getFavouriteUsers = useCallback(() => {
     (async () => {
       try {
@@ -292,7 +303,8 @@ const Team = ({ socket }) => {
 
   useEffect(() => {
     getFavouriteUsers();
-  }, [getFavouriteUsers]);
+    getCollaborateUsers();
+  }, [getFavouriteUsers, getCollaborateUsers]);
 
   return (
     <>
@@ -327,7 +339,11 @@ const Team = ({ socket }) => {
                     <TabPanel value={'tab-1'} sx={{ p: 0, pt: 1 }}>
                       <List sx={{ height: 400, width: '100%', overflowY: 'scroll' }}>
                         {users
-                          .filter((item) => (showStars ? favourites.includes(item.email) : true))
+                          .filter(
+                            (item) =>
+                              (showStars ? favourites.includes(item.email) : true) &&
+                              (favourites.includes(item.email) || collaborates.includes(item.email) || !item.setting.hide)
+                          )
                           .map((item, key) => (
                             <UserItem
                               user={item}

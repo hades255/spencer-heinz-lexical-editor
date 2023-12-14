@@ -31,7 +31,7 @@ import NewPasswordConfirm from './NewPasswordConfirm';
 
 // ============================|| JWT - LOGIN ||============================ //
 
-const NewPassword = ({ GO, token, creator, document, user }) => {
+const NewPassword = ({ GO, creator, document, user }) => {
   const scriptedRef = useScriptRef();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -182,7 +182,6 @@ const NewPassword = ({ GO, token, creator, document, user }) => {
 
 NewPassword.propTypes = {
   GO: PropTypes.func,
-  token: PropTypes.string,
   document: PropTypes.object,
   creator: PropTypes.object,
   user: PropTypes.object

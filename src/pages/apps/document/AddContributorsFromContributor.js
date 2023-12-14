@@ -77,7 +77,7 @@ export default function AddContributorsFromContributor({ open: openThis = false,
             })
           );
         }
-        if (changes.B.length !== 0) setShowPopup(true);
+        if (changes.B.length !== 0 && document.emailMethod === 'manual') setShowPopup(true);
 
         // dispatch(getDocumentSingleList(uniqueId));
         onClose(false);

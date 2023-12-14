@@ -131,12 +131,24 @@ export default function AddContributor({ users, value, onChange, exist = [], use
   const inputRef = useRef(null);
   const [showStars, setShowStars] = useState(false);
   const [favourites, setFavourites] = useState([]);
+  const [collaborates, setCollaborates] = useState([]);
 
   const getFavouriteUsers = useCallback(() => {
     (async () => {
       try {
         const res = await axiosServices.get('/user/favourite');
         setFavourites(res.data.data);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, []);
+
+  const getCollaborateUsers = useCallback(() => {
+    (async () => {
+      try {
+        const res = await axiosServices.get('/user/collaborates');
+        setCollaborates(res.data.data);
       } catch (error) {
         console.log(error);
       }
@@ -161,7 +173,8 @@ export default function AddContributor({ users, value, onChange, exist = [], use
 
   useEffect(() => {
     getFavouriteUsers();
-  }, [getFavouriteUsers]);
+    getCollaborateUsers();
+  }, [getFavouriteUsers, getCollaborateUsers]);
 
   const leftChecked = intersection(
     checked,
@@ -227,6 +240,17 @@ export default function AddContributor({ users, value, onChange, exist = [], use
   const onSearch = useAsyncDebounce((value) => {
     setSearch(value.toLowerCase());
   }, 200);
+
+  const handleToggleOpenCDlg = useCallback(
+    (res) => {
+      if (res && users.find((item) => item.email === searchVal)) {
+        onChange(union(value, [searchVal]));
+        return;
+      }
+      toggleOpenCDlg(res);
+    },
+    [users, searchVal, onChange, value]
+  );
 
   const handleCloseCDlg = useCallback((res = false) => {
     toggleOpenCDlg(false);
@@ -394,8 +418,8 @@ export default function AddContributor({ users, value, onChange, exist = [], use
           <Stack direction={'row'} justifyContent={'center'}>
             <SearchInput
               searchVal={searchVal}
-              toggleOpenCDlg={toggleOpenCDlg}
-              users={users}
+              toggleOpenCDlg={handleToggleOpenCDlg}
+              users={users.filter((item) => !item.setting.hide)}
               setSearchVal={setSearchVal}
               onSearch={onSearch}
               inputRef={inputRef}
@@ -411,7 +435,12 @@ export default function AddContributor({ users, value, onChange, exist = [], use
           {customList(
             'Choices',
             users
-              .filter((item) => !emails.includes(item.email) && item.email.includes(search) && !item.setting.hide)
+              .filter(
+                (item) =>
+                  !emails.includes(item.email) &&
+                  item.email.includes(search) &&
+                  (favourites.includes(item.email) || collaborates.includes(item.email) || !item.setting.hide)
+              )
               .sort((a, b) => (a.status > b.status ? 1 : a.status < b.status ? -1 : 0))
           )}
         </Grid>

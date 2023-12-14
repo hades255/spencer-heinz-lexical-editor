@@ -82,7 +82,7 @@ const CheckInvite = () => {
           </Stack>
         </Grid>
         <Grid item xs={12}>
-          {c === 'success' && <NewPassword GO={GO} user={u} token={token} document={d} creator={creator} />}
+          {c === 'success' && <NewPassword GO={GO} user={u} document={d} creator={creator} />}
           {c === 'error' && (
             <Grid container spacing={3}>
               <Grid item xs={12}>

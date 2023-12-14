@@ -23,6 +23,7 @@ import Transitions from 'components/@extended/Transitions';
 // assets
 import { Person2Outlined } from '@mui/icons-material';
 import CustomCell from 'components/customers/CustomCell';
+import moment from 'moment';
 
 // ==============================|| CUSTOMER - VIEW ||============================== //
 
@@ -48,8 +49,16 @@ const DocumentDetail = ({ data }) => {
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
                     <Stack spacing={2.5}>
-                      <Typography variant="h5">{data.name}</Typography>
-                      <Stack spacing={0.5}>
+                      <Stack spacing={0.5} direction={'row'}>
+                        <Typography variant="h5" color={'secondary'}>
+                          Title:
+                        </Typography>
+                        <Typography variant="h5">{data.name}</Typography>
+                      </Stack>
+                      <Stack spacing={0.5} direction={'row'}>
+                        <Typography variant="p" color={'secondary'}>
+                          Description:
+                        </Typography>
                         <Typography variant="p">{data.description}</Typography>
                       </Stack>
                     </Stack>
@@ -62,6 +71,20 @@ const DocumentDetail = ({ data }) => {
                       {data.invites.map((item, key) => (
                         <CustomCell key={key} user={item} />
                       ))}
+                    </Stack>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Stack spacing={0.5} direction={'row'}>
+                      <Typography variant="p" color={'secondary'}>
+                        Created At:
+                      </Typography>
+                      <Typography variant="p">{moment(data.createdAt).format('MM/DD/YYYY h:mm A')}</Typography>
+                    </Stack>
+                    <Stack spacing={0.5} direction={'row'}>
+                      <Typography variant="p" color={'secondary'}>
+                        Last Updated At:
+                      </Typography>
+                      <Typography variant="p">{moment(data.updatedAt).format('MM/DD/YYYY h:mm A')}</Typography>
                     </Stack>
                   </Grid>
                   <Grid item xs={12}>

@@ -152,7 +152,6 @@ export const HandleInvitation = ({ user, document, notification, onCancel }) => 
         ._id
     : document.creator._id;
 
-  console.log(leader);
   const handleAccept = useCallback(() => {
     onCancel();
     dispatch(setInvitationStatus(notification, 'accept', leader));
