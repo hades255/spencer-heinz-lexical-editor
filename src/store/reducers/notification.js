@@ -4,7 +4,7 @@ import axiosServices from 'utils/axios';
 import { getMyDocumentLists } from './document';
 
 const initialState = {
-  list: [],
+  list: null,
   all: [],
   error: null
 };
@@ -20,7 +20,7 @@ const notification = createSlice({
       state.list = action.payload;
     },
     addLists(state, action) {
-      state.list = [...action.payload, ...state.list];
+      state.list = state.list ? [...action.payload, ...state.list] : action.payload;
     },
     setAll(state, action) {
       state.all = action.payload;

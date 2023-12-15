@@ -160,7 +160,7 @@ const Notification = () => {
   }, []);
 
   useEffect(() => {
-    dispatch(setLists([]));
+    dispatch(setLists(null));
     dispatch(setMessageLists([]));
   }, []);
 
@@ -227,7 +227,7 @@ const Notification = () => {
           aria-haspopup="true"
           onClick={handleToggle}
         >
-          <Badge badgeContent={notifications.filter((item) => item.status === 'unread').length} color="primary">
+          <Badge badgeContent={notifications?.filter((item) => item.status === 'unread').length} color="primary">
             <BellOutlined />
           </Badge>
         </IconButton>
