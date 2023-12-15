@@ -149,6 +149,7 @@ const Team = ({ socket }) => {
       }
     })();
   }, []);
+
   const getFavouriteUsers = useCallback(() => {
     (async () => {
       try {
@@ -262,6 +263,7 @@ const Team = ({ socket }) => {
     },
     [socket]
   );
+
   const handlesetActiveTeam = useCallback(
     (team) => {
       (async () => {

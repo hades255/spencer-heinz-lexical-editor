@@ -20,7 +20,8 @@ import {
   setDocInvitedUsers,
   setDocLeaders,
   setDocMe,
-  setDocUsers
+  setDocUsers,
+  setOnlinestatusToTeam
 } from 'store/reducers/document';
 import { useSelector } from 'store';
 
@@ -72,6 +73,9 @@ const Document = ({ user, document }) => {
           break;
         case 'block-team':
           dispatch(setDocBlockTeams(data.blocked)); //  active status team
+          break;
+        case 'online-status':
+          dispatch(setOnlinestatusToTeam(data.user)); //  active status team
           break;
         case 'userslistWithTeam':
           dispatch(setDocLeaders(data.leaders)); //  all leaders of each team

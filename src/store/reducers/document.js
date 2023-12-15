@@ -82,6 +82,12 @@ const document = createSlice({
       });
       state.lists = DocumentUpdate;
     },
+    setOnlinestatusToTeam(state, action) {
+      state.users = state.users.map((item) => ({
+        ...item,
+        online_status: action.payload._id === item._id ? action.payload.online_status : item.online_status
+      }));
+    },
 
     // delete invoice
     deleteDocument(state, action) {
@@ -107,7 +113,8 @@ export const {
   setDocUsers,
   setDocLeaders,
   setDocActiveTeam,
-  setDocBlockTeams
+  setDocBlockTeams,
+  setOnlinestatusToTeam
 } = document.actions;
 
 export function getDocumentLists() {
