@@ -2,28 +2,10 @@
 import { FormattedMessage } from 'react-intl';
 
 // assets
-import {
-  DollarOutlined,
-  LoginOutlined,
-  PhoneOutlined,
-  RocketOutlined,
-  DashboardOutlined,
-  FileWordOutlined,
-  EditOutlined,
-  FileAddTwoTone
-} from '@ant-design/icons';
+import { DashboardOutlined, FileWordOutlined, EditOutlined } from '@ant-design/icons';
 
 // icons
-const icons = {
-  DollarOutlined,
-  LoginOutlined,
-  PhoneOutlined,
-  RocketOutlined,
-  DashboardOutlined,
-  FileWordOutlined,
-  EditOutlined,
-  FileAddTwoTone
-};
+const icons = { DashboardOutlined, FileWordOutlined, EditOutlined };
 
 // ==============================|| MENU ITEMS - PAGES ||============================== //
 
@@ -60,7 +42,14 @@ const pages = {
           url: '/document/create'
         }
       ]
-    },
+    }
+  ]
+};
+
+export default pages;
+
+/**
+ * 
     {
       id: 'authentication',
       title: <FormattedMessage id="authentication" />,
@@ -81,7 +70,4 @@ const pages = {
         }
       ]
     }
-  ]
-};
-
-export default pages;
+ */

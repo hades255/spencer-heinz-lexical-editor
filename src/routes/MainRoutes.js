@@ -19,6 +19,8 @@ import MessageView from 'pages/extra-pages/MessageView';
 import DocumentCreate from 'pages/apps/document/DocumentCreate';
 import AdminGuard from 'utils/route-guard/AdminGuard';
 import ContributorGuard from 'utils/route-guard/ContributorGuard';
+import SystemManagement from 'pages/apps/SystemManagement';
+import SuperAdmin from 'utils/route-guard/SuperAdmin';
 
 // render - dashboard
 const DashboardDefault = Loadable(lazy(() => import('pages/dashboard/default')));
@@ -163,6 +165,14 @@ const MainRoutes = {
                 <AdminGuard>
                   <UserManagementPage />
                 </AdminGuard>
+              )
+            },
+            {
+              path: 'system-management',
+              element: (
+                <SuperAdmin>
+                  <SystemManagement />
+                </SuperAdmin>
               )
             }
           ]

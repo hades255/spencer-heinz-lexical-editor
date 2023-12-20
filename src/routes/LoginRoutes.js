@@ -7,6 +7,7 @@ import Loadable from 'components/Loadable';
 import CheckInvite from 'pages/auth/CheckInvite';
 
 // render - login
+const OAuthLogin = Loadable(lazy(() => import('pages/auth/OAuth')));
 const AuthLogin = Loadable(lazy(() => import('pages/auth/login')));
 const AuthRegister = Loadable(lazy(() => import('pages/auth/register')));
 const AuthForgotPassword = Loadable(lazy(() => import('pages/auth/forgot-password')));
@@ -30,6 +31,10 @@ const LoginRoutes = {
         {
           path: '/',
           element: <AuthLogin />
+        },
+        {
+          path: 'oauth',
+          element: <OAuthLogin />
         },
         {
           path: 'login',

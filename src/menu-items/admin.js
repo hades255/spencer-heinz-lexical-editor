@@ -2,50 +2,10 @@
 import { FormattedMessage } from 'react-intl';
 
 // assets
-import {
-  BorderOutlined,
-  BoxPlotOutlined,
-  ChromeOutlined,
-  DeploymentUnitOutlined,
-  GatewayOutlined,
-  MenuUnfoldOutlined,
-  QuestionOutlined,
-  SmileOutlined,
-  StopOutlined,
-  ProfileOutlined,
-  EditOutlined,
-  UserOutlined,
-  WalletOutlined,
-  QuestionCircleOutlined,
-  LockOutlined,
-  SettingOutlined,
-  CommentOutlined,
-  UnorderedListOutlined,
-  FileWordOutlined
-} from '@ant-design/icons';
+import { UserOutlined, FileWordOutlined } from '@ant-design/icons';
 
 // icons
-const icons = {
-  ChromeOutlined,
-  MenuUnfoldOutlined,
-  BoxPlotOutlined,
-  StopOutlined,
-  BorderOutlined,
-  SmileOutlined,
-  GatewayOutlined,
-  QuestionOutlined,
-  DeploymentUnitOutlined,
-  ProfileOutlined,
-  EditOutlined,
-  UserOutlined,
-  WalletOutlined,
-  QuestionCircleOutlined,
-  LockOutlined,
-  SettingOutlined,
-  CommentOutlined,
-  UnorderedListOutlined,
-  FileWordOutlined
-};
+const icons = { UserOutlined, FileWordOutlined };
 
 // ==============================|| MENU ITEMS - SUPPORT ||============================== //
 
