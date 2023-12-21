@@ -1,17 +1,23 @@
 import { Link } from 'react-router-dom';
 
 // material-ui
-import { Grid, Stack, Typography } from '@mui/material';
+import { Button, Divider, Grid, Stack, Typography } from '@mui/material';
 
 // project import
 import useAuth from 'hooks/useAuth';
 import AuthWrapper from 'sections/auth/AuthWrapper';
 import FirebaseRegister from 'sections/auth/auth-forms/AuthRegister';
+import { GoogleOutlined } from '@ant-design/icons';
+import { useCallback } from 'react';
 
 // ================================|| REGISTER ||================================ //
 
 const Register = () => {
   const { isLoggedIn } = useAuth();
+
+  const handleGoogleAuth = useCallback(() => {
+    window.location.href = (process.env.REACT_APP_API_URL || 'http://localhost:8000/') + 'oauth2/google';
+  }, []);
 
   return (
     <AuthWrapper>
@@ -32,6 +38,15 @@ const Register = () => {
         </Grid>
         <Grid item xs={12}>
           <FirebaseRegister />
+          <Divider sx={{ my: 2 }} />
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Button disableElevation fullWidth size="large" type="submit" variant="outlined" color="secondary" onClick={handleGoogleAuth}>
+                <GoogleOutlined style={{ marginRight: 4, fontSize: 28 }} />
+                Continue with Google
+              </Button>
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
     </AuthWrapper>

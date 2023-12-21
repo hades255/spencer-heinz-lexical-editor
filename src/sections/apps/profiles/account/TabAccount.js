@@ -13,7 +13,8 @@ import {
   Select,
   Stack,
   Switch,
-  TextField
+  TextField,
+  Tooltip
 } from '@mui/material';
 import * as Yup from 'yup';
 
@@ -29,6 +30,7 @@ import axiosServices from 'utils/axios';
 import { openSnackbar } from 'store/reducers/snackbar';
 import TabPassword from './TabPassword';
 import DeleteAccount from './DeleteAccount';
+import countries from 'data/countries';
 
 // ==============================|| ACCOUNT PROFILE - MY ACCOUNT ||============================== //
 
@@ -248,18 +250,15 @@ const TabAccount = () => {
                 <InputLabel htmlFor="mobilePhone-signup">Mobile Phone Number</InputLabel>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
                   <Select value={state.countryCode} name="countryCode" onChange={handleInputChange}>
-                    <MenuItem value="+91">+91</MenuItem>
-                    <MenuItem value="1-671">1-671</MenuItem>
-                    <MenuItem value="+36">+36</MenuItem>
-                    <MenuItem value="(225)">(255)</MenuItem>
-                    <MenuItem value="+39">+39</MenuItem>
-                    <MenuItem value="1-876">1-876</MenuItem>
-                    <MenuItem value="+7">+7</MenuItem>
-                    <MenuItem value="(254)">(254)</MenuItem>
-                    <MenuItem value="(373)">(373)</MenuItem>
-                    <MenuItem value="1-664">1-664</MenuItem>
-                    <MenuItem value="+95">+95</MenuItem>
-                    <MenuItem value="(264)">(264)</MenuItem>
+                    {countries.map((item, key) => (
+                      <MenuItem key={key} value={item.phone}>
+                        <Tooltip title={item.label} arrow>
+                          <span>
+                            {item.code} {item.phone}
+                          </span>
+                        </Tooltip>
+                      </MenuItem>
+                    ))}
                   </Select>
                   <OutlinedInput
                     fullWidth
@@ -279,18 +278,15 @@ const TabAccount = () => {
                 <InputLabel htmlFor="workPhone-signup">Work Phone Number</InputLabel>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
                   <Select value={state.countryCode} name="countryCode" onChange={handleInputChange}>
-                    <MenuItem value="+91">+91</MenuItem>
-                    <MenuItem value="1-671">1-671</MenuItem>
-                    <MenuItem value="+36">+36</MenuItem>
-                    <MenuItem value="(225)">(255)</MenuItem>
-                    <MenuItem value="+39">+39</MenuItem>
-                    <MenuItem value="1-876">1-876</MenuItem>
-                    <MenuItem value="+7">+7</MenuItem>
-                    <MenuItem value="(254)">(254)</MenuItem>
-                    <MenuItem value="(373)">(373)</MenuItem>
-                    <MenuItem value="1-664">1-664</MenuItem>
-                    <MenuItem value="+95">+95</MenuItem>
-                    <MenuItem value="(264)">(264)</MenuItem>
+                    {countries.map((item, key) => (
+                      <MenuItem key={key} value={item.phone}>
+                        <Tooltip title={item.label} arrow>
+                          <span>
+                            {item.code} {item.phone}
+                          </span>
+                        </Tooltip>
+                      </MenuItem>
+                    ))}
                   </Select>
                   <OutlinedInput
                     fullWidth
@@ -362,7 +358,7 @@ const TabAccount = () => {
       </Grid>
       <Grid item xs={12} sm={6}>
         <MainCard title="Favourite Users" content={false}>
-          <List sx={{ p: 0, maxHeight: 300, overflowY: 'scroll' }}>
+          <List sx={{ p: 0, minHeight: 142, maxHeight: 300, overflowY: 'scroll' }}>
             {users
               .filter((item) => favUsers.includes(item.email))
               .map((item, key) => (

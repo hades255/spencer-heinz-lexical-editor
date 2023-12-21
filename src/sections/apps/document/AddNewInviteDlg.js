@@ -14,7 +14,8 @@ import {
   Dialog,
   DialogTitle,
   Divider,
-  DialogContent
+  DialogContent,
+  Tooltip
 } from '@mui/material';
 
 // third party
@@ -33,6 +34,7 @@ import { openSnackbar } from 'store/reducers/snackbar';
 // import { getUserLists } from 'store/reducers/user';
 import { PopupTransition } from 'components/@extended/Transitions';
 import { addNewUser } from 'store/reducers/user';
+import countries from 'data/countries';
 
 const AddNewInviteDlg = ({ open, email, onClose }) => {
   const { register } = useAuth();
@@ -70,7 +72,7 @@ const AddNewInviteDlg = ({ open, email, onClose }) => {
                   lastname: '',
                   email,
                   company: '',
-                  countryCode: '+91',
+                  countryCode: '+1',
                   mobilePhone: '',
                   workPhone: '',
                   submit: null
@@ -216,18 +218,15 @@ const AddNewInviteDlg = ({ open, email, onClose }) => {
                           <InputLabel htmlFor="mobilePhone-signup">Mobile Phone Number</InputLabel>
                           <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
                             <Select value={values.countryCode} name="countryCode" onBlur={handleBlur} onChange={handleChange}>
-                              <MenuItem value="+91">+91</MenuItem>
-                              <MenuItem value="1-671">1-671</MenuItem>
-                              <MenuItem value="+36">+36</MenuItem>
-                              <MenuItem value="(225)">(255)</MenuItem>
-                              <MenuItem value="+39">+39</MenuItem>
-                              <MenuItem value="1-876">1-876</MenuItem>
-                              <MenuItem value="+7">+7</MenuItem>
-                              <MenuItem value="(254)">(254)</MenuItem>
-                              <MenuItem value="(373)">(373)</MenuItem>
-                              <MenuItem value="1-664">1-664</MenuItem>
-                              <MenuItem value="+95">+95</MenuItem>
-                              <MenuItem value="(264)">(264)</MenuItem>
+                              {countries.map((item, key) => (
+                                <MenuItem key={key} value={item.phone}>
+                                  <Tooltip title={item.label} arrow>
+                                    <span>
+                                      {item.code} {item.phone}
+                                    </span>
+                                  </Tooltip>
+                                </MenuItem>
+                              ))}
                             </Select>
                             <OutlinedInput
                               fullWidth
@@ -254,18 +253,15 @@ const AddNewInviteDlg = ({ open, email, onClose }) => {
                           <InputLabel htmlFor="workPhone-signup">Work Phone Number</InputLabel>
                           <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
                             <Select value={values.countryCode} name="countryCode" onBlur={handleBlur} onChange={handleChange}>
-                              <MenuItem value="+91">+91</MenuItem>
-                              <MenuItem value="1-671">1-671</MenuItem>
-                              <MenuItem value="+36">+36</MenuItem>
-                              <MenuItem value="(225)">(255)</MenuItem>
-                              <MenuItem value="+39">+39</MenuItem>
-                              <MenuItem value="1-876">1-876</MenuItem>
-                              <MenuItem value="+7">+7</MenuItem>
-                              <MenuItem value="(254)">(254)</MenuItem>
-                              <MenuItem value="(373)">(373)</MenuItem>
-                              <MenuItem value="1-664">1-664</MenuItem>
-                              <MenuItem value="+95">+95</MenuItem>
-                              <MenuItem value="(264)">(264)</MenuItem>
+                              {countries.map((item, key) => (
+                                <MenuItem key={key} value={item.phone}>
+                                  <Tooltip title={item.label} arrow>
+                                    <span>
+                                      {item.code} {item.phone}
+                                    </span>
+                                  </Tooltip>
+                                </MenuItem>
+                              ))}
                             </Select>
                             <OutlinedInput
                               fullWidth

@@ -187,11 +187,9 @@ const Notification = () => {
       const data = JSON.parse(event.data);
       if (data.notifications.length !== 0) {
         setFlag((f) => f + 1);
-        dispatch(addLists(data.notifications));
       }
-      if (data.messages.length !== 0) {
-        dispatch(addMessageLists(data.messages));
-      }
+      dispatch(addLists(data.notifications));
+      dispatch(addMessageLists(data.messages));
     };
 
     ws.onclose = () => {};
@@ -290,7 +288,7 @@ const Notification = () => {
                         }
                       }}
                     >
-                      {notifications.map((item, key) => (
+                      {notifications?.map((item, key) => (
                         <NotificationItem notification={item} key={key} setOpen={handleToggle} redirect={handleRedirect} />
                       ))}
                     </List>

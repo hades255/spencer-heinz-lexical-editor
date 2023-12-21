@@ -20,6 +20,7 @@ import useAuth from 'hooks/useAuth';
 // assets
 import avatar1 from 'assets/images/users/avatar-1.png';
 import { LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
+import BackgroundLetterAvatar from 'components/@extended/BackgroundLetterAvatar';
 
 // tab panel wrapper
 function TabPanel({ children, value, index, ...other }) {
@@ -104,7 +105,7 @@ const Profile = () => {
         onClick={handleToggle}
       >
         <Stack direction="row" spacing={2} alignItems="center" sx={{ p: 0.5 }}>
-          <Avatar alt="profile user" src={avatar1} size="xs" />
+          <BackgroundLetterAvatar name={user?.name} xs />
           <Typography variant="subtitle1">{user?.name}</Typography>
         </Stack>
       </ButtonBase>
@@ -145,11 +146,11 @@ const Profile = () => {
                     <Grid container justifyContent="space-between" alignItems="center">
                       <Grid item>
                         <Stack direction="row" spacing={1.25} alignItems="center">
-                          <Avatar alt="profile user" src={avatar1} sx={{ width: 32, height: 32 }} />
+                          <BackgroundLetterAvatar name={user?.name} />
                           <Stack>
                             <Typography variant="h6">{user?.name}</Typography>
                             <Typography variant="body2" color="textSecondary">
-                              UI/UX Designer
+                              {user?.role.toUpperCase()}
                             </Typography>
                           </Stack>
                         </Stack>

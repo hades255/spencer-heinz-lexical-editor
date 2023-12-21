@@ -14,7 +14,8 @@ import {
   MenuItem,
   Select,
   Stack,
-  TextField
+  TextField,
+  Tooltip
 } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -337,18 +338,15 @@ const TabPersonal = () => {
                       <InputLabel htmlFor="personal-mobilePhone">Mobile Phone Number</InputLabel>
                       <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
                         <Select value={values.countryCode} name="countryCode" onBlur={handleBlur} onChange={handleChange}>
-                          <MenuItem value="+91">+91</MenuItem>
-                          <MenuItem value="1-671">1-671</MenuItem>
-                          <MenuItem value="+36">+36</MenuItem>
-                          <MenuItem value="(225)">(255)</MenuItem>
-                          <MenuItem value="+39">+39</MenuItem>
-                          <MenuItem value="1-876">1-876</MenuItem>
-                          <MenuItem value="+7">+7</MenuItem>
-                          <MenuItem value="(254)">(254)</MenuItem>
-                          <MenuItem value="(373)">(373)</MenuItem>
-                          <MenuItem value="1-664">1-664</MenuItem>
-                          <MenuItem value="+95">+95</MenuItem>
-                          <MenuItem value="(264)">(264)</MenuItem>
+                          {countries.map((item, key) => (
+                            <MenuItem key={key} value={item.phone}>
+                              <Tooltip title={item.label} arrow>
+                                <span>
+                                  {item.code} {item.phone}
+                                </span>
+                              </Tooltip>
+                            </MenuItem>
+                          ))}
                         </Select>
                         <TextField
                           fullWidth
@@ -372,18 +370,15 @@ const TabPersonal = () => {
                       <InputLabel htmlFor="personal-workPhone">Work Phone Number</InputLabel>
                       <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
                         <Select value={values.countryCode} name="countryCode" onBlur={handleBlur} onChange={handleChange}>
-                          <MenuItem value="+91">+91</MenuItem>
-                          <MenuItem value="1-671">1-671</MenuItem>
-                          <MenuItem value="+36">+36</MenuItem>
-                          <MenuItem value="(225)">(255)</MenuItem>
-                          <MenuItem value="+39">+39</MenuItem>
-                          <MenuItem value="1-876">1-876</MenuItem>
-                          <MenuItem value="+7">+7</MenuItem>
-                          <MenuItem value="(254)">(254)</MenuItem>
-                          <MenuItem value="(373)">(373)</MenuItem>
-                          <MenuItem value="1-664">1-664</MenuItem>
-                          <MenuItem value="+95">+95</MenuItem>
-                          <MenuItem value="(264)">(264)</MenuItem>
+                          {countries.map((item, key) => (
+                            <MenuItem key={key} value={item.phone}>
+                              <Tooltip title={item.label} arrow>
+                                <span>
+                                  {item.code} {item.phone}
+                                </span>
+                              </Tooltip>
+                            </MenuItem>
+                          ))}
                         </Select>
                         <TextField
                           fullWidth

@@ -204,7 +204,7 @@ const TabPersonal = () => {
                     <InputLabel htmlFor="personal-phone">Phone Number</InputLabel>
                     <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
                       <Select defaultValue="1-876">
-                        <MenuItem value="91">+91</MenuItem>
+                        <MenuItem value="1">+1</MenuItem>
                         <MenuItem value="1-671">1-671</MenuItem>
                         <MenuItem value="36">+36</MenuItem>
                         <MenuItem value="225">(255)</MenuItem>

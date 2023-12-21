@@ -107,7 +107,7 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent, hand
       initialState: {
         pageIndex: Number(searchParams.get('page') || '1') - 1,
         pageSize: Number(searchParams.get('perpage') || '100'),
-        hiddenColumns: ['avatar', 'email', 'workPhone'],
+        hiddenColumns: ['avatar', 'email', 'workPhone', 'countryCode'],
         sortBy: [sortBy]
       }
     },
@@ -121,9 +121,9 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent, hand
 
   useEffect(() => {
     if (matchDownSM) {
-      setHiddenColumns(['age', 'contact', 'visits', 'email', 'status', 'avatar', 'workPhone']);
+      setHiddenColumns(['age', 'contact', 'visits', 'email', 'status', 'avatar', 'workPhone', 'countryCode']);
     } else {
-      setHiddenColumns(['avatar', 'email', 'workPhone']);
+      setHiddenColumns(['avatar', 'email', 'workPhone', 'countryCode']);
     }
     // eslint-disable-next-line
   }, [matchDownSM]);
@@ -225,11 +225,15 @@ const NumberFormatCell = ({ row }) => {
     <Stack spacing={0}>
       <Typography variant="" color="textSecondary">
         <MobileOutlined style={{ borderRadius: '10px' }} />
-        <PatternFormat displayType="text" format=" +1 (###) ###-####" mask="_" defaultValue={values.mobilePhone} />
+        {values.mobilePhone !== '0' && (
+          <PatternFormat displayType="text" format={` ${values.countryCode} (###) ###-####`} mask="_" defaultValue={values.mobilePhone} />
+        )}
       </Typography>
       <Typography variant="" color="textSecondary">
         <PhoneOutlined />
-        <PatternFormat displayType="text" format=" +1 (###) ###-####" mask="_" defaultValue={values.workPhone} />
+        {values.workPhone !== '0' && (
+          <PatternFormat displayType="text" format={` ${values.countryCode} (###) ###-####`} mask="_" defaultValue={values.workPhone} />
+        )}
       </Typography>
     </Stack>
   );
@@ -566,6 +570,10 @@ const UserManagementPage = () => {
       {
         Header: 'workPhone',
         accessor: 'workPhone'
+      },
+      {
+        Header: 'countryCode',
+        accessor: 'countryCode'
       },
       {
         Header: 'Flag',

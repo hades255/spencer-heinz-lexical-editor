@@ -32,7 +32,7 @@ const NotificationList = () => {
                   <Typography variant="h4">Notifications</Typography>
                 </Stack>
               </Grid>
-              <Timeline position="alternate">
+              <Timeline position="alternate" sx={{ minHeight: '50vh' }}>
                 {notifications.map((notification, key) => (
                   <TimelineItem key={key}>
                     <TimelineOppositeContent sx={{ m: 'auto 0' }} align="right" variant="body2" color="text.secondary">

@@ -24,6 +24,7 @@ import Avatar from 'components/@extended/Avatar';
 // assets
 import { AimOutlined, EnvironmentOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
 import useAuth from 'hooks/useAuth';
+import BackgroundLetterAvatar from 'components/@extended/BackgroundLetterAvatar';
 
 const avatarImage = require.context('assets/images/users', true);
 
@@ -45,7 +46,11 @@ const TabProfile = () => {
                       <Chip label="Pro" size="small" color="primary" />
                     </Stack>
                     <Stack spacing={2.5} alignItems="center">
-                      <Avatar alt="Avatar 1" size="xl" src={avatarImage(`./default.png`)} />
+                      {user.avatar ? (
+                        <Avatar alt="Avatar 1" size="xl" src={avatarImage(`./default.png`)} />
+                      ) : (
+                        <BackgroundLetterAvatar name={user.name} />
+                      )}
                       <Stack spacing={0.5} alignItems="center">
                         <Typography variant="h5">{user.name}</Typography>
                         <Typography color="secondary">{user.designation}</Typography>

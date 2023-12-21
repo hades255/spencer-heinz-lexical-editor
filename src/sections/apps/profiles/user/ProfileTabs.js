@@ -18,6 +18,7 @@ import useAuth from 'hooks/useAuth';
 
 // assets
 import { FacebookFilled, LinkedinFilled, MoreOutlined, TwitterSquareFilled, CameraOutlined } from '@ant-design/icons';
+import BackgroundLetterAvatar from 'components/@extended/BackgroundLetterAvatar';
 
 const avatarImage = require.context('assets/images/users', true);
 
@@ -108,7 +109,11 @@ const ProfileTabs = ({ focusInput }) => {
                 cursor: 'pointer'
               }}
             >
-              <Avatar alt="Avatar 1" src={avatar} sx={{ width: 124, height: 124, border: '1px dashed' }} />
+              {user.avatar ? (
+                <Avatar alt="Avatar 1" src={avatar} sx={{ width: 124, height: 124, border: '1px dashed' }} />
+              ) : (
+                <BackgroundLetterAvatar name={user.name} xl />
+              )}
               <Box
                 sx={{
                   position: 'absolute',

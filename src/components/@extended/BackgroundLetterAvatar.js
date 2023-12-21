@@ -22,18 +22,20 @@ const stringToColor = (string) => {
   return color;
 };
 
-const stringAvatar = (name) => {
+const stringAvatar = (name, xs = false, xl = false) => {
+  const add = xs ? { fontSize: 15, width: 30, height: 30 } : xl ? { fontSize: 60, width: 124, height: 124 } : {};
   return {
     sx: {
       bgcolor: stringToColor(name),
-      cursor: 'pointer'
+      cursor: 'pointer',
+      ...add
     },
     children: name.indexOf(' ') === -1 ? name[0] : `${name.split(' ')[0][0]}${name.split(' ')[1][0]}`
   };
 };
 
-const BackgroundLetterAvatar = ({ name = '', ...props }) => {
-  return <Avatar {...stringAvatar(name)} {...props} />;
+const BackgroundLetterAvatar = ({ name = '', xs, xl, ...props }) => {
+  return <Avatar {...stringAvatar(name, xs, xl)} {...props} />;
 };
 
 BackgroundLetterAvatar.propTypes = {
