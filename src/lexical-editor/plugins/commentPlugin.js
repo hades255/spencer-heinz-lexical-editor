@@ -47,6 +47,7 @@ import { $isBlackoutNode, isBlackedOutNode } from 'lexical-editor/nodes/blackout
 import { ACTION_REQUEST_USER, COMMENT_TYPES } from 'lexical-editor/utils/constants';
 import { ReassignButton } from 'lexical-editor/components/comment/reassignButton';
 import { useSelector } from 'store';
+import axiosServices from 'utils/axios';
 
 const EditorPriority = 1;
 export const SET_COMMENT_COMMAND = createCommand('SET_COMMENT_COMMAND');
@@ -63,7 +64,7 @@ export const updateComment = () => {
 
 let floatTimeOut = 0;
 
-export default function CommentPlugin({ user }) {
+export default function CommentPlugin({ user, uniqueId: doc }) {
   const allUsers = useSelector((state) => state.document.users);
   const leaders = useSelector((state) => state.document.leaders);
   const me = useSelector((state) => state.document.me);
@@ -250,6 +251,20 @@ export default function CommentPlugin({ user }) {
     [editor, me, getLeaderFromTeam]
   );
 
+  const submitComment = useCallback(
+    ({ assignee, task, comment, commentor: { _id }, uniqueId, type }) => {
+      (async () => {
+        try {
+          const res = await axiosServices.post('/task', { assignee, task, comment, commentor: _id, uniqueId, type, doc });
+          console.log(res);
+        } catch (error) {
+          console.log(error);
+        }
+      })();
+    },
+    [doc]
+  );
+
   const setComment = useCallback(
     (payload) => {
       const { assignee, task, user, commentContent, type } = payload;
@@ -364,6 +379,9 @@ export default function CommentPlugin({ user }) {
         }
 
         $wrapNodeInElement(writable, () => {
+          setTimeout(() => {
+            submitComment(newComment);
+          });
           return $createCommentNode('editor-comment', [newComment], [user._id]);
         });
         // } else {
@@ -372,7 +390,7 @@ export default function CommentPlugin({ user }) {
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [editor]
+    [editor, submitComment]
   );
 
   const filterComment = useCallback(
@@ -727,8 +745,7 @@ export default function CommentPlugin({ user }) {
 
 CommentPlugin.propTypes = {
   user: PropTypes.string,
-  me: PropTypes.any,
-  users: PropTypes.array
+  uniqueId: PropTypes.any
 };
 
 function getSelectedNode(selection) {

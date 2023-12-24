@@ -50,7 +50,8 @@ import {
   EditTwoTone,
   DeleteTwoTone,
   UnlockOutlined,
-  ArrowUpOutlined
+  ArrowUpOutlined,
+  UserDeleteOutlined
 } from '@ant-design/icons';
 
 import { useSelector } from 'react-redux';
@@ -62,6 +63,7 @@ import AlertCustomerPwdreset from 'sections/apps/customer/AlertCustomerPwdreset'
 import { SelectionCell, SelectionHeader } from 'components/table/Selection';
 import CustomCell from 'components/customers/CustomCell';
 import { USER_ROLES } from 'config/constants';
+import AlertCustomerDeleteP from 'sections/apps/customer/AlertCustomerDeleteP';
 
 const CustomerCell = ({ row: { values } }) => {
   return <CustomCell user={values} />;
@@ -340,7 +342,9 @@ const ActionCell = (
   handleClose,
   handleCloseLockDlg,
   handleUpdateStatus,
-  handleClosePwdresetDlg
+  handleClosePwdresetDlg,
+  handleClosePDelete,
+  role
 ) => {
   const collapseIcon = row.isExpanded ? (
     <CloseOutlined style={{ color: theme.palette.error.main }} />
@@ -361,7 +365,7 @@ const ActionCell = (
           {collapseIcon}
         </IconButton>
       </Tooltip>
-      {row.values.status === 'active' || row.values.status === 'locked' ? (
+      {row.values.status === 'active' || row.values.status === 'locked' || (row.values.role === 'admin' && role !== 'super admin') ? (
         <IconButton disabled>
           <CheckOutlined />
         </IconButton>
@@ -378,7 +382,7 @@ const ActionCell = (
           </IconButton>
         </Tooltip>
       )}
-      {row.values.status === 'deleted' ? (
+      {row.values.status === 'deleted' || (row.values.role === 'admin' && role !== 'super admin') ? (
         <IconButton disabled>
           <UnlockOutlined />
         </IconButton>
@@ -401,19 +405,29 @@ const ActionCell = (
           </IconButton>
         </Tooltip>
       )}
-      <Tooltip title="Edit">
-        <IconButton
-          color="primary"
-          onClick={(e) => {
-            e.stopPropagation();
-            setCustomer(row.values);
-            handleAdd();
-          }}
-        >
-          <EditTwoTone twoToneColor={theme.palette.primary.main} />
+      {row.values.role === 'admin' && role !== 'super admin' ? (
+        <IconButton disabled>
+          <EditTwoTone twoToneColor={theme.palette.secondary.main} />
         </IconButton>
-      </Tooltip>
-      {row.values.status === 'active' ? (
+      ) : (
+        <Tooltip title="Edit">
+          <IconButton
+            color="primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              setCustomer(row.original);
+              handleAdd();
+            }}
+          >
+            <EditTwoTone twoToneColor={theme.palette.primary.main} />
+          </IconButton>
+        </Tooltip>
+      )}
+      {row.values.status !== 'active' || (row.values.role === 'admin' && role !== 'super admin') ? (
+        <IconButton disabled>
+          <ToolOutlined />
+        </IconButton>
+      ) : (
         <Tooltip title="Reset Password">
           <IconButton
             color="warning"
@@ -427,25 +441,41 @@ const ActionCell = (
             <ToolOutlined twoToneColor={theme.palette.warning.main} />
           </IconButton>
         </Tooltip>
-      ) : (
-        <IconButton disabled>
-          <ToolOutlined />
-        </IconButton>
       )}
-      <Tooltip title={row.values.status === 'deleted' && row.values.comment ? `Deleted because ${row.values.comment}` : 'Delete'}>
-        <IconButton
-          color={row.values.status === 'deleted' ? 'secodnary' : 'error'}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (row.values.status === 'deleted') return;
-            handleClose();
-            setCustomerDeleteId(row.values.name);
-            setUserDeleteId(row.original._id);
-          }}
-        >
-          <DeleteTwoTone twoToneColor={row.values.status === 'deleted' ? theme.palette.info.main : theme.palette.error.main} />
+      {row.values.role === 'admin' && role !== 'super admin' ? (
+        <IconButton disabled>
+          <UserDeleteOutlined />
         </IconButton>
-      </Tooltip>
+      ) : row.values.status === 'deleted' ? (
+        <Tooltip title={`Permanent Delete `}>
+          <IconButton
+            color={'info'}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClosePDelete();
+              setCustomerDeleteId(row.values.name);
+              setUserDeleteId(row.original._id);
+            }}
+          >
+            <UserDeleteOutlined twoToneColor={theme.palette.info.main} />
+          </IconButton>
+        </Tooltip>
+      ) : (
+        <Tooltip title={row.values.status === 'deleted' && row.values.comment ? `Deleted because ${row.values.comment}` : 'Delete'}>
+          <IconButton
+            color={row.values.status === 'deleted' ? 'secodnary' : 'error'}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (row.values.status === 'deleted') return;
+              handleClose();
+              setCustomerDeleteId(row.values.name);
+              setUserDeleteId(row.original._id);
+            }}
+          >
+            <DeleteTwoTone twoToneColor={row.values.status === 'deleted' ? theme.palette.info.main : theme.palette.error.main} />
+          </IconButton>
+        </Tooltip>
+      )}
     </Stack>
   );
 };
@@ -473,11 +503,12 @@ const UserManagementPage = () => {
   const user = useContext(AuthContext).user;
   const [add, setAdd] = useState(false);
   const [open, setOpen] = useState(false);
+  const [openPDelete, setOpenPDelete] = useState(false);
   const [openLockDlg, setOpenLockDlg] = useState(false);
   const [openPwdresetDlg, setOpenPwdresetDlg] = useState(false);
-  const [customer, setCustomer] = useState();
-  const [customerDeleteId, setCustomerDeleteId] = useState();
-  const [userDeleteId, setUserDeleteId] = useState();
+  const [customer, setCustomer] = useState(null);
+  const [customerDeleteId, setCustomerDeleteId] = useState(null);
+  const [userDeleteId, setUserDeleteId] = useState(null);
   const [advancedSearch, setAdvancedSearch] = useState({
     active: true,
     deleted: false,
@@ -520,6 +551,10 @@ const UserManagementPage = () => {
 
   const handleClose = () => {
     setOpen(!open);
+  };
+
+  const handleClosePDelete = () => {
+    setOpenPDelete(!openPDelete);
   };
 
   const handleCloseLockDlg = () => {
@@ -606,7 +641,9 @@ const UserManagementPage = () => {
             handleClose,
             handleCloseLockDlg,
             handleUpdateStatus,
-            handleClosePwdresetDlg
+            handleClosePwdresetDlg,
+            handleClosePDelete,
+            user.role
           )
       }
     ],
@@ -636,6 +673,7 @@ const UserManagementPage = () => {
         />
       </ScrollX>
       <AlertCustomerDelete title={customerDeleteId} userDeleteId={userDeleteId} open={open} handleClose={handleClose} />
+      <AlertCustomerDeleteP title={customerDeleteId} userDeleteId={userDeleteId} open={openPDelete} handleClose={handleClosePDelete} />
       <AlertCustomerLock title={customerDeleteId} userDeleteId={userDeleteId} open={openLockDlg} handleClose={handleCloseLockDlg} />
       <AlertCustomerPwdreset
         title={customerDeleteId}

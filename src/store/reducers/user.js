@@ -45,7 +45,7 @@ const user = createSlice({
     // delete user
     deleteUser(state, action) {
       const { uniqueId } = action.payload;
-      const users = state.lists.filter((list) => list.uniqueId !== uniqueId);
+      const users = state.lists.filter((list) => list._id !== uniqueId);
       state.lists = users;
     }
   }
@@ -125,15 +125,15 @@ export function getUserUpdate(uniqueId, updatedUser) {
   };
 }
 
-export function getUserDelete(uniqueId) {
+export function setUserDelete(uniqueId) {
   return async () => {
     try {
-      await axiosServices.post('/user/deleteUser', { uniqueId });
+      await axiosServices.delete('/user/' + uniqueId + '/permanently');
       dispatch(deleteUser({ uniqueId }));
       dispatch(
         openSnackbar({
           open: true,
-          message: 'Your account deleted successfully.',
+          message: 'User Deleted permanently.',
           variant: 'alert',
           alert: {
             color: 'success'

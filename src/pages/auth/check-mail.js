@@ -1,21 +1,23 @@
 import { Link } from 'react-router-dom';
 
 // material-ui
-import { useTheme } from '@mui/material/styles';
-import { Box, Button, Grid, Divider, Typography, useMediaQuery } from '@mui/material';
+import { Box, Button, Grid, Divider, Typography } from '@mui/material';
 
 // project import
 import useAuth from 'hooks/useAuth';
 import AnimateButton from 'components/@extended/AnimateButton';
 import AuthWrapper from 'sections/auth/AuthWrapper';
+import { GoogleOutlined } from '@ant-design/icons';
+import { useCallback } from 'react';
 
 // ================================|| CHECK MAIL ||================================ //
 
 const CheckMail = () => {
-  const theme = useTheme();
-  const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
-
   const { isLoggedIn } = useAuth();
+
+  const handleGoogleAuth = useCallback(() => {
+    window.location.href = (process.env.REACT_APP_API_URL || 'http://hades.pc.com:8000/') + 'oauth2/google';
+  }, []);
 
   return (
     <AuthWrapper>
@@ -45,9 +47,19 @@ const CheckMail = () => {
           </AnimateButton>
         </Grid>
         <Grid item xs={12}>
-          <Divider>
-            <Typography variant={matchDownSM ? 'subtitle1' : 'h5'}>Sign up with</Typography>
+          <Divider sx={{ my: 2 }}>
+            <Typography variant={'subtitle1'} color={'secondary'}>
+              Sign in with
+            </Typography>
           </Divider>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Button disableElevation fullWidth size="large" type="submit" variant="outlined" color="secondary" onClick={handleGoogleAuth}>
+                <GoogleOutlined style={{ marginRight: 4, fontSize: 28 }} />
+                Google
+              </Button>
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
     </AuthWrapper>

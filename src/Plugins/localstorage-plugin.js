@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { debounce } from 'lodash';
 
@@ -27,3 +28,7 @@ export function LocalStoragePlugin({ namespace }) {
 
   return null;
 }
+
+LocalStoragePlugin.propTypes = {
+  namespace: PropTypes.any
+};

@@ -9,7 +9,6 @@ import { Box, ButtonBase, CardContent, ClickAwayListener, Grid, Paper, Popper, S
 // project import
 import ProfileTab from './ProfileTab';
 import SettingTab from './SettingTab';
-import Avatar from 'components/@extended/Avatar';
 import MainCard from 'components/MainCard';
 import Transitions from 'components/@extended/Transitions';
 import IconButton from 'components/@extended/IconButton';
@@ -18,7 +17,6 @@ import { ThemeMode } from 'config';
 import useAuth from 'hooks/useAuth';
 
 // assets
-import avatar1 from 'assets/images/users/avatar-1.png';
 import { LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import BackgroundLetterAvatar from 'components/@extended/BackgroundLetterAvatar';
 

@@ -1,4 +1,4 @@
-export const BACKEND_API_URL = 'http://localhost:5050';
+export const BACKEND_API_URL = 'http://192.168.148.86:5050';
 
 export const CAR_OPTIONS = ['Chevy', 'Toyota ', 'Dodge ', 'Nissan ', 'Honda'];
 export const COLOR_OPTIONS = ['Blue', 'Green', 'Black', 'White', 'Red'];

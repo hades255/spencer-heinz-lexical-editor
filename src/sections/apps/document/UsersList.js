@@ -300,28 +300,9 @@ function UsersList({ openDrawer, handleDrawerOpen, socket, document }) {
         />
       )}
       {openEmailDlg && <ShowEmailSending open={openEmailDlg} onClose={handleCloseEmailSendingDlg} />}
-      <Dialog
-        open={showPopup}
-        onClose={(r) => {
-          if (r === 'escapeKeyDown') handleCloseShowPopup();
-        }}
-      >
-        <DialogContent>
-          <Stack direction={'row'} justifyContent={'center'}>
-            <Avatar color="info" sx={{ width: 72, height: 72, fontSize: '3rem' }}>
-              <InfoOutlined />
-            </Avatar>
-          </Stack>
-          <Stack sx={{ my: 3 }}>
-            <Typography>Newly added users must be invited/emailed manually</Typography>
-          </Stack>
-          <Stack>
-            <Button onClick={handleCloseShowPopup} variant="contained">
-              OK
-            </Button>
-          </Stack>
-        </DialogContent>
-      </Dialog>
+      <AlertDlg open={showPopup} onClose={handleCloseShowPopup}>
+        <Typography>Newly added users must be invited/emailed manually</Typography>
+      </AlertDlg>
     </>
   );
 }
@@ -334,3 +315,32 @@ UsersList.propTypes = {
 };
 
 export default UsersList;
+
+export const AlertDlg = ({ open, onClose, children }) => (
+  <Dialog
+    open={open}
+    onClose={(r) => {
+      if (r === 'escapeKeyDown') onClose();
+    }}
+  >
+    <DialogContent>
+      <Stack direction={'row'} justifyContent={'center'}>
+        <Avatar color="info" sx={{ width: 72, height: 72, fontSize: '3rem' }}>
+          <InfoOutlined />
+        </Avatar>
+      </Stack>
+      <Stack sx={{ my: 3 }}>{children}</Stack>
+      <Stack>
+        <Button onClick={onClose} variant="contained">
+          OK
+        </Button>
+      </Stack>
+    </DialogContent>
+  </Dialog>
+);
+
+AlertDlg.propTypes = {
+  open: PropTypes.any,
+  onClose: PropTypes.any,
+  children: PropTypes.any
+};

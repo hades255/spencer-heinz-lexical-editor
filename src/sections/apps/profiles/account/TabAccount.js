@@ -1,7 +1,8 @@
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 // material-ui
 import {
+  Box,
   Button,
   Grid,
   InputLabel,
@@ -14,7 +15,8 @@ import {
   Stack,
   Switch,
   TextField,
-  Tooltip
+  Tooltip,
+  Typography
 } from '@mui/material';
 import * as Yup from 'yup';
 
@@ -31,6 +33,7 @@ import { openSnackbar } from 'store/reducers/snackbar';
 import TabPassword from './TabPassword';
 import DeleteAccount from './DeleteAccount';
 import countries from 'data/countries';
+import { AlertDlg } from 'sections/apps/document/UsersList';
 
 // ==============================|| ACCOUNT PROFILE - MY ACCOUNT ||============================== //
 
@@ -53,8 +56,8 @@ const TabAccount = () => {
 
   useEffect(() => {
     if (loading) {
-      setLoading(false);
       init();
+      setLoading(false);
     }
   }, [init, loading]);
 
@@ -63,11 +66,13 @@ const TabAccount = () => {
   }, []);
 
   // console.log(user);
-  const { name, email, favourite, setting, countryCode, mobilePhone, workPhone, company } = user;
+  const { name, email, favourite, setting, countryCode, mobilePhone, workPhone, company, pwdResetAt } = user;
   const [state, setState] = useState({ name, email, countryCode, mobilePhone, workPhone, company });
   const [favUsers, setFavUsers] = useState(favourite || []);
 
   const [checked, setChecked] = useState({ ...setting });
+  const [openalertPwdDlg, setOpenalertPwdDlg] = useState(false);
+  const refTabPassword = useRef(null);
 
   const handleSetChangedSetting = useCallback(
     (data) => {
@@ -112,12 +117,29 @@ const TabAccount = () => {
     [checked, handleSetChangedSetting]
   );
 
+  const handleLoginMethodChange = useCallback(
+    ({ target: { value } }) => {
+      if (value === 'password' && !pwdResetAt) {
+        setOpenalertPwdDlg(true);
+      } else {
+        setChecked({ ...checked, loginMethod: value });
+        handleSetChangedSetting({ loginMethod: value });
+      }
+    },
+    [checked, handleSetChangedSetting, pwdResetAt]
+  );
+
   const handleInputChange = useCallback(
     ({ target: { name, value } }) => {
       setState({ ...state, [name]: value });
     },
     [state]
   );
+
+  const handleCloseAlertPwd = useCallback(() => {
+    refTabPassword.current?.scrollIntoView({ behavior: 'smooth' });
+    setOpenalertPwdDlg(false);
+  }, [refTabPassword]);
 
   const handleSetFavourites = useCallback(
     (email, flag) => {
@@ -206,170 +228,179 @@ const TabAccount = () => {
   }, [state, user, init]);
 
   return (
-    <Grid container spacing={3}>
-      <Grid item xs={12}>
-        <MainCard
-          title="General Settings"
-          secondary={
-            <Button size="small" variant="contained" onClick={handleSubmitState}>
-              Update Account
-            </Button>
-          }
-        >
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <Stack spacing={1.25}>
-                <InputLabel htmlFor="my-account-username">Username</InputLabel>
-                <TextField
-                  fullWidth
-                  defaultValue={state.name}
-                  name="name"
-                  onChange={handleInputChange}
-                  id="my-account-username"
-                  placeholder="Username"
-                  autoFocus
-                />
-              </Stack>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Stack spacing={1.25}>
-                <InputLabel htmlFor="my-account-email">Account Email</InputLabel>
-                <TextField
-                  fullWidth
-                  defaultValue={state.email}
-                  name="email"
-                  onChange={handleInputChange}
-                  id="my-account-email"
-                  placeholder="Account Email"
-                  disabled={true}
-                />
-              </Stack>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Stack spacing={1.25}>
-                <InputLabel htmlFor="mobilePhone-signup">Mobile Phone Number</InputLabel>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
-                  <Select value={state.countryCode} name="countryCode" onChange={handleInputChange}>
-                    {countries.map((item, key) => (
-                      <MenuItem key={key} value={item.phone}>
-                        <Tooltip title={item.label} arrow>
-                          <span>
-                            {item.code} {item.phone}
-                          </span>
-                        </Tooltip>
-                      </MenuItem>
-                    ))}
-                  </Select>
+    <>
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <MainCard
+            title="General Settings"
+            secondary={
+              <Button size="small" variant="contained" onClick={handleSubmitState}>
+                Update Account
+              </Button>
+            }
+          >
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <Stack spacing={1.25}>
+                  <InputLabel htmlFor="my-account-username">Username</InputLabel>
+                  <TextField
+                    fullWidth
+                    defaultValue={state.name}
+                    name="name"
+                    onChange={handleInputChange}
+                    id="my-account-username"
+                    placeholder="Username"
+                    autoFocus
+                  />
+                </Stack>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Stack spacing={1.25}>
+                  <InputLabel htmlFor="my-account-email">Account Email</InputLabel>
+                  <TextField
+                    fullWidth
+                    defaultValue={state.email}
+                    name="email"
+                    onChange={handleInputChange}
+                    id="my-account-email"
+                    placeholder="Account Email"
+                    disabled={true}
+                  />
+                </Stack>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Stack spacing={1.25}>
+                  <InputLabel htmlFor="mobilePhone-signup">Mobile Phone Number</InputLabel>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
+                    <Select value={state.countryCode} name="countryCode" onChange={handleInputChange}>
+                      {countries.map((item, key) => (
+                        <MenuItem key={key} value={item.phone}>
+                          <Tooltip title={item.label} arrow>
+                            <span>
+                              {item.code} {item.phone}
+                            </span>
+                          </Tooltip>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    <OutlinedInput
+                      fullWidth
+                      id="mobilePhone-signup"
+                      type="mobilePhone"
+                      value={state.mobilePhone}
+                      name="mobilePhone"
+                      onChange={handleInputChange}
+                      placeholder="Mobile Phone Number"
+                      inputProps={{}}
+                    />
+                  </Stack>
+                </Stack>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Stack spacing={1.25}>
+                  <InputLabel htmlFor="workPhone-signup">Work Phone Number</InputLabel>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
+                    <Select value={state.countryCode} name="countryCode" onChange={handleInputChange}>
+                      {countries.map((item, key) => (
+                        <MenuItem key={key} value={item.phone}>
+                          <Tooltip title={item.label} arrow>
+                            <span>
+                              {item.code} {item.phone}
+                            </span>
+                          </Tooltip>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    <OutlinedInput
+                      fullWidth
+                      id="workPhone-signup"
+                      type="workPhone"
+                      value={state.workPhone}
+                      name="workPhone"
+                      onChange={handleInputChange}
+                      placeholder="Work Phone Number"
+                      inputProps={{}}
+                    />
+                  </Stack>
+                </Stack>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Stack spacing={1.25}>
+                  <InputLabel htmlFor="company-signup">Company</InputLabel>
                   <OutlinedInput
                     fullWidth
-                    id="mobilePhone-signup"
-                    type="mobilePhone"
-                    value={state.mobilePhone}
-                    name="mobilePhone"
+                    id="company-signup"
+                    value={state.company}
+                    name="company"
                     onChange={handleInputChange}
-                    placeholder="Mobile Phone Number"
+                    placeholder="Demo Inc."
                     inputProps={{}}
                   />
                 </Stack>
-              </Stack>
+              </Grid>
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <Stack spacing={1.25}>
-                <InputLabel htmlFor="workPhone-signup">Work Phone Number</InputLabel>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
-                  <Select value={state.countryCode} name="countryCode" onChange={handleInputChange}>
-                    {countries.map((item, key) => (
-                      <MenuItem key={key} value={item.phone}>
-                        <Tooltip title={item.label} arrow>
-                          <span>
-                            {item.code} {item.phone}
-                          </span>
-                        </Tooltip>
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  <OutlinedInput
-                    fullWidth
-                    id="workPhone-signup"
-                    type="workPhone"
-                    value={state.workPhone}
-                    name="workPhone"
-                    onChange={handleInputChange}
-                    placeholder="Work Phone Number"
-                    inputProps={{}}
-                  />
-                </Stack>
-              </Stack>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Stack spacing={1.25}>
-                <InputLabel htmlFor="company-signup">Company</InputLabel>
-                <OutlinedInput
-                  fullWidth
-                  id="company-signup"
-                  value={state.company}
-                  name="company"
-                  onChange={handleInputChange}
-                  placeholder="Demo Inc."
-                  inputProps={{}}
+          </MainCard>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <MainCard title="Advance Settings" content={false}>
+            <List sx={{ p: 0 }}>
+              <ListItem divider>
+                <ListItemText
+                  id="switch-list-label-ln"
+                  primary="Login Notifications"
+                  secondary="Notify when login attempted from other place"
                 />
-              </Stack>
-            </Grid>
-          </Grid>
-        </MainCard>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <MainCard title="Advance Settings" content={false}>
-          <List sx={{ p: 0 }}>
-            <ListItem divider>
-              <ListItemText
-                id="switch-list-label-ln"
-                primary="Login Notifications"
-                secondary="Notify when login attempted from other place"
-              />
-              <Switch
-                edge="end"
-                name="loginNotification"
-                onChange={handleToggle}
-                checked={checked.loginNotification}
-                inputProps={{
-                  'aria-labelledby': 'switch-list-label-ln'
-                }}
-              />
-            </ListItem>
-            <ListItem divider>
-              <ListItemText
-                id="switch-list-label-sh"
-                primary="Secure Searching"
-                secondary="Don't show you when others searching in document"
-              />
-              <Switch
-                edge="end"
-                name="hide"
-                onChange={handleToggle}
-                checked={checked.hide}
-                inputProps={{
-                  'aria-labelledby': 'switch-list-label-sh'
-                }}
-              />
-            </ListItem>
-          </List>
-        </MainCard>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <MainCard title="Favourite Users" content={false}>
-          <List sx={{ p: 0, minHeight: 142, maxHeight: 300, overflowY: 'scroll' }}>
-            {users
-              .filter((item) => favUsers.includes(item.email))
-              .map((item, key) => (
-                <UserItem key={key} user={item} favourites={favUsers} makeTeam={false} setFavourites={handleSetFavourites} />
-              ))}
-          </List>
-        </MainCard>
-      </Grid>
-      <TabPassword />
-      <DeleteAccount />
-      {/* <Grid item xs={12} sm={6}>
+                <Switch
+                  edge="end"
+                  name="loginNotification"
+                  onChange={handleToggle}
+                  checked={checked.loginNotification}
+                  inputProps={{
+                    'aria-labelledby': 'switch-list-label-ln'
+                  }}
+                />
+              </ListItem>
+              <ListItem divider>
+                <ListItemText
+                  id="switch-list-label-sh"
+                  primary="Secure Searching"
+                  secondary="Don't show you when others searching in document"
+                />
+                <Switch
+                  edge="end"
+                  name="hide"
+                  onChange={handleToggle}
+                  checked={checked.hide}
+                  inputProps={{
+                    'aria-labelledby': 'switch-list-label-sh'
+                  }}
+                />
+              </ListItem>
+              <ListItem divider>
+                <ListItemText id="switch-list-label-sh" primary="Sign in method" secondary="Set how you can sign in" />
+                <Select value={checked.loginMethod} onChange={handleLoginMethodChange}>
+                  <MenuItem value={'password'}>Password</MenuItem>
+                  <MenuItem value={'google'}>Google</MenuItem>
+                </Select>
+              </ListItem>
+            </List>
+          </MainCard>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <MainCard title="Favourite Users" content={false}>
+            <List sx={{ p: 0, minHeight: 142, maxHeight: 300, overflowY: 'scroll' }}>
+              {users
+                .filter((item) => favUsers.includes(item.email))
+                .map((item, key) => (
+                  <UserItem key={key} user={item} favourites={favUsers} makeTeam={false} setFavourites={handleSetFavourites} />
+                ))}
+            </List>
+          </MainCard>
+        </Grid>
+        <Box ref={refTabPassword} />
+        <TabPassword />
+        <DeleteAccount />
+        {/* <Grid item xs={12} sm={6}>
         <MainCard title="Advance Settings" content={false}>
           <List sx={{ p: 0 }}>
             <ListItem divider>
@@ -461,7 +492,12 @@ const TabAccount = () => {
           </List>
         </MainCard>
       </Grid> */}
-    </Grid>
+      </Grid>
+      <AlertDlg open={openalertPwdDlg} onClose={handleCloseAlertPwd}>
+        <Typography>You have to set your password if it&apos;s the first time to set this option.</Typography>
+        <Typography>Default Password is &quot;Welcome123.!@#&quot;</Typography>
+      </AlertDlg>
+    </>
   );
 };
 

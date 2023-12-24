@@ -2,7 +2,8 @@ export const LOGIN_ERROR_MESSAGES = {
   active: { color: 'success', message: 'active' },
   pending: { color: 'info', message: 'Your account is pending. Please wait for your account is active.' },
   locked: { color: 'warning', message: 'Your account is locked. Please contact admin and check your email.' },
-  deleted: { color: 'error', message: 'Your account is deleted. Please contact admin and check your email.' }
+  deleted: { color: 'error', message: 'Your account is deleted. Please contact admin and check your email.' },
+  password: { color: 'warning', message: 'Your password has not been set. Please check your inbox.' }
 };
 
 export const MESSAGE_TYPES = {
@@ -117,3 +118,10 @@ export const USER_ROLES = {
   CREATOR_VIP: 'creator-vip',
   CONTRIBUTOR: 'contributor'
 };
+
+export const CATEGORIES = [
+  { key: 'tasks', title: 'Tasks' },
+  { key: 'asks', title: 'Asks' },
+  { key: 'myDocs', title: 'Active Documents' },
+  { key: 'editDocs', title: 'Edits' }
+];

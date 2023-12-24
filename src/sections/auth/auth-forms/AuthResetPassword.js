@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 // material-ui
 import {
@@ -35,10 +35,10 @@ import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 // ============================|| STATIC - RESET PASSWORD ||============================ //
 
 const AuthResetPassword = () => {
+  const token = useParams().token;
   const scriptedRef = useScriptRef();
-  const navigate = useNavigate();
 
-  const { isLoggedIn } = useAuth();
+  const { resetPassword } = useAuth();
 
   const [level, setLevel] = useState();
   const [showPassword, setShowPassword] = useState(false);
@@ -76,20 +76,21 @@ const AuthResetPassword = () => {
         try {
           // password reset
           if (scriptedRef.current) {
+            resetPassword(token, values.password, true);
             setStatus({ success: true });
             setSubmitting(false);
 
-            dispatch(
-              openSnackbar({
-                open: true,
-                message: 'Successfuly reset password.',
-                variant: 'alert',
-                alert: {
-                  color: 'success'
-                },
-                close: true
-              })
-            );
+            // dispatch(
+            //   openSnackbar({
+            //     open: true,
+            //     message: 'Successfuly reset password.',
+            //     variant: 'alert',
+            //     alert: {
+            //       color: 'success'
+            //     },
+            //     close: true
+            //   })
+            // );
 
             //   setTimeout(() => {
             //     navigate(isLoggedIn ? '/auth/login' : '/login', { replace: true });
@@ -109,13 +110,20 @@ const AuthResetPassword = () => {
             //       close: true
             //     })
             //   );
-
-            setTimeout(() => {
-              navigate(isLoggedIn ? '/auth/login' : '/login', { replace: true });
-            }, 1500);
           }
         } catch (err) {
           console.error(err);
+          dispatch(
+            openSnackbar({
+              open: true,
+              message: err.message,
+              variant: 'alert',
+              alert: {
+                color: 'danger'
+              },
+              close: true
+            })
+          );
           if (scriptedRef.current) {
             setStatus({ success: false });
             setErrors({ submit: err.message });

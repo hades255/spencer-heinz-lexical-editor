@@ -132,10 +132,11 @@ export const JWTProvider = ({ children }) => {
         );
       }
     } catch (error) {
+      console.log(error)
       dispatch_(
         openSnackbar({
           open: true,
-          message: error.toString(),
+          message: error.message,
           variant: 'alert',
           alert: {
             color: 'error'
@@ -182,11 +183,61 @@ export const JWTProvider = ({ children }) => {
     dispatch({ type: LOGOUT });
   };
 
-  const resetPassword = async (currentPassword, newPassword) => {
-    await axios.post('/auth/resetPassword', {
-      currentPassword,
-      newPassword
-    });
+  const resetPassword = async (currentPassword, newPassword, reset = false) => {
+    try {
+      if (reset) {
+        const response = await axios.put('/auth/resetPassword/' + currentPassword, {
+          newPassword
+        });
+        console.log(response)
+        const { code } = response.data;
+        if (code === 'success') {
+          dispatch_(
+            openSnackbar({
+              open: true,
+              message: 'Password changed successfully. Please go login.',
+              variant: 'alert',
+              alert: {
+                color: 'success'
+              },
+              close: true
+            })
+          );
+        } else {
+          const { message } = response.data;
+          const { status } = response.data.data;
+          dispatch_(
+            openSnackbar({
+              open: true,
+              message: message ?? LOGIN_ERROR_MESSAGES[status].message,
+              variant: 'alert',
+              alert: {
+                color: message ? 'error' : LOGIN_ERROR_MESSAGES[status].color
+              },
+              close: true
+            })
+          );
+        }
+      } else {
+        await axios.post('/auth/resetPassword', {
+          currentPassword,
+          newPassword
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      dispatch_(
+        openSnackbar({
+          open: true,
+          message: error.message,
+          variant: 'alert',
+          alert: {
+            color: 'error'
+          },
+          close: true
+        })
+      );
+    }
   };
 
   const forgetPassword = async (email) => {

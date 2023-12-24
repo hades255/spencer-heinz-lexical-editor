@@ -53,7 +53,7 @@ const LoginRoutes = {
           element: <AuthCheckMail />
         },
         {
-          path: 'reset-password',
+          path: 'reset-password/:token',
           element: <AuthResetPassword />
         },
         {

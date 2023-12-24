@@ -178,7 +178,7 @@ const Notification = () => {
 
   useEffect(() => {
     if (!user) return;
-    const ws = new WebSocket(process.env.REACT_APP_NOTIFICATION_WEBSOCKET_URL || 'ws://localhost:8000/notification/socket');
+    const ws = new WebSocket(process.env.REACT_APP_NOTIFICATION_WEBSOCKET_URL || 'ws://192.168.148.86:8000/notification/socket');
     ws.onopen = () => {
       ws.send(JSON.stringify({ _id: user._id, role: user.role }));
     };

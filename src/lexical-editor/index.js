@@ -65,7 +65,7 @@ const LexicalEditor = ({ uniqueId, user }) => {
       yjsDocMap.set(id, doc);
       const serviceToken = window.localStorage.getItem('serviceToken');
       console.log('connecting to Y server');
-      const provider = new WebsocketProvider(process.env.REACT_APP_YSOCKET_URL || 'ws://localhost:8000/document/connect', id, doc, {
+      const provider = new WebsocketProvider(process.env.REACT_APP_YSOCKET_URL || 'ws://192.168.148.86:8000/document/connect', id, doc, {
         params: { token: serviceToken }
       });
       provider.on('status', (event) => {
@@ -158,7 +158,7 @@ const LexicalEditor = ({ uniqueId, user }) => {
       <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
       {/* custom plugins */}
       <ActionsPlugin user={user._id} />
-      <CommentPlugin user={user._id} />
+      <CommentPlugin user={user._id} uniqueId={uniqueId} />
       <FloatMenuPlugin />
       <LockPlugin user={user._id} />
       <BlackoutPlugin user={user._id} />

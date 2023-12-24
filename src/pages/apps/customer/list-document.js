@@ -87,7 +87,7 @@ const DocumentListPage = () => {
         disableSortBy: true
       },
       {
-        Header: 'Document',
+        Header: 'Description',
         accessor: 'name',
         Cell: DocumentCell,
         disableSortBy: true

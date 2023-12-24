@@ -19,7 +19,7 @@ const Login = () => {
   const email = searchParams.get('email') || '';
 
   const handleGoogleAuth = useCallback(() => {
-    window.location.href = (process.env.REACT_APP_API_URL || 'http://localhost:8000/') + 'oauth2/google';
+    window.location.href = (process.env.REACT_APP_API_URL || 'http://hades.pc.com:8000/') + 'oauth2/google';
   }, []);
 
   return (
@@ -41,12 +41,16 @@ const Login = () => {
         </Grid>
         <Grid item xs={12}>
           <AuthLogin email={email} />
-          <Divider sx={{ my: 2 }} />
+          <Divider sx={{ my: 2 }}>
+            <Typography variant={'subtitle1'} color={'secondary'}>
+              Sign in with
+            </Typography>
+          </Divider>
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <Button disableElevation fullWidth size="large" type="submit" variant="outlined" color="secondary" onClick={handleGoogleAuth}>
                 <GoogleOutlined style={{ marginRight: 4, fontSize: 28 }} />
-                Continue with Google
+                Google
               </Button>
             </Grid>
           </Grid>

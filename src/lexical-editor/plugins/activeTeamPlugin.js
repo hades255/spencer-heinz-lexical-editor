@@ -9,6 +9,7 @@ const ActiveTeamPlugin = () => {
 
   useEffect(() => {
     if (user && editor) {
+      console.log(editor.getEditorState().toJSON());
       if (user.team === activeTeam) editor.setEditable(true);
       else editor.setEditable(false);
     }

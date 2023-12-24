@@ -68,17 +68,19 @@ const AuthRegister = ({ redirect = true, onCancel = null, customer = null }) => 
   return (
     <>
       <Formik
-        initialValues={{
-          firstname: '',
-          lastname: '',
-          email: '',
-          company: '',
-          password: redirect ? '' : 'Welcome123.!@#',
-          countryCode: '+1',
-          mobilePhone: '',
-          workPhone: '',
-          submit: null
-        }}
+        initialValues={
+          customer || {
+            firstname: '',
+            lastname: '',
+            email: '',
+            company: '',
+            password: redirect ? '' : 'Welcome123.!@#',
+            countryCode: '+1',
+            mobilePhone: '',
+            workPhone: '',
+            submit: null
+          }
+        }
         validationSchema={Yup.object().shape({
           firstname: Yup.string().max(255).required('First Name is required'),
           lastname: Yup.string().max(255).required('Last Name is required'),
