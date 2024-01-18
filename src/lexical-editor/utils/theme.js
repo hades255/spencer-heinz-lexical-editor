@@ -67,6 +67,7 @@ const LexicalTheme = {
   },
   // custom nodes
   comment: 'editor-comment',
+  completedComment: 'completed-comment',
   suppressedComment: 'suppressed-comment',
   commentIcon: 'comment-icon',
   commentIconUnTouched: 'comment-icon-untouched',

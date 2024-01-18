@@ -35,8 +35,12 @@ export default function DropDownMenu({
   }, [isDropDownActive, pos?.x, pos?.y]);
 
   const handleClick = (event) => {
-    setIsDropDownActive(true);
-    setAnchorEl(event.currentTarget);
+    if (open) {
+      setAnchorEl(null);
+    } else {
+      setIsDropDownActive(true);
+      setAnchorEl(event.currentTarget);
+    }
   };
   const handleClose = () => {
     setIsDropDownActive(false);
@@ -99,7 +103,7 @@ export default function DropDownMenu({
           overflowX: 'hidden'
         }}
       >
-        <MenuList>
+        <MenuList sx={{ width: '100%' }}>
           {users.map((user) => (
             <MenuItem
               selected={user._id === assignee}

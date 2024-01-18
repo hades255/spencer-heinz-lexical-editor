@@ -1,9 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 
 // material-ui
-import { CardMedia, Grid, Link, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, Button } from '@mui/material';
+import {
+  CardMedia,
+  Grid,
+  Link,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+  Button,
+  Badge
+} from '@mui/material';
 
 // project imports
 import MainCard from 'components/MainCard';
@@ -14,6 +27,17 @@ import avatar from 'assets/images/users/avatar-group.png';
 import { PlusOutlined } from '@ant-design/icons';
 import axiosServices from 'utils/axios';
 import moment from 'moment';
+import styled from '@emotion/styled';
+import { TruncatedText } from 'utils/string';
+
+export const StyledBadge = styled(Badge)(({ theme }) => ({
+  '& .MuiBadge-badge': {
+    right: 0,
+    top: 13,
+    border: `2px solid ${theme.palette.background.paper}`,
+    padding: '0 4px'
+  }
+}));
 
 const mediaSX = {
   width: 90,
@@ -21,7 +45,7 @@ const mediaSX = {
   borderRadius: 1
 };
 
-const DashboardTaskPage = ({ select }) => {
+const DashboardTaskPage = ({ select, category }) => {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
 
@@ -29,14 +53,16 @@ const DashboardTaskPage = ({ select }) => {
     if (select) {
       (async () => {
         try {
-          const res = await axiosServices.get('/home/documents/' + select + '/tasks');
+          const res = await axiosServices.get('/home/documents/' + select + '/tasks/' + category);
           setTasks(res.data.data);
         } catch (error) {
           console.log(error);
         }
       })();
     } else setTasks([]);
-  }, [select]);
+  }, [select, category]);
+
+  const handleAddTask = useCallback(() => navigate('/document/' + select), [navigate, select]);
 
   return (
     <Grid container spacing={3}>
@@ -48,7 +74,7 @@ const DashboardTaskPage = ({ select }) => {
             // <Link component={RouterLink} to="#" color="primary">
             //   + Create one
             // </Link>
-            <Button variant="contained" startIcon={<PlusOutlined />} size="small">
+            <Button variant="contained" startIcon={<PlusOutlined />} size="small" onClick={handleAddTask}>
               Add Task
             </Button>
           }
@@ -94,23 +120,7 @@ const DashboardTaskPage = ({ select }) => {
                   </TableHead>
                   <TableBody>
                     {tasks.map((item, index) => (
-                      <TableRow
-                        hover
-                        key={index}
-                        onClick={() => {
-                          navigate('/document/' + item.doc);
-                        }}
-                        sx={{ cursor: 'pointer' }}
-                      >
-                        <TableCell>{item.commentor.name}</TableCell>
-                        <TableCell>{item.assignee.name}</TableCell>
-                        <TableCell>{item.comment}</TableCell>
-                        <TableCell align="center">{item.task}</TableCell>
-                        <TableCell align="center">{item.type.toUpperCase()}</TableCell>
-                        <TableCell align="center" sx={{ pr: 3 }}>
-                          {moment(item.createdAt).format('MM/DD/YYYY h:mm A')}
-                        </TableCell>
-                      </TableRow>
+                      <TaskRow key={index} task={item} />
                     ))}
                   </TableBody>
                 </Table>
@@ -126,5 +136,49 @@ const DashboardTaskPage = ({ select }) => {
 export default DashboardTaskPage;
 
 DashboardTaskPage.propTypes = {
-  select: PropTypes.any
+  select: PropTypes.any,
+  category: PropTypes.any
+};
+
+const TaskRow = ({ task }) => {
+  const navigate = useNavigate();
+  const [more, setMore] = useState(false);
+
+  const handleSetMore = useCallback(
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setMore(!more);
+    },
+    [more]
+  );
+
+  const handleClick = useCallback(() => navigate('/document/' + task.doc), [navigate, task]);
+
+  return (
+    <TableRow hover onClick={handleClick} sx={{ cursor: 'pointer' }}>
+      <TableCell>{task.commentor.name}</TableCell>
+      <TableCell>{task.assignee.name}</TableCell>
+      <TableCell>
+        {more ? task.comment : TruncatedText(task.comment, 50)}
+        {task.comment.length > 50 && (
+          <Typography variant="caption" sx={{ pl: 1, pr: 1, fontWeight: 'bold', color: 'dark' }} onClick={handleSetMore}>
+            {more ? 'Hide' : 'More'}
+          </Typography>
+        )}
+      </TableCell>
+      <TableCell align="center">{task.task}</TableCell>
+      <TableCell align="center">
+        {task.type.toUpperCase()}
+        <StyledBadge badgeContent={task.status.toUpperCase()} color={task.status === 'review' ? 'info' : 'primary'}></StyledBadge>
+      </TableCell>
+      <TableCell align="center" sx={{ pr: 3 }}>
+        {moment(task.createdAt).format('MM/DD/YYYY h:mm A')}
+      </TableCell>
+    </TableRow>
+  );
+};
+
+TaskRow.propTypes = {
+  task: PropTypes.object
 };

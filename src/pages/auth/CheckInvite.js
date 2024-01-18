@@ -1,7 +1,7 @@
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 // material-ui
-import { Button, Grid, Stack, Typography } from '@mui/material';
+import { Button, Divider, Grid, Stack, Typography } from '@mui/material';
 
 // project import
 import useAuth from 'hooks/useAuth';
@@ -12,6 +12,7 @@ import AnimateButton from 'components/@extended/AnimateButton';
 import NewPassword from './NewPassword';
 import { dispatch } from 'store';
 import { openSnackbar } from 'store/reducers/snackbar';
+import { GoogleOutlined } from '@ant-design/icons';
 
 // ================================|| LOGIN ||================================ //
 
@@ -36,6 +37,7 @@ const CheckInvite = () => {
         setCreator(creator_);
       } catch (error) {
         console.log(error);
+        setC('error');
         dispatch(
           openSnackbar({
             open: true,
@@ -63,6 +65,10 @@ const CheckInvite = () => {
     },
     [c, u, d, navigate, setUser]
   );
+
+  const handleGoogleAuth = useCallback(() => {
+    window.location.href = (process.env.REACT_APP_API_URL || 'http://hades.pc.com:8000/') + 'oauth2/google';
+  }, []);
 
   return (
     <AuthWrapper>
@@ -101,6 +107,19 @@ const CheckInvite = () => {
               </Grid>
             </Grid>
           )}
+          <Divider sx={{ my: 2 }}>
+            <Typography variant={'subtitle1'} color={'secondary'}>
+              Or sign in with
+            </Typography>
+          </Divider>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Button disableElevation fullWidth size="large" type="submit" variant="outlined" color="secondary" onClick={handleGoogleAuth}>
+                <GoogleOutlined style={{ marginRight: 4, fontSize: 28 }} />
+                Google
+              </Button>
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
     </AuthWrapper>

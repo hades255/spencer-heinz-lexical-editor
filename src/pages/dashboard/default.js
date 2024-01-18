@@ -40,9 +40,6 @@ const DashboardDefault = () => {
           </Grid>
         ))}
         <Grid item xs={12} sm={12} md={12} lg={12} sx={{ mb: 2 }}>
-          <AnalyticEcommerce onClick={handleClickCategory} index={'tasks'} title="Reviews" count="0" />
-        </Grid>
-        <Grid item xs={12} sm={12} md={12} lg={12} sx={{ mb: 2 }}>
           <AnalyticEcommerce onClick={handleClickCategory} index={'tasks'} title="Comments" count="0" />
         </Grid>
         <Grid item xs={12} sm={12} md={12} lg={12} sx={{ mb: 2 }}>
@@ -58,7 +55,7 @@ const DashboardDefault = () => {
           <DashboardDocumentPage category={category} setSelect={setSelect} select={select} />
         </Grid>
         <Grid item>
-          <DashboardTaskPage select={select} />
+          <DashboardTaskPage select={select} category={category} />
         </Grid>
       </Grid>
 

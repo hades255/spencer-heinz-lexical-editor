@@ -1,5 +1,7 @@
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
 import {
+  SELECTION_CHANGE_COMMAND,
   $getNodeByKey,
   $getPreviousSelection,
   $getSelection,
@@ -7,16 +9,14 @@ import {
   $isRangeSelection,
   $nodesOfType,
   $setSelection,
-  SELECTION_CHANGE_COMMAND,
   createCommand
 } from 'lexical';
-import { $createCommentNode, CommentNode } from 'lexical-editor/nodes/commentNode';
-import { mergeRegister, $wrapNodeInElement } from '@lexical/utils';
-import { $isCommentNode } from '../nodes/commentNode';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { $isAtNodeEnd } from '@lexical/selection';
+import { mergeRegister, $wrapNodeInElement } from '@lexical/utils';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { isEmpty, isFunction, isUndefined, max, min, trim } from 'lodash';
-import PropTypes from 'prop-types';
+import { $isCommentNode } from '../nodes/commentNode';
+import { $createCommentNode, CommentNode } from 'lexical-editor/nodes/commentNode';
 import {
   Badge,
   Box,
@@ -31,6 +31,7 @@ import {
   Grid,
   Paper,
   TextField,
+  Tooltip,
   Typography
 } from '@mui/material';
 import { IconButton } from '@mui/material';
@@ -48,19 +49,19 @@ import { ACTION_REQUEST_USER, COMMENT_TYPES } from 'lexical-editor/utils/constan
 import { ReassignButton } from 'lexical-editor/components/comment/reassignButton';
 import { useSelector } from 'store';
 import axiosServices from 'utils/axios';
+import DoneIcon from '@mui/icons-material/Done';
+import ReplyIcon from '@mui/icons-material/Reply';
+import ClearIcon from '@mui/icons-material/Clear';
 
 const EditorPriority = 1;
 export const SET_COMMENT_COMMAND = createCommand('SET_COMMENT_COMMAND');
 export const UPDATE_COMMENT_COMMAND = createCommand('UPDATE_COMMENT_COMMAND');
+export const REMOVE_COMMENT = createCommand('REMOVE_COMMENT');
 
 export const ADD_REPLY_COMMAND = createCommand('ADD_REPLY_COMMAND');
 
 export const TOUCH_COMMENT_COMMAND = createCommand('TOUCH_COMMENT_COMMAND');
 export const FILTER_COMMENT = createCommand('FILTER_COMMENT');
-
-export const updateComment = () => {
-  console.log('updated comment');
-};
 
 let floatTimeOut = 0;
 
@@ -128,6 +129,39 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
       setComments([]);
     }
   }, [isOnFab]);
+
+  const submitComment = useCallback(
+    ({ assignee, task, comment, commentor: { _id }, uniqueId, type }) => {
+      (async () => {
+        try {
+          await axiosServices.post('/task', { assignee, task, comment, commentor: _id, uniqueId, type, doc });
+        } catch (error) {
+          console.log(error);
+        }
+      })();
+    },
+    [doc]
+  );
+
+  const submitCommentComplete = useCallback((uniqueId, status = 'complete') => {
+    (async () => {
+      try {
+        await axiosServices.put('/task/uniqueId/' + uniqueId, { status });
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, []);
+
+  const submitCommentRemove = useCallback((uniqueId) => {
+    (async () => {
+      try {
+        await axiosServices.delete('/task/uniqueId/' + uniqueId);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, []);
 
   const updateState = useCallback(() => {
     const selection = $getSelection();
@@ -222,6 +256,53 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
     [editor]
   );
 
+  const updateComment = useCallback(
+    (node, index, comment, status) => {
+      if (!isEmpty(node)) {
+        console.log(node);
+        node.setStatus(index, status);
+        const writable = node.getWritable();
+        const newCommentNode = $createCommentNode('editor-comment', [...writable.getComments()], [user]);
+        const children = writable.getChildren();
+        for (let i = 0; i < children.length; i += 1) newCommentNode.append(children[i]);
+        writable.replace(newCommentNode);
+
+        setTimeout(() => {
+          submitCommentComplete(comment.uniqueId, status);
+        }, 100);
+        return true;
+      }
+      return false;
+    },
+    [user, submitCommentComplete]
+  );
+
+  const removeComment = useCallback(
+    (comment) => {
+      const commentNodes = $nodesOfType(CommentNode);
+      commentNodes.forEach((node) => {
+        const comments = node.getLatest().getComments();
+        const writable = node.getWritable();
+        if (comments.find((item) => item.uniqueId === comment.uniqueId)) {
+          const _comments = comments.filter((item) => item.uniqueId != comment.uniqueId);
+          const children = writable.getChildren();
+          if (_comments.length === 0) {
+            for (let i = 0; i < children.length; i += 1) writable.insertBefore(children[i]);
+            writable.remove();
+          } else {
+            const newCommentNode = $createCommentNode('editor-comment', _comments, [user._id]);
+            for (let i = 0; i < children.length; i += 1) newCommentNode.append(children[i]);
+            writable.replace(newCommentNode);
+          }
+          setTimeout(() => {
+            submitCommentRemove(comment.uniqueId);
+          }, 100);
+        }
+      });
+    },
+    [user, submitCommentRemove]
+  );
+
   const getLeaderFromTeam = useCallback(
     (team) => {
       return users.find((item) => item.team === team && item.leader);
@@ -249,20 +330,6 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [editor, me, getLeaderFromTeam]
-  );
-
-  const submitComment = useCallback(
-    ({ assignee, task, comment, commentor: { _id }, uniqueId, type }) => {
-      (async () => {
-        try {
-          const res = await axiosServices.post('/task', { assignee, task, comment, commentor: _id, uniqueId, type, doc });
-          console.log(res);
-        } catch (error) {
-          console.log(error);
-        }
-      })();
-    },
-    [doc]
   );
 
   const setComment = useCallback(
@@ -334,6 +401,9 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
           const children = writable.getChildren();
           for (let i = 0; i < children.length; i += 1) newCommentNode.append(children[i]);
           writable.replace(newCommentNode);
+          setTimeout(() => {
+            submitComment(newComment);
+          });
           return false;
         }
 
@@ -478,7 +548,17 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
       editor.registerCommand(
         UPDATE_COMMENT_COMMAND,
         (payload) => {
-          updateComment(payload);
+          const { activeNode, index, comment, status } = payload;
+          updateComment(activeNode, index, comment, status);
+          return true;
+        },
+        EditorPriority
+      ),
+      editor.registerCommand(
+        REMOVE_COMMENT,
+        (payload) => {
+          const { comment } = payload;
+          removeComment(comment);
           return true;
         },
         EditorPriority
@@ -487,21 +567,36 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor]);
 
-  const handleCancelReply = () => {
+  const handleCancelReply = useCallback(() => {
     setDialogOpen(false);
     floatTimeOut = setTimeout(() => {
       setIsOnFab(false);
     }, 1000);
-  };
+  }, []);
 
-  const handleReplyKeyDown = (e) => {
-    let _reply = replyRef.current.value;
-    if (e.key === 'Enter' && trim(_reply)) {
-      e.preventDefault();
-      editor.dispatchCommand(ADD_REPLY_COMMAND, { activeNode, index: activeCommentIndex, reply: replyRef.current.value });
-    }
-    return false;
-  };
+  const handleReplyKeyDown = useCallback(
+    (e) => {
+      let _reply = replyRef.current.value;
+      if (e.key === 'Enter' && trim(_reply)) {
+        e.preventDefault();
+        editor.dispatchCommand(ADD_REPLY_COMMAND, { activeNode, index: activeCommentIndex, reply: replyRef.current.value });
+      }
+      return false;
+    },
+    [activeCommentIndex, activeNode, editor]
+  );
+
+  const handleSetStatusComment = useCallback(
+    (comment, status) => editor.dispatchCommand(UPDATE_COMMENT_COMMAND, { activeNode, index: activeCommentIndex, comment, status }),
+    [activeCommentIndex, activeNode, editor]
+  );
+
+  const handleRemoveComment = useCallback(
+    (comment) => {
+      editor.dispatchCommand(REMOVE_COMMENT, { comment });
+    },
+    [editor]
+  );
 
   return (
     <>
@@ -624,36 +719,122 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                       </IconButton> */}
                     </Grid>
                     <Grid justifyContent="start" item>
-                      <IconButton
-                        variant={'outlined'}
-                        sx={{ paddingX: '0', position: 'absolute', top: '250px', left: '20px', transform: 'translate(-50%, 10px)' }}
-                        size={'small'}
-                        disabled={activeCommentIndex !== _index}
-                        onClick={() => {
-                          const suppressedUniqueIds = comments.slice(_index).map((value) => value.uniqueId);
-                          setSuppressedComments([...not(suppressedComments, suppressedUniqueIds), ...suppressedUniqueIds]);
-                        }}
-                      >
-                        <HideSourceRounded />
-                      </IconButton>
+                      <Tooltip title="Don't show this comment when click text">
+                        <IconButton
+                          variant={'outlined'}
+                          sx={{
+                            paddingX: '0',
+                            position: 'absolute',
+                            bottom: '20px',
+                            left: '20px',
+                            transform: 'translate(-50%, 10px)'
+                          }}
+                          size={'medium'}
+                          onClick={() => {
+                            const suppressedUniqueIds = comments.slice(_index).map((value) => value.uniqueId);
+                            setSuppressedComments([...not(suppressedComments, suppressedUniqueIds), ...suppressedUniqueIds]);
+                          }}
+                        >
+                          <HideSourceRounded />
+                        </IconButton>
+                      </Tooltip>
                       <ReassignButton users={users} me={me} />
-                      <Button
-                        variant={'outlined'}
-                        sx={{
-                          paddingX: '0',
-                          position: 'absolute',
-                          top: '250px',
-                          left: '150px',
-                          transform: 'translate(-50%, 10px)'
-                        }}
-                        size={'small'}
-                        disabled={activeCommentIndex !== _index}
-                        onClick={() => {
-                          setDialogOpen(true);
-                        }}
+                      <Tooltip title="Reply">
+                        <IconButton
+                          variant={'outlined'}
+                          sx={{
+                            paddingX: '0',
+                            position: 'absolute',
+                            bottom: '20px',
+                            right: '60px',
+                            transform: 'translate(-50%, 10px)'
+                          }}
+                          size={'medium'}
+                          onClick={() => {
+                            setDialogOpen(true);
+                          }}
+                        >
+                          <ReplyIcon color="success" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip
+                        title={
+                          user === _comment.commentor._id
+                            ? _comment.status === 'completed'
+                              ? 'Completed'
+                              : _comment.status === 'review'
+                              ? 'Require Review'
+                              : 'Set complete'
+                            : user === _comment.assignee
+                            ? _comment.status === 'completed'
+                              ? 'Completed'
+                              : _comment.status === 'review'
+                              ? 'Cancel Review'
+                              : 'Set review'
+                            : "Can't touch this"
+                        }
                       >
-                        Reply
-                      </Button>
+                        <IconButton
+                          variant={'outlined'}
+                          sx={{
+                            paddingX: '0',
+                            position: 'absolute',
+                            bottom: '20px',
+                            right: '25px',
+                            transform: 'translate(-50%, 10px)'
+                          }}
+                          size={'medium'}
+                          onClick={() => {
+                            return user === _comment.commentor._id
+                              ? _comment.status === 'completed'
+                                ? 'Completed'
+                                : handleSetStatusComment(_comment, 'complete')
+                              : user === _comment.assignee
+                              ? _comment.status === 'completed'
+                                ? 'Completed'
+                                : _comment.status === 'review'
+                                ? handleSetStatusComment(_comment, 'assign')
+                                : handleSetStatusComment(_comment, 'review')
+                              : "Can't touch this";
+                          }}
+                        >
+                          <DoneIcon
+                            color={
+                              user === _comment.commentor._id
+                                ? _comment.status === 'completed'
+                                  ? 'success'
+                                  : _comment.status === 'review'
+                                  ? 'info'
+                                  : 'warning'
+                                : user === _comment.assignee
+                                ? _comment.status === 'completed'
+                                  ? 'success'
+                                  : _comment.status === 'review'
+                                  ? 'info'
+                                  : 'warning'
+                                : 'secondary'
+                            }
+                          />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title={user === _comment.commentor._id ? 'Remove this comment' : "Can't touch this"}>
+                        <IconButton
+                          variant={'outlined'}
+                          sx={{
+                            paddingX: '0',
+                            position: 'absolute',
+                            bottom: '20px',
+                            right: '-10px',
+                            transform: 'translate(-50%, 10px)'
+                          }}
+                          size={'medium'}
+                          onClick={() => {
+                            if (user === _comment.commentor._id) handleRemoveComment(_comment);
+                          }}
+                        >
+                          <ClearIcon color={user === _comment.commentor._id ? 'error' : 'secondary'} />
+                        </IconButton>
+                      </Tooltip>
                     </Grid>
                   </Grid>
                   {replyShow[_index] && (

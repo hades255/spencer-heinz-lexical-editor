@@ -42,7 +42,6 @@ export class LockNode extends ElementNode {
 
   isEditable() {
     const currentUser = LockNode.__currentUser;
-    console.log(currentUser, this.__users);
     return !currentUser || this.__users.find((value) => value === currentUser);
   }
 

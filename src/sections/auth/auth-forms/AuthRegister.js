@@ -85,7 +85,13 @@ const AuthRegister = ({ redirect = true, onCancel = null, customer = null }) => 
           firstname: Yup.string().max(255).required('First Name is required'),
           lastname: Yup.string().max(255).required('Last Name is required'),
           email: redirect ? Yup.string().email('Must be a valid email').max(255).required('Email is required') : null,
-          password: Yup.string().max(255).required('Password is required'),
+          password: Yup.string()
+            .max(255)
+            .required('Password is required')
+            .matches(
+              /^.*(?=.{8,})((?=.*[~!@#$%^&*()\-_=+{};:,<.>]){1})(?=.*\d)((?=.*[a-z]){1})((?=.*[A-Z]){1}).*$/,
+              'Password must contain at least 8 characters, one uppercase, one number and one special case character'
+            ),
           mobilePhone: Yup.number()
             .test('len', 'Contact should be exactly 10 digit', (val) => val?.toString().length === 10)
             .required('Mobile Phone number is required'),

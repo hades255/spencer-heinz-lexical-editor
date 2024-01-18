@@ -11,7 +11,7 @@ import FloatDialog from '../floatMenu/floatDialog';
 import { BlackoutNode, isBlackedOutNode } from 'lexical-editor/nodes/blackoutNode';
 import { mergeRegister } from '@lexical/utils';
 import { ACTION_REQUEST_USER, COMMENT_TYPES } from 'lexical-editor/utils/constants';
-import { Box } from '@mui/material';
+import { Box, Tooltip } from '@mui/material';
 import { getSelectedNode } from 'lexical-editor/plugins/toolbarPlugin';
 import { SET_COMMENT_COMMAND } from 'lexical-editor/plugins/commentPlugin';
 import { $isRangeSelected } from 'lexical-editor/utils/$isRangeSelected';
@@ -97,7 +97,6 @@ export const ReassignButton = ({ users, me }) => {
     //   return false;
     // }
     setDialogOpen(false);
-    console.log('B');
     editor.dispatchCommand(SET_COMMENT_COMMAND, { assignee, task, user, commentContent: comment, type: COMMENT_TYPES.REASSIGNED });
   };
 
@@ -129,37 +128,35 @@ export const ReassignButton = ({ users, me }) => {
 
   return (
     <>
-      <Box
-        sx={{
-          top: '250px',
-          left: '50px'
-        }}
-        zIndex={`10001`}
-        // display={!pos?.x || !pos?.y ? `none` : `flex`}
-        position={`absolute`}
-        alignItems={`center`}
-        justifyContent={`space-between`}
-        bgcolor={`white`}
-        border={`1px solid black`}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-      >
-        <DropDownMenu
-          setIsDropDownActive={setIsDropDownActive}
-          setStep={setStep}
-          step={step}
-          index={0}
-          isDropDownActive={isDropDownActive}
-          setAssignee={setAssignee}
-          assignee={assignee}
-          setTask={setTask}
-          task={task}
-          users={permittedUsers}
-          setDialogOpen={setDialogOpen}
-          pos={{ x: 1, y: 1 }}
-          currentUser={me}
-        />
-      </Box>
+      <Tooltip title="Reassign task">
+        <Box
+          position={`absolute`}
+          bottom={10}
+          left={40}
+          alignItems={`center`}
+          justifyContent={`space-between`}
+          bgcolor={`white`}
+          zIndex={`10001`}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+        >
+          <DropDownMenu
+            setIsDropDownActive={setIsDropDownActive}
+            setStep={setStep}
+            step={step}
+            index={0}
+            isDropDownActive={isDropDownActive}
+            setAssignee={setAssignee}
+            assignee={assignee}
+            setTask={setTask}
+            task={task}
+            users={permittedUsers}
+            setDialogOpen={setDialogOpen}
+            pos={{ x: 1, y: 1 }}
+            currentUser={me}
+          />
+        </Box>
+      </Tooltip>
       <FloatDialog
         isDialogOpen={isDialogOpen}
         setDialogOpen={setDialogOpen}

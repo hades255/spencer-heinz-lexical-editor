@@ -13,6 +13,7 @@ import PropTypes from 'prop-types';
 import ToolbarBlackout from 'lexical-editor/components/ToolbarBlackout';
 import ToolbarJump from 'lexical-editor/components/ToolbarJump';
 import { useSelector } from 'store';
+import Download from 'lexical-editor/components/download';
 
 export function getSelectedNode(selection) {
   const anchor = selection.anchor;
@@ -182,6 +183,7 @@ export default function ToolbarPlugin({ user }) {
           <ToolbarJump editor={editor} active={active} />
         </>
       )}
+      <Download user={user._id} />
     </div>
   );
 }

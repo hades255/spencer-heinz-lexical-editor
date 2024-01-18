@@ -62,9 +62,16 @@ const NewPassword = ({ GO, creator, document, user }) => {
           submit: null
         }}
         validationSchema={Yup.object().shape({
-          password: Yup.string().max(255).required('Password is required')
+          password: Yup.string()
+            .max(255)
+            .required('Password is required')
+            .matches(
+              /^.*(?=.{8,})((?=.*[~!@#$%^&*()\-_=+{};:,<.>]){1})(?=.*\d)((?=.*[a-z]){1})((?=.*[A-Z]){1}).*$/,
+              'Password must contain at least 8 characters, one uppercase, one number and one special case character'
+            )
         })}
         onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
+          if (!confirmDlg) return;
           try {
             const response = await axiosServices.post('/invite', { password: values.password, did: document._id, uid: user._id });
             if (scriptedRef.current) {
@@ -154,7 +161,10 @@ const NewPassword = ({ GO, creator, document, user }) => {
                     size="large"
                     variant="contained"
                     color="primary"
-                    onClick={() => setConfirmDlg(true)}
+                    onClick={() => {
+                      if (errors.password) return;
+                      setConfirmDlg(true);
+                    }}
                   >
                     OK
                   </Button>

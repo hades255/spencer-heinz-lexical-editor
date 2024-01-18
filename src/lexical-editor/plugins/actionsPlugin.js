@@ -1,17 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { ClearEditorPlugin } from '@lexical/react/LexicalClearEditorPlugin';
-import {
-  $getNodeByKey,
-  $getRoot,
-  $isParagraphNode,
-  CLEAR_EDITOR_COMMAND,
-  CLEAR_HISTORY_COMMAND,
-  REDO_COMMAND,
-  UNDO_COMMAND
-} from 'lexical';
+import { $getNodeByKey, $getRoot, $isParagraphNode, CLEAR_HISTORY_COMMAND, UNDO_COMMAND } from 'lexical';
 import { useEditorHistoryState } from 'contexts/LexicalEditor';
-import { Box, Button } from '@mui/material';
 import { $isLockNode, LockNode, isLockedNode } from 'lexical-editor/nodes/lockNode';
 import { mergeRegister } from '@lexical/utils';
 import PropTypes from 'prop-types';
@@ -216,15 +207,30 @@ export function ActionsPlugin({ user }) {
         }
         return false;
       }),
-      editor.registerMutationListener(CommentNode, (nodeMutations, { updateTags }) => {
-        if (updateTags.has('collaboration')) return;
+      editor.registerMutationListener(CommentNode, (nodeMutations, { updateTags, prevEditorState }) => {
+        if (updateTags.has('collaboration')) return false;
         let validationFlag = false;
-        for (const nodeMutation of nodeMutations) {
-          if (nodeMutation[1] === 'destroyed' || nodeMutation[1] === 'updated') continue;
-          validationFlag = true;
+        for (const mutation of nodeMutations) {
+          if (nodeMutations.size === 1 && mutation[1] === 'destroyed') {
+            validationFlag = true;
+            break;
+          }
         }
         if (validationFlag) {
-          editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
+          // editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
+          dispatch(
+            openSnackbar({
+              open: true,
+              message: 'Comments can only be deleted on comment dialog.',
+              variant: 'alert',
+              alert: {
+                color: 'info'
+              },
+              close: true
+            })
+          );
+          editor.setEditable(false);
+          debouncedUnDo(editor);
         }
         return false;
       }),
@@ -261,10 +267,69 @@ export function ActionsPlugin({ user }) {
     [editor, undoStack, redoStack]
   );
 
-  return (
-    <>
-      {MandatoryPlugins}
-      <Box display={`flex`} gap={1}>
+  return <>{MandatoryPlugins}</>;
+}
+
+// const ActionIcons = {
+//   Clear: (
+//     <svg
+//       xmlns="http://www.w3.org/2000/svg"
+//       fill="none"
+//       viewBox="0 0 24 24"
+//       strokeWidth={1.5}
+//       stroke="currentColor"
+//       className="w-5 h-5"
+//       width={`25px`}
+//     >
+//       <title>Clear</title>
+//       <path
+//         strokeLinecap="round"
+//         strokeLinejoin="round"
+//         d="M12 9.75L14.25 12m0 0l2.25 2.25M14.25 12l2.25-2.25M14.25 12L12 14.25m-2.58 4.92l-6.375-6.375a1.125 1.125 0 010-1.59L9.42 4.83c.211-.211.498-.33.796-.33H19.5a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25h-9.284c-.298 0-.585-.119-.796-.33z"
+//       />
+//     </svg>
+//   ),
+//   Undo: (
+//     <svg
+//       xmlns="http://www.w3.org/2000/svg"
+//       fill="none"
+//       viewBox="0 0 24 24"
+//       strokeWidth={1.5}
+//       stroke="currentColor"
+//       className="w-5 h-5"
+//       width={`25px`}
+//     >
+//       <title>Undo</title>
+//       <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+//     </svg>
+//   ),
+//   Redo: (
+//     <svg
+//       xmlns="http://www.w3.org/2000/svg"
+//       fill="none"
+//       viewBox="0 0 24 24"
+//       strokeWidth={1.5}
+//       stroke="currentColor"
+//       className="w-5 h-5"
+//       width={`25px`}
+//     >
+//       <title>Redo</title>
+//       <path strokeLinecap="round" strokeLinejoin="round" d="M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 000 12h3" />
+//     </svg>
+//   )
+// };
+
+ActionsPlugin.propTypes = {
+  user: PropTypes.string
+};
+
+const debouncedUnDo = debounce((editor) => {
+  editor.dispatchCommand(UNDO_COMMAND, undefined);
+  editor.setEditable(true);
+}, 10);
+
+/*
+<Box display={`flex`} gap={1}>
         <Button
           size="small"
           disabled={isEditorEmpty}
@@ -296,64 +361,4 @@ export function ActionsPlugin({ user }) {
           </Button>
         </Box>
       </Box>
-    </>
-  );
-}
-
-const ActionIcons = {
-  Clear: (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={1.5}
-      stroke="currentColor"
-      className="w-5 h-5"
-      width={`25px`}
-    >
-      <title>Clear</title>
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 9.75L14.25 12m0 0l2.25 2.25M14.25 12l2.25-2.25M14.25 12L12 14.25m-2.58 4.92l-6.375-6.375a1.125 1.125 0 010-1.59L9.42 4.83c.211-.211.498-.33.796-.33H19.5a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25h-9.284c-.298 0-.585-.119-.796-.33z"
-      />
-    </svg>
-  ),
-  Undo: (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={1.5}
-      stroke="currentColor"
-      className="w-5 h-5"
-      width={`25px`}
-    >
-      <title>Undo</title>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
-    </svg>
-  ),
-  Redo: (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={1.5}
-      stroke="currentColor"
-      className="w-5 h-5"
-      width={`25px`}
-    >
-      <title>Redo</title>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 000 12h3" />
-    </svg>
-  )
-};
-
-ActionsPlugin.propTypes = {
-  user: PropTypes.string
-};
-
-const debouncedUnDo = debounce((editor) => {
-  editor.dispatchCommand(UNDO_COMMAND, undefined);
-  editor.setEditable(true);
-}, 10);
+      */

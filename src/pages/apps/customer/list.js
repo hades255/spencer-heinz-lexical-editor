@@ -365,91 +365,89 @@ const ActionCell = (
           {collapseIcon}
         </IconButton>
       </Tooltip>
-      {row.values.status === 'active' || row.values.status === 'locked' || (row.values.role === 'admin' && role !== 'super admin') ? (
-        <IconButton disabled>
-          <CheckOutlined />
+      <Tooltip title={'Approve'}>
+        <IconButton
+          color={
+            row.values.status === 'active' || row.values.status === 'locked' || (row.values.role === 'admin' && role !== 'super admin')
+              ? 'secondary'
+              : 'success'
+          }
+          onClick={(e) => {
+            e.stopPropagation();
+            if (row.values.status === 'active' || row.values.status === 'locked' || (row.values.role === 'admin' && role !== 'super admin'))
+              return;
+            handleUpdateStatus(row.original._id, 'active');
+          }}
+        >
+          <CheckOutlined twoToneColor={theme.palette.success.main} />
         </IconButton>
-      ) : (
-        <Tooltip title="Approve">
-          <IconButton
-            color="success"
-            onClick={(e) => {
-              e.stopPropagation();
+      </Tooltip>
+      <Tooltip title={row.values.status === 'locked' ? (row.values.comment ? `Locked because ${row.values.comment}` : 'Unlock') : 'Lock'}>
+        <IconButton
+          color={
+            row.values.status === 'deleted' || (row.values.role === 'admin' && role !== 'super admin')
+              ? 'secondary'
+              : row.values.status === 'locked'
+              ? 'info'
+              : 'error'
+          }
+          onClick={(e) => {
+            e.stopPropagation();
+            if (row.values.status === 'deleted' || (row.values.role === 'admin' && role !== 'super admin')) return;
+            if (row.values.status === 'locked') {
               handleUpdateStatus(row.original._id, 'active');
-            }}
-          >
-            <CheckOutlined twoToneColor={theme.palette.success.main} />
-          </IconButton>
-        </Tooltip>
-      )}
-      {row.values.status === 'deleted' || (row.values.role === 'admin' && role !== 'super admin') ? (
-        <IconButton disabled>
-          <UnlockOutlined />
-        </IconButton>
-      ) : (
-        <Tooltip title={row.values.status === 'locked' ? (row.values.comment ? `Locked because ${row.values.comment}` : 'Unlock') : 'Lock'}>
-          <IconButton
-            color={row.values.status === 'locked' ? 'info' : 'error'}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (row.values.status === 'locked') {
-                handleUpdateStatus(row.original._id, 'active');
-              } else {
-                handleCloseLockDlg();
-                setCustomerDeleteId(row.values.name);
-                setUserDeleteId(row.original._id);
-              }
-            }}
-          >
-            <UnlockOutlined twoToneColor={theme.palette.info.main} />
-          </IconButton>
-        </Tooltip>
-      )}
-      {row.values.role === 'admin' && role !== 'super admin' ? (
-        <IconButton disabled>
-          <EditTwoTone twoToneColor={theme.palette.secondary.main} />
-        </IconButton>
-      ) : (
-        <Tooltip title="Edit">
-          <IconButton
-            color="primary"
-            onClick={(e) => {
-              e.stopPropagation();
-              setCustomer(row.original);
-              handleAdd();
-            }}
-          >
-            <EditTwoTone twoToneColor={theme.palette.primary.main} />
-          </IconButton>
-        </Tooltip>
-      )}
-      {row.values.status !== 'active' || (row.values.role === 'admin' && role !== 'super admin') ? (
-        <IconButton disabled>
-          <ToolOutlined />
-        </IconButton>
-      ) : (
-        <Tooltip title="Reset Password">
-          <IconButton
-            color="warning"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleClosePwdresetDlg();
+            } else {
+              handleCloseLockDlg();
               setCustomerDeleteId(row.values.name);
               setUserDeleteId(row.original._id);
+            }
+          }}
+        >
+          <UnlockOutlined twoToneColor={theme.palette.info.main} />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Edit">
+        <IconButton
+          color={row.values.role === 'admin' && role !== 'super admin' ? 'secondary' : 'primary'}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (row.values.role === 'admin' && role !== 'super admin') return;
+            setCustomer(row.original);
+            handleAdd();
+          }}
+        >
+          <EditTwoTone twoToneColor={theme.palette.primary.main} />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Reset Password">
+        <IconButton
+          color={row.values.status !== 'active' || (row.values.role === 'admin' && role !== 'super admin') ? 'secondary' : 'warning'}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (row.values.status !== 'active' || (row.values.role === 'admin' && role !== 'super admin')) return;
+            handleClosePwdresetDlg();
+            setCustomerDeleteId(row.values.name);
+            setUserDeleteId(row.original._id);
+          }}
+        >
+          <ToolOutlined twoToneColor={theme.palette.warning.main} />
+        </IconButton>
+      </Tooltip>
+      {row.values.role === 'admin' && role !== 'super admin' ? (
+        <Tooltip title={`Permanent Delete `}>
+          <IconButton
+            color={'secondary'}
+            onClick={(e) => {
+              e.stopPropagation();
             }}
           >
-            <ToolOutlined twoToneColor={theme.palette.warning.main} />
+            <UserDeleteOutlined />
           </IconButton>
         </Tooltip>
-      )}
-      {row.values.role === 'admin' && role !== 'super admin' ? (
-        <IconButton disabled>
-          <UserDeleteOutlined />
-        </IconButton>
       ) : row.values.status === 'deleted' ? (
         <Tooltip title={`Permanent Delete `}>
           <IconButton
-            color={'info'}
+            color={'error'}
             onClick={(e) => {
               e.stopPropagation();
               handleClosePDelete();

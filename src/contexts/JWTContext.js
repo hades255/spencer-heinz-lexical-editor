@@ -132,7 +132,7 @@ export const JWTProvider = ({ children }) => {
         );
       }
     } catch (error) {
-      console.log(error)
+      console.log(error);
       dispatch_(
         openSnackbar({
           open: true,
@@ -189,7 +189,7 @@ export const JWTProvider = ({ children }) => {
         const response = await axios.put('/auth/resetPassword/' + currentPassword, {
           newPassword
         });
-        console.log(response)
+        console.log(response);
         const { code } = response.data;
         if (code === 'success') {
           dispatch_(

@@ -41,6 +41,7 @@ import { $createCustomTextNode, CustomTextNode } from './nodes/customTextNode';
 import { JumpNode } from './nodes/jumpNode';
 import { JumpPlugin } from './plugins/jumpPlugin';
 import ActiveTeamPlugin from './plugins/activeTeamPlugin';
+import FocusPlugin from './plugins/focusPlugin';
 
 // set excluded properties for collab
 const excludedProperties = new Map();
@@ -164,6 +165,7 @@ const LexicalEditor = ({ uniqueId, user }) => {
       <BlackoutPlugin user={user._id} />
       <JumpPlugin />
       <ActiveTeamPlugin />
+      <FocusPlugin />
     </LexicalComposer>
   );
 };

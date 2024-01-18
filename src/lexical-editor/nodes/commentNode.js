@@ -53,6 +53,11 @@ export class CommentNode extends ElementNode {
     this.__newOrUpdated = newOrUpdated;
   }
 
+  isEditable() {
+    const currentUser = CommentNode.__currentUser;
+    return !currentUser || this.__users?.find((value) => value === currentUser);
+  }
+
   addComment(_comment) {
     const writable = this.getWritable();
     writable.__comments.unshift(_comment);
@@ -84,6 +89,16 @@ export class CommentNode extends ElementNode {
     }
     const _replies = _comment['replies'];
     return _replies;
+  }
+
+  setStatus(_commentIndex, status) {
+    const writable = this.getWritable();
+    let _comment = writable.__comments[_commentIndex];
+    if (isUndefined(_comment)) {
+      return false;
+    }
+    _comment['status'] = status;
+    return true;
   }
 
   getComments() {
@@ -164,6 +179,7 @@ export class CommentNode extends ElementNode {
     // }));
     nComments = nComments.map((item) => ({ ...item, comment: 'AAA' }));
     span.setAttribute('data-lexical-comment', 'true');
+    span.setAttribute('data-lexical-text', 'true');
     span.setAttribute('data-comments', JSON.stringify(nComments));
     span.setAttribute('data-new_or_updated', JSON.stringify(this.__newOrUpdated));
     addClassNamesToElement(span, LexicalTheme.comment);
@@ -192,9 +208,16 @@ export class CommentNode extends ElementNode {
       document.getSelection().addRange(range);
 
       // set new or updated flag -> false
+      removeClassNamesFromElement(e.target.parentNode, LexicalTheme.suppressedComment);
       removeClassNamesFromElement(e.target, LexicalTheme.commentIconUnTouched);
       addClassNamesToElement(e.target, LexicalTheme.commentIcon);
     });
+    const storedValue = window.localStorage.getItem('suppressedComments');
+    let suppressedUniqueIds = storedValue === null ? [] : JSON.parse(storedValue);
+    if (nComments.filter((value) => suppressedUniqueIds.includes(value.uniqueId)).length === nComments.length) {
+      addClassNamesToElement(span, LexicalTheme.suppressedComment);
+    }
+
     addClassNamesToElement(IconImage, this.isTouched() ? LexicalTheme.commentIcon : LexicalTheme.commentIconUnTouched);
     span.appendChild(IconImage);
 
@@ -206,11 +229,18 @@ export class CommentNode extends ElementNode {
     const commentSpan = dom;
     commentSpan.setAttribute('data-comments', JSON.stringify(this.__comments));
     commentSpan.setAttribute('data-new_or_updated', JSON.stringify(this.__newOrUpdated));
-    if (this.getSuppressed()) {
+
+    const storedValue = window.localStorage.getItem('suppressedComments');
+    let suppressedUniqueIds = storedValue === null ? [] : JSON.parse(storedValue);
+    removeClassNamesFromElement(commentSpan, LexicalTheme.suppressedComment);
+    if (this.__comments.filter((value) => suppressedUniqueIds.includes(value.uniqueId)).length === this.__comments.length) {
       addClassNamesToElement(commentSpan, LexicalTheme.suppressedComment);
-    } else {
-      removeClassNamesFromElement(commentSpan, LexicalTheme.suppressedComment);
+    } else if (this.getSuppressed()) {
+      addClassNamesToElement(commentSpan, LexicalTheme.suppressedComment);
     }
+    //  else {
+    //   removeClassNamesFromElement(commentSpan, LexicalTheme.suppressedComment);
+    // }
     const iconImage = commentSpan.getElementsByTagName('img')[0];
     if (this.isTouched()) {
       removeClassNamesFromElement(iconImage, LexicalTheme.commentIconUnTouched);
@@ -220,6 +250,7 @@ export class CommentNode extends ElementNode {
   }
 
   exportDOM() {
+    console.log('OK');
     const element = document.createElement('span');
     element.setAttribute('data-lexical-comment', 'true');
     element.setAttribute('data-comments', JSON.stringify(this.__comments));
@@ -294,6 +325,28 @@ function convertCommentElement(domNode) {
 
 export function $isCommentNode(node) {
   return node instanceof CommentNode;
+}
+
+export function isCommentNode(_node, user) {
+  let validationFlag = false;
+  const _comments = _node.getComments();
+  if ($isCommentNode(_node)) {
+    const _can = _comments.filter((item) => item.commentor._id === user);
+    console.log(_can);
+  } else {
+    return false;
+  }
+  return validationFlag;
+}
+
+export function canRemoveCommentNode(_node, user) {
+  console.log(user);
+  let validationFlag = false;
+  if ($isCommentNode(_node)) {
+    const text = _node.getTextContent();
+    if (text.length <= 2) validationFlag = true;
+  }
+  return validationFlag;
 }
 
 export function $createCommentNode(className, comments, newOrUpdated = []) {

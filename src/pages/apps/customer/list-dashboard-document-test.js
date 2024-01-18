@@ -96,8 +96,12 @@ const DocumentRow = ({ row, setSelect, select }) => {
     <>
       {row.title && (
         <TableRow>
-          <TableCell align="center" colSpan={'4'} sx={{ borderBottom: '1px solid lightgray' }}>
-            <Typography variant="subtitle1" color={'secondary'}>
+          <TableCell
+            align="center"
+            colSpan={'4'}
+            sx={{ bgcolor: '#f6f6f6', borderBottom: '1px solid lightgray', borderRadius: '0 0 30px 30px', border: 0 }}
+          >
+            <Typography variant="subtitle1" sx={{ color: 'darkblue' }}>
               {row.title}
             </Typography>
           </TableCell>

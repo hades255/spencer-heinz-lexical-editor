@@ -111,7 +111,6 @@ export const FloatMenuPlugin = () => {
   };
 
   const handleCancelComment = () => {
-    console.log('cancelled');
     setDialogOpen(false);
     setAssignee('');
     setTask('');

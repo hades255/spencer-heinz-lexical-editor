@@ -24,6 +24,8 @@ import {
   setOnlinestatusToTeam
 } from 'store/reducers/document';
 import { useSelector } from 'store';
+import { TruncatedText } from 'utils/string';
+import CheckClipboardPermission from './CheckClipboardPermission';
 
 const drawerWidth = 320;
 
@@ -56,7 +58,10 @@ const Document = ({ user, document }) => {
 
   const [socket, setSocket] = useState(null);
   const [load, setLoad] = useState(false);
+  const [showDesc, setShowDesc] = useState(false);
   const blocked = useSelector((state) => state.document.blockTeams.includes(state.document.me?.team));
+
+  const handleShowDescMore = useCallback(() => setShowDesc(!showDesc), [showDesc]);
 
   const handleSetSocket = useCallback(() => {
     const ws = new WebSocket(process.env.REACT_APP_DEFAULT_WEBSOCKET_URL + 'userrooms/' + document._id + '?userId=' + user._id);
@@ -172,23 +177,34 @@ const Document = ({ user, document }) => {
                     </Grid>
                   </Grid>
                 </Grid>
-                <Grid container spacing={3}>
-                  <Grid
-                    item
-                    xs={12}
-                    sx={{
-                      bgcolor: theme.palette.background.paper,
-                      pr: 2,
-                      pb: 1,
-                      mb: 2,
-                      borderBottom: `1px solid ${theme.palette.divider}`
-                    }}
-                  >
-                    <Typography variant="subtitle1" color="textSecondary">
-                      {document?.description}
-                    </Typography>
+                {document?.description && (
+                  <Grid container spacing={3}>
+                    <Grid
+                      item
+                      xs={12}
+                      sx={{
+                        bgcolor: theme.palette.background.paper,
+                        pr: 2,
+                        pb: 1,
+                        mb: 2,
+                        borderBottom: `1px solid ${theme.palette.divider}`
+                      }}
+                    >
+                      <Typography variant="subtitle1" color="textSecondary">
+                        {showDesc ? document.description : TruncatedText(document.description, 70)}
+                        {document.description.length > 70 && (
+                          <Typography
+                            variant="caption"
+                            sx={{ pl: 1, pr: 1, fontWeight: 'bold', color: 'dark', cursor: 'pointer' }}
+                            onClick={handleShowDescMore}
+                          >
+                            {showDesc ? 'Hide' : 'More'}
+                          </Typography>
+                        )}
+                      </Typography>
+                    </Grid>
                   </Grid>
-                </Grid>
+                )}
                 <Grid container spacing={3}>
                   <Grid
                     item
@@ -227,6 +243,7 @@ const Document = ({ user, document }) => {
           </Grid>
         </Main>
       </Box>
+      <CheckClipboardPermission />
     </>
   );
 };

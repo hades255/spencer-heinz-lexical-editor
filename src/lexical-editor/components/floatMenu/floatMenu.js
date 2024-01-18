@@ -4,6 +4,7 @@ import { Box } from '@mui/material';
 import { inRange, isUndefined } from 'lodash';
 import DropDownMenu from '../../components/floatMenu/dropdown';
 import PropTypes from 'prop-types';
+import DownloadDropdownMenu from './download';
 
 let setPosTimeout = 0;
 const FloatMenu = ({ show, ...props }) => {
@@ -167,6 +168,7 @@ const FloatMenu = ({ show, ...props }) => {
           pos={pos}
           currentUser={props.currentUser}
         />
+        <DownloadDropdownMenu setIsDropDownActive={props.setIsDropDownActive} setStep={setStep} pos={pos} />
       </Box>
     </>
   );

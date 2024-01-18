@@ -1,5 +1,5 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { $getSelection, $isParagraphNode, $isRangeSelection, COPY_COMMAND, createCommand } from 'lexical';
+import { $getSelection, $isParagraphNode, $isRangeSelection, createCommand } from 'lexical';
 import PropTypes from 'prop-types';
 import { useCallback, useEffect } from 'react';
 import { mergeRegister } from '@lexical/utils';
@@ -244,16 +244,6 @@ export const BlackoutPlugin = ({ user }) => {
         UNBLACK_OUT_COMMAND,
         () => {
           unblackoutContent();
-          return true;
-        },
-        EditorPriority
-      ),
-      editor.registerCommand(
-        COPY_COMMAND,
-        () => {
-          navigator.clipboard.readText().then(() => {
-            // console.log(copiedText);
-          });
           return true;
         },
         EditorPriority

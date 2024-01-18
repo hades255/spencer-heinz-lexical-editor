@@ -230,12 +230,18 @@
 }
 
 .editor-comment {
-  color: white;
+  color: #eee;
   background-color: #fa2c6a;
-  box-shadow: 1px 1px 4px #ff4d4f;
+  box-shadow: 1px 1px 4px gray;
   border-radius: 5px;
   cursor: pointer;
-  border: 1px solid #999;
+}
+
+.completed-comment {
+  background-color: lightgray;
+  box-shadow: 1px 1px 4px gray;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
 .multi-mention {
@@ -259,6 +265,7 @@
 }
 
 .comment-icon {
+  scale: 0.7;
   transition: all 0.2s ease-in-out;
 }
 
