@@ -21,7 +21,7 @@ const NavCard = () => (
         </Typography>
       </Stack>
       <AnimateButton>
-        <Button variant="shadow" size="small" component={Link} href="https://codedthemes.support-hub.io/" target="_blank">
+        <Button variant="shadow" size="small" component={Link} href="/faq" target="_blank">
           Support
         </Button>
       </AnimateButton>

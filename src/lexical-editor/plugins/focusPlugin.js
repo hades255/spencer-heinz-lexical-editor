@@ -93,41 +93,42 @@ export default function FocusPlugin() {
       editor.registerCommand(
         COPY_COMMAND,
         () => {
-          navigator.clipboard.read().then((clipboardItems) => {
-            (async () => {
-              try {
-                const clipboardItem = clipboardItems[0];
-                const _html = await clipboardItem.getType('text/html');
-                const html = await _html.text();
-                // console.log(html);
-                // const res = html.replace(/<img[^>]*>/g, '');
-                const div = document.createElement('div');
-                div.innerHTML = html;
-                div.querySelectorAll('[data-lexical-comment="true"]').forEach((element) => {
-                  element.remove();
-                });
-                div.querySelectorAll('[data-lexical-black-out="true"]').forEach((element) => {
-                  element.remove();
-                });
-                div.querySelectorAll('[data-lexical-jump="true"]').forEach((element) => {
-                  element.remove();
-                });
-                div.querySelectorAll('[data-lexical-lock="true"]').forEach((element) => {
-                  element.remove();
-                });
-                const data = [
-                  new ClipboardItem({
-                    ['text/html']: new Blob([div.innerHTML], { type: 'text/html' }),
-                    ['text/plain']: new Blob([div.innerText], { type: 'text/plain' })
-                  })
-                ];
-                // console.log(data);
-                await navigator.clipboard.write(data);
-              } catch (error) {
-                console.log(error);
-              }
-            })();
-          });
+          (async () => {
+            try {
+              const permissionStatus = localStorage.getItem('clipboard');
+              if (permissionStatus != 'granted') return;
+              const clipboardItems = await navigator.clipboard.read();
+              const clipboardItem = clipboardItems[0];
+              const _html = await clipboardItem.getType('text/html');
+              const html = await _html.text();
+              // console.log(html);
+              // const res = html.replace(/<img[^>]*>/g, '');
+              const div = document.createElement('div');
+              div.innerHTML = html;
+              div.querySelectorAll('[data-lexical-comment="true"]').forEach((element) => {
+                element.remove();
+              });
+              div.querySelectorAll('[data-lexical-black-out="true"]').forEach((element) => {
+                element.remove();
+              });
+              div.querySelectorAll('[data-lexical-jump="true"]').forEach((element) => {
+                element.remove();
+              });
+              div.querySelectorAll('[data-lexical-lock="true"]').forEach((element) => {
+                element.remove();
+              });
+              const data = [
+                new ClipboardItem({
+                  ['text/html']: new Blob([div.innerHTML], { type: 'text/html' }),
+                  ['text/plain']: new Blob([div.innerText], { type: 'text/plain' })
+                })
+              ];
+              // console.log(data);
+              await navigator.clipboard.write(data);
+            } catch (error) {
+              console.log(error);
+            }
+          })();
           return true;
         },
         EditorPriority

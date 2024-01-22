@@ -41,7 +41,6 @@ import { $isRangeSelected } from 'lexical-editor/utils/$isRangeSelected';
 import { useUserInteractions } from 'lexical-editor/hooks/useUserInteractions';
 import { v4 as uuidv4 } from 'uuid';
 import useLocalStorage from 'lexical-editor/hooks/useLocalStorage';
-import { HideSourceRounded } from '@mui/icons-material';
 import { not } from 'utils/array';
 import { $isLockNode } from 'lexical-editor/nodes/lockNode';
 import { $isBlackoutNode, isBlackedOutNode } from 'lexical-editor/nodes/blackoutNode';
@@ -49,9 +48,10 @@ import { ACTION_REQUEST_USER, COMMENT_TYPES } from 'lexical-editor/utils/constan
 import { ReassignButton } from 'lexical-editor/components/comment/reassignButton';
 import { useSelector } from 'store';
 import axiosServices from 'utils/axios';
+import { HideSourceRounded } from '@mui/icons-material';
 import DoneIcon from '@mui/icons-material/Done';
 import ReplyIcon from '@mui/icons-material/Reply';
-import ClearIcon from '@mui/icons-material/Clear';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
 const EditorPriority = 1;
 export const SET_COMMENT_COMMAND = createCommand('SET_COMMENT_COMMAND');
@@ -117,11 +117,11 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
   }, [isDialogOpen]);
 
   useEffect(() => {
-    setReplyShow({});
+    setReplyShow((prev) => ({ ...prev, [activeCommentIndex]: true }));
   }, [activeCommentIndex]);
 
   useEffect(() => {
-    setReplyShow({});
+    setReplyShow({ 0: true });
     setActiveCommentIndex(0);
     setActiveReplyIndex(0);
     if (!isOnFab) {
@@ -143,7 +143,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
     [doc]
   );
 
-  const submitCommentComplete = useCallback((uniqueId, status = 'complete') => {
+  const submitCommentComplete = useCallback((uniqueId, status = 'completed') => {
     (async () => {
       try {
         await axiosServices.put('/task/uniqueId/' + uniqueId, { status });
@@ -259,7 +259,6 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
   const updateComment = useCallback(
     (node, index, comment, status) => {
       if (!isEmpty(node)) {
-        console.log(node);
         node.setStatus(index, status);
         const writable = node.getWritable();
         const newCommentNode = $createCommentNode('editor-comment', [...writable.getComments()], [user]);
@@ -288,7 +287,9 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
           const children = writable.getChildren();
           if (_comments.length === 0) {
             for (let i = 0; i < children.length; i += 1) writable.insertBefore(children[i]);
+            console.log(comment);
             writable.remove();
+            console.log(comment);
           } else {
             const newCommentNode = $createCommentNode('editor-comment', _comments, [user._id]);
             for (let i = 0; i < children.length; i += 1) newCommentNode.append(children[i]);
@@ -604,7 +605,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
         <>
           <Box
             sx={{ top: activeRect?.top + 10, left: activeRect?.left - 1 }}
-            zIndex={`10001`}
+            zIndex={`99`}
             display={isUndefined(activeRect?.left) || isUndefined(activeRect?.top) || !isOnFab ? `none` : `flex`}
             flexDirection={`column`}
             position={`absolute`}
@@ -636,7 +637,6 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                     setActiveCommentIndex(_index);
                   }}
                   onMouseLeave={() => {
-                    // setReplyShow({});
                     floatTimeOut = setTimeout(() => {
                       if (!isDialogOpen) {
                         setIsOnFab(false);
@@ -675,16 +675,18 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                           To: {[...users, ACTION_REQUEST_USER].find((user) => user._id === _comment.assignee)?.name}, Action:{' '}
                           {_comment.task}
                         </h3>
-                        <IconButton
-                          onClick={() => {
-                            setReplyShow((prev) => ({ ...prev, [_index]: !prev[_index] }));
-                          }}
-                          disabled={activeCommentIndex !== _index || !_comment['replies']?.length}
-                        >
-                          <Badge badgeContent={_comment['replies']?.length ?? 0} color="error">
-                            <MailFilled width={`30px`} color={'action'} />
-                          </Badge>
-                        </IconButton>
+                        <Tooltip title="View Replies">
+                          <IconButton
+                            onClick={() => {
+                              if (activeCommentIndex === _index || _comment['replies']?.length)
+                                setReplyShow((prev) => ({ ...prev, [_index]: !prev[_index] }));
+                            }}
+                          >
+                            <Badge badgeContent={_comment['replies']?.length ?? 0} color="primary">
+                              <MailFilled width={`30px`} color={'action'} />
+                            </Badge>
+                          </IconButton>
+                        </Tooltip>
                       </Grid>
                       <Box sx={{ maxHeight: `170px`, overflowY: `auto` }}>
                         <p
@@ -719,7 +721,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                       </IconButton> */}
                     </Grid>
                     <Grid justifyContent="start" item>
-                      <Tooltip title="Don't show this comment when click text">
+                      <Tooltip title="Don't show this comment when click text" placement="top" arrow>
                         <IconButton
                           variant={'outlined'}
                           sx={{
@@ -739,7 +741,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                         </IconButton>
                       </Tooltip>
                       <ReassignButton users={users} me={me} />
-                      <Tooltip title="Reply">
+                      <Tooltip title="Reply" placement="top" arrow>
                         <IconButton
                           variant={'outlined'}
                           sx={{
@@ -773,6 +775,8 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                               : 'Set review'
                             : "Can't touch this"
                         }
+                        placement="top"
+                        arrow
                       >
                         <IconButton
                           variant={'outlined'}
@@ -788,7 +792,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                             return user === _comment.commentor._id
                               ? _comment.status === 'completed'
                                 ? 'Completed'
-                                : handleSetStatusComment(_comment, 'complete')
+                                : handleSetStatusComment(_comment, 'completed')
                               : user === _comment.assignee
                               ? _comment.status === 'completed'
                                 ? 'Completed'
@@ -814,10 +818,15 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                                   : 'warning'
                                 : 'secondary'
                             }
+                            style={
+                              _comment.status === 'review'
+                                ? { borderRadius: '50%', animation: 'pulse-info 1s infinite' }
+                                : { borderRadius: '50%' }
+                            }
                           />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title={user === _comment.commentor._id ? 'Remove this comment' : "Can't touch this"}>
+                      <Tooltip title={user === _comment.commentor._id ? 'Remove this comment' : "Can't touch this"} placement="top" arrow>
                         <IconButton
                           variant={'outlined'}
                           sx={{
@@ -832,7 +841,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                             if (user === _comment.commentor._id) handleRemoveComment(_comment);
                           }}
                         >
-                          <ClearIcon color={user === _comment.commentor._id ? 'error' : 'secondary'} />
+                          <DeleteOutlineIcon color={user === _comment.commentor._id ? 'error' : 'secondary'} />
                         </IconButton>
                       </Tooltip>
                     </Grid>
@@ -842,6 +851,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                       onClickAway={() => {
                         setReplyShow((prev) => ({ ...prev, [_index]: false }));
                       }}
+                      mouseEvent="onMouseDown"
                     >
                       <div>
                         {_comment['replies'].map((_reply, _replyIndex) => (

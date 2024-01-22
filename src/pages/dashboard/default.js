@@ -5,7 +5,7 @@ import { Grid } from '@mui/material';
 // project import
 import AnalyticEcommerce from 'components/cards/statistics/AnalyticEcommerce';
 
-import DashboardDocumentPage from 'pages/apps/customer/list-dashboard-document-test';
+import DashboardDocumentPage from 'pages/apps/customer/list-dashboard-document-home';
 import DashboardTaskPage from 'pages/apps/customer/list-dashboard-task';
 import axiosServices from 'utils/axios';
 import { CATEGORIES } from 'config/constants';
@@ -39,12 +39,6 @@ const DashboardDefault = () => {
             <AnalyticEcommerce onClick={handleClickCategory} index={item.key} title={item.title} count={counts[item.key]} />
           </Grid>
         ))}
-        <Grid item xs={12} sm={12} md={12} lg={12} sx={{ mb: 2 }}>
-          <AnalyticEcommerce onClick={handleClickCategory} index={'tasks'} title="Comments" count="0" />
-        </Grid>
-        <Grid item xs={12} sm={12} md={12} lg={12} sx={{ mb: 2 }}>
-          <AnalyticEcommerce onClick={handleClickCategory} index={'tasks'} title="Approvals" count="0" />
-        </Grid>
         <Grid item xs={12} sm={12} md={12} lg={12} sx={{ mb: 2 }}>
           <AnalyticEcommerce onClick={handleClickCategory} index={'tasks'} title="Signatures" count="0" />
         </Grid>

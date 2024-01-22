@@ -124,5 +124,7 @@ export const CATEGORIES = [
   { key: 'asks', title: 'Asks' },
   { key: 'myDocs', title: 'Active Documents' },
   { key: 'editDocs', title: 'Edits' },
-  { key: 'reviews', title: 'Reviews' }
+  { key: 'reviews', title: 'Reviews' },
+  { key: 'comments', title: 'Comments' },
+  { key: 'approvals', title: 'Approvals' }
 ];

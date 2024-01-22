@@ -121,6 +121,11 @@ const LexicalEditor = ({ uniqueId, user }) => {
     }
   };
 
+  const handleCopy = useCallback((e) => {
+    const permissionStatus = localStorage.getItem('clipboard');
+    if (permissionStatus != 'granted') e.preventDefault();
+  }, []);
+
   return (
     <LexicalComposer initialConfig={config}>
       <NodeEventPlugin
@@ -135,7 +140,14 @@ const LexicalEditor = ({ uniqueId, user }) => {
       {!isLoading ? (
         <RichTextPlugin
           contentEditable={
-            <ContentEditable className="editor-input" rows={40} spellCheck={true} style={{ height: '70vh', overflowY: 'scroll' }} />
+            <ContentEditable
+              className="editor-input"
+              rows={40}
+              spellCheck={true}
+              style={{ minHeight: '65vh' }}
+              onCopy={handleCopy}
+              onCut={handleCopy}
+            />
           }
           ErrorBoundary={LexicalErrorBoundary}
         />

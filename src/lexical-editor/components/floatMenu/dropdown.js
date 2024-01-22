@@ -100,7 +100,8 @@ export default function DropDownMenu({
           maxHeight: ITEM_HEIGHT * 4.5,
           overflowY: `auto`,
           width: '15ch',
-          overflowX: 'hidden'
+          overflowX: 'hidden',
+          zIndex: 10003
         }}
       >
         <MenuList sx={{ width: '100%' }}>

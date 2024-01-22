@@ -71,7 +71,7 @@ const DashboardDocumentPage = ({ category, setSelect, select }) => {
                 <Typography variant="h6" style={{ marginBottom: '15px' }}>
                   You don&apos;t have any documents here
                 </Typography>
-                <Link component={RouterLink} to="#" color="primary">
+                <Link component={RouterLink} to="/document/create" color="primary">
                   + Create one
                 </Link>
               </Grid>

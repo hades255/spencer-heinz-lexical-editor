@@ -211,6 +211,7 @@ export function ActionsPlugin({ user }) {
         if (updateTags.has('collaboration')) return false;
         let validationFlag = false;
         for (const mutation of nodeMutations) {
+          console.log(nodeMutations, updateTags);
           if (nodeMutations.size === 1 && mutation[1] === 'destroyed') {
             validationFlag = true;
             break;

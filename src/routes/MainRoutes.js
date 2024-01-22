@@ -24,6 +24,7 @@ import SuperAdmin from 'utils/route-guard/SuperAdmin';
 
 // render - dashboard
 const DashboardDefault = Loadable(lazy(() => import('pages/dashboard/default')));
+const FAQ = Loadable(lazy(() => import('pages/maintenance/faq')));
 // pages routing
 const MaintenanceError = Loadable(lazy(() => import('pages/maintenance/404')));
 const MaintenanceError500 = Loadable(lazy(() => import('pages/maintenance/500')));
@@ -216,6 +217,10 @@ const MainRoutes = {
           ]
         }
       ]
+    },
+    {
+      path: 'faq',
+      element: <FAQ />
     },
     {
       path: 'maintenance',

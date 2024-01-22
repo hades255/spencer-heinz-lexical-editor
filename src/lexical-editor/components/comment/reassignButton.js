@@ -128,7 +128,7 @@ export const ReassignButton = ({ users, me }) => {
 
   return (
     <>
-      <Tooltip title="Reassign task">
+      <Tooltip title="Reassign task" placement="top" arrow>
         <Box
           position={`absolute`}
           bottom={10}

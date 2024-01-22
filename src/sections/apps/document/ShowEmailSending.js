@@ -303,7 +303,7 @@ const ShowEmailSending = ({ open, onClose }) => {
                         <Typography>Please collaborate with me on {document.name}</Typography>
                       </Stack>
                       <Box>
-                        <CopyButton text={`Please collaborate with me on {document.name}`} title={'Copy subject'} />
+                        <CopyButton text={`Please collaborate with me on ${document.name}`} title={'Copy subject'} />
                       </Box>
                     </Stack>
                     <Stack direction={'row'} justifyContent={'space-between'}>
