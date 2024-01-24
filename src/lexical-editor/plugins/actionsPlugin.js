@@ -9,10 +9,11 @@ import PropTypes from 'prop-types';
 import { debounce, isEmpty } from 'lodash';
 import { openSnackbar } from 'store/reducers/snackbar';
 import { $isBlackoutNode, BlackoutNode, isBlackedOutNode } from 'lexical-editor/nodes/blackoutNode';
-import { CommentNode } from 'lexical-editor/nodes/commentNode';
+import { CommentNode, canRemoveCommentNode } from 'lexical-editor/nodes/commentNode';
 import { $isJumpNode, JumpNode } from 'lexical-editor/nodes/jumpNode';
 import { getNavList } from 'store/reducers/document';
 import { useDispatch } from 'store';
+import { ConsoleSqlOutlined } from '@ant-design/icons';
 
 export function ActionsPlugin({ user }) {
   const [editor] = useLexicalComposerContext();
@@ -208,21 +209,42 @@ export function ActionsPlugin({ user }) {
         return false;
       }),
       editor.registerMutationListener(CommentNode, (nodeMutations, { updateTags, prevEditorState }) => {
+        console.log(nodeMutations, updateTags);
         if (updateTags.has('collaboration')) return false;
+        let nodeKey, mutation, same;
+        for (const [nodeKey_, mutation_] of nodeMutations) {
+          nodeKey = nodeKey_;
+          mutation = mutation || mutation_;
+          same = mutation ? mutation === mutation_ : false;
+        }
+        // if (updateTags.has('history-merge')) {
+        //   console.log('history-merge');
+        // }
+
         let validationFlag = false;
-        for (const mutation of nodeMutations) {
-          console.log(nodeMutations, updateTags);
-          if (nodeMutations.size === 1 && mutation[1] === 'destroyed') {
-            validationFlag = true;
-            break;
+
+        if (same) {
+          if (mutation === 'destroyed') {
+            prevEditorState.read(() => {
+              const node = $getNodeByKey(nodeKey);
+              if (!node) {
+                return false;
+              }
+              validationFlag = canRemoveCommentNode(node, user);
+              console.log(validationFlag);
+              if (!validationFlag) editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
+            });
+          }
+          if (mutation === 'created') {
+            editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
           }
         }
+
         if (validationFlag) {
-          // editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
           dispatch(
             openSnackbar({
               open: true,
-              message: 'Comments can only be deleted on comment dialog.',
+              message: 'You are not authorized to edit this block of text.',
               variant: 'alert',
               alert: {
                 color: 'info'

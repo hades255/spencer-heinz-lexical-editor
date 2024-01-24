@@ -13,6 +13,7 @@ import { $isBlackoutNode, isBlackedOutNode } from 'lexical-editor/nodes/blackout
 import { openSnackbar } from 'store/reducers/snackbar';
 import { dispatch } from 'store';
 import { useSelector } from 'store';
+import { ContactSupportOutlined } from '@mui/icons-material';
 
 const EditorPriority = 1;
 export const LOCK_COMMAND = createCommand('LOCK_COMMAND');
@@ -261,6 +262,7 @@ export const LockPlugin = ({ user }) => {
           writable.insertBefore(wrapLockNode);
         }
         wrapLockNode.append(writable);
+        console.log(wrapLockNode.getChildren());
       });
       // check if all users are selected
       if (isEqual(getUserIds(users).sort(), [...not(unlockedUsers, [user]), user].sort())) {

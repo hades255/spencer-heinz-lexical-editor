@@ -177,7 +177,7 @@ export class CommentNode extends ElementNode {
     //       ? _users.find((x) => x.team === item.commentor.team && x.leader)
     //       : item.commentor
     // }));
-    nComments = nComments.map((item) => ({ ...item, comment: 'AAA' }));
+    // nComments = nComments.map((item) => ({ ...item, comment: 'AAA' }));
     span.setAttribute('data-lexical-comment', 'true');
     span.setAttribute('data-lexical-text', 'true');
     span.setAttribute('data-comments', JSON.stringify(nComments));
@@ -220,7 +220,6 @@ export class CommentNode extends ElementNode {
 
     addClassNamesToElement(IconImage, this.isTouched() ? LexicalTheme.commentIcon : LexicalTheme.commentIconUnTouched);
     span.appendChild(IconImage);
-
     return span;
   }
 
@@ -250,8 +249,8 @@ export class CommentNode extends ElementNode {
   }
 
   exportDOM() {
-    console.log('OK');
     const element = document.createElement('span');
+    console.log(element);
     element.setAttribute('data-lexical-comment', 'true');
     element.setAttribute('data-comments', JSON.stringify(this.__comments));
     element.setAttribute('data-new_or_updated', JSON.stringify(this.__newOrUpdated));
@@ -316,6 +315,7 @@ export class CommentNode extends ElementNode {
 }
 
 function convertCommentElement(domNode) {
+  console.log(domNode);
   const { className, dataset } = domNode;
   const node = $createCommentNode(className, JSON.parse(dataset.comments, JSON.parse(dataset.new_or_updated)));
   return {
@@ -328,25 +328,27 @@ export function $isCommentNode(node) {
 }
 
 export function isCommentNode(_node, user) {
-  let validationFlag = false;
   const _comments = _node.getComments();
   if ($isCommentNode(_node)) {
     const _can = _comments.filter((item) => item.commentor._id === user);
-    console.log(_can);
+    // console.log(_can); //  touch this
+    if (_can && _can.length) return false;
+    return true;
   } else {
     return false;
   }
-  return validationFlag;
 }
 
 export function canRemoveCommentNode(_node, user) {
-  console.log(user);
-  let validationFlag = false;
   if ($isCommentNode(_node)) {
-    const text = _node.getTextContent();
-    if (text.length <= 2) validationFlag = true;
+    const __comments = _node.getComments();
+    let flag = false;
+    __comments.forEach((comment) => {
+      if (comment.commentor._id !== user) flag = true;
+    });
+    return flag;
   }
-  return validationFlag;
+  return false;
 }
 
 export function $createCommentNode(className, comments, newOrUpdated = []) {

@@ -35,7 +35,7 @@ import {
   Typography
 } from '@mui/material';
 import { IconButton } from '@mui/material';
-import { MailFilled } from '@ant-design/icons';
+import { MailFilled, ZoomOutOutlined } from '@ant-design/icons';
 import { createPortal } from 'react-dom';
 import { $isRangeSelected } from 'lexical-editor/utils/$isRangeSelected';
 import { useUserInteractions } from 'lexical-editor/hooks/useUserInteractions';
@@ -48,7 +48,6 @@ import { ACTION_REQUEST_USER, COMMENT_TYPES } from 'lexical-editor/utils/constan
 import { ReassignButton } from 'lexical-editor/components/comment/reassignButton';
 import { useSelector } from 'store';
 import axiosServices from 'utils/axios';
-import { HideSourceRounded } from '@mui/icons-material';
 import DoneIcon from '@mui/icons-material/Done';
 import ReplyIcon from '@mui/icons-material/Reply';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -351,7 +350,6 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
       //   lastNode = anchorNode;
       // }
       // let wrapElement = null;
-      // console.log('set new comment');
 
       const newComment = {
         assignee: assignee,
@@ -363,30 +361,10 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
         uniqueId: uuidv4(),
         type: type ?? COMMENT_TYPES.ASSIGNED
       };
-      nodes.forEach((_node) => {
-        const node = _node.getLatest();
-
-        const writable = node.getWritable();
-
-        // check if parent node is paragraph node @topbot 9/4/2023
-        if ($isParagraphNode(node)) {
-          return false;
-        }
-
-        // check if parent node is blacked out of
-        if (isBlackedOutNode(writable, user._id) || ($isBlackoutNode(node) && !node.isEditable())) {
-          const writable = node.getParent().getWritable();
-          if (isBlackedOutNode(writable, user._id)) {
-            return false;
-          }
-          // const newCommentNode = $createCommentNode('editor-comment', [newComment], [user._id]);
-          // newCommentNode.append($createTextNode('🖐'));
-          // writable.append(newCommentNode);
-          // return false;
-        }
-
-        // check if reassigned for this node
-        if (type === COMMENT_TYPES.REASSIGNED) {
+      // check if reassigned for this node
+      if (type === COMMENT_TYPES.REASSIGNED) {
+        nodes.forEach((_node) => {
+          const node = _node.getLatest();
           // check if parent is lock or black-out
           if ($isLockNode(node.getParent()) || $isBlackoutNode(node.getParent())) {
             if (anchorNode?.getParent() !== focusNode?.getParent() || _node.getParent() !== focusNode?.getParent()) {
@@ -406,6 +384,39 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
             submitComment(newComment);
           });
           return false;
+        });
+        return false;
+      }
+
+      let wrapCommentNode = $createCommentNode('editor-comment', [newComment], [user._id]);
+
+      nodes.forEach((_node) => {
+        const node = _node.getLatest();
+
+        const writable = node.getWritable();
+
+        // check if parent node is paragraph node @topbot 9/4/2023
+        if ($isParagraphNode(node)) {
+          wrapCommentNode = $createCommentNode('editor-comment', [newComment], [user._id]);
+          return false;
+        }
+
+        // check if parent node is blacked out of
+        if (isBlackedOutNode(writable, user._id) || ($isBlackoutNode(node) && !node.isEditable())) {
+          const writable = node.getParent().getWritable();
+          if (isBlackedOutNode(writable, user._id)) {
+            return false;
+          }
+          // const newCommentNode = $createCommentNode('editor-comment', [newComment], [user._id]);
+          // newCommentNode.append($createTextNode('🖐'));
+          // writable.append(newCommentNode);
+          // return false;
+        }
+        // check if parent is lock or black-out
+        if ($isLockNode(node.getParent()) || $isBlackoutNode(node.getParent())) {
+          if (anchorNode?.getParent() !== focusNode?.getParent() || _node.getParent() !== focusNode?.getParent()) {
+            return false;
+          }
         }
 
         if ($isCommentNode(node)) {
@@ -442,22 +453,20 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
           return false;
         }
 
-        // check if parent is lock or black-out
-        if ($isLockNode(node.getParent()) || $isBlackoutNode(node.getParent())) {
-          if (anchorNode?.getParent() !== focusNode?.getParent() || _node.getParent() !== focusNode?.getParent()) {
-            return false;
-          }
+        if (!wrapCommentNode.isAttached()) {
+          writable.insertBefore(wrapCommentNode);
         }
+        wrapCommentNode.append(writable);
 
-        $wrapNodeInElement(writable, () => {
-          setTimeout(() => {
-            submitComment(newComment);
-          });
-          return $createCommentNode('editor-comment', [newComment], [user._id]);
-        });
+        // $wrapNodeInElement(writable, () => {
+        //   return $createCommentNode('editor-comment', [newComment], [user._id]);
+        // });
         // } else {
         //   wrapElement.append(writable);
         // }
+      });
+      setTimeout(() => {
+        submitComment(newComment);
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -737,7 +746,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                             setSuppressedComments([...not(suppressedComments, suppressedUniqueIds), ...suppressedUniqueIds]);
                           }}
                         >
-                          <HideSourceRounded />
+                          <ZoomOutOutlined />
                         </IconButton>
                       </Tooltip>
                       <ReassignButton users={users} me={me} />
