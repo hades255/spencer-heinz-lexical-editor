@@ -15,7 +15,11 @@ import {
   TableRow,
   Typography,
   Button,
-  Badge
+  Badge,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
 } from '@mui/material';
 
 // project imports
@@ -29,10 +33,11 @@ import axiosServices from 'utils/axios';
 import moment from 'moment';
 import styled from '@emotion/styled';
 import { TruncatedText } from 'utils/string';
+import useAuth from 'hooks/useAuth';
 
 export const StyledBadge = styled(Badge)(({ theme }) => ({
   '& .MuiBadge-badge': {
-    right: 0,
+    right: 20,
     top: 13,
     border: `2px solid ${theme.palette.background.paper}`,
     padding: '0 4px'
@@ -45,24 +50,31 @@ const mediaSX = {
   borderRadius: 1
 };
 
-const DashboardTaskPage = ({ select, category }) => {
+const DashboardTaskPage = ({ group, select, category }) => {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
+  const [status, setStatus] = useState('all');
 
   useEffect(() => {
     if (select) {
+      if (!group || !select) return;
       (async () => {
         try {
-          const res = await axiosServices.get('/home/documents/' + select + '/tasks/' + category);
+          setStatus('all');
+          const res = await axiosServices.get('/home/documents/select/' + group + '/' + (category || group) + '/' + select);
           setTasks(res.data.data);
         } catch (error) {
           console.log(error);
         }
       })();
     } else setTasks([]);
-  }, [select, category]);
+  }, [select, category, group]);
 
   const handleAddTask = useCallback(() => navigate('/document/' + select), [navigate, select]);
+
+  const handleStatusSelectChange = useCallback(({ target: { value } }) => {
+    setStatus(value);
+  }, []);
 
   return (
     <Grid container spacing={3}>
@@ -102,26 +114,45 @@ const DashboardTaskPage = ({ select, category }) => {
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell width={'17%'} sx={{ pl: 3 }}>
+                      <TableCell align="center" width={'17%'} sx={{ pl: 3, pb: 0 }}>
                         Commentor
                       </TableCell>
-                      <TableCell width={'18%'}>Assignee</TableCell>
-                      <TableCell width={'40%'}>Comment</TableCell>
-                      <TableCell width={'10%'} align="center">
+                      <TableCell align="center" width={'18%'} sx={{ pb: 0 }}>
+                        Assignee
+                      </TableCell>
+                      <TableCell align="center" width={'40%'} sx={{ pb: 0 }}>
+                        Comment
+                      </TableCell>
+                      <TableCell width={'10%'} align="center" sx={{ pb: 0 }}>
                         Task
                       </TableCell>
-                      <TableCell width={'10%'} align="center">
-                        Type
+                      <TableCell width={'10%'} align="center" sx={category ? { pb: 0 } : { p: 0 }}>
+                        {category ? (
+                          'Status'
+                        ) : (
+                          <FormControl variant="standard" sx={{ m: 0, minWidth: 120, border: 'none', outline: 'none' }}>
+                            <InputLabel id="status-select">Status</InputLabel>
+                            <Select labelId="status-select" value={status} onChange={handleStatusSelectChange}>
+                              <MenuItem value={'all'}>All</MenuItem>
+                              <MenuItem value={'assign'}>Assign</MenuItem>
+                              <MenuItem value={'completed'}>Completed</MenuItem>
+                              <MenuItem value={'review'}>Review</MenuItem>
+                              <MenuItem value={'rework'}>Rework</MenuItem>
+                            </Select>
+                          </FormControl>
+                        )}
                       </TableCell>
-                      <TableCell width={'10%'} align="center" sx={{ pr: 3 }}>
+                      <TableCell width={'10%'} align="center" sx={{ pr: 3, pb: 0 }}>
                         Date
                       </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {tasks.map((item, index) => (
-                      <TaskRow key={index} task={item} />
-                    ))}
+                    {tasks
+                      .filter((item) => status === 'all' || item.status === status)
+                      .map((item, index) => (
+                        <TaskRow key={index} task={item} />
+                      ))}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -137,10 +168,12 @@ export default DashboardTaskPage;
 
 DashboardTaskPage.propTypes = {
   select: PropTypes.any,
+  group: PropTypes.any,
   category: PropTypes.any
 };
 
 const TaskRow = ({ task }) => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [more, setMore] = useState(false);
 
@@ -154,11 +187,10 @@ const TaskRow = ({ task }) => {
   );
 
   const handleClick = useCallback(() => navigate('/document/' + task.doc), [navigate, task]);
-
   return (
     <TableRow hover onClick={handleClick} sx={{ cursor: 'pointer' }}>
-      <TableCell>{task.commentor.name}</TableCell>
-      <TableCell>{task.assignee.name}</TableCell>
+      <TableCell align="center">{task.commentor._id === user._id ? 'You' : task.commentor.name}</TableCell>
+      <TableCell align="center">{task.assignee._id === user._id ? 'You' : task.assignee.name}</TableCell>
       <TableCell>
         {more ? task.comment : TruncatedText(task.comment, 50)}
         {task.comment.length > 50 && (
@@ -168,12 +200,17 @@ const TaskRow = ({ task }) => {
         )}
       </TableCell>
       <TableCell align="center">{task.task}</TableCell>
-      <TableCell align="center">
+      <TableCell align="center" sx={{ p: 0 }}>
         {task.type.toUpperCase()}
-        <StyledBadge badgeContent={task.status.toUpperCase()} color={task.status === 'review' ? 'info' : 'primary'}></StyledBadge>
+        <StyledBadge
+          badgeContent={task.status.toUpperCase()}
+          color={
+            task.status === 'completed' ? 'success' : task.status === 'rework' ? 'warning' : task.status === 'review' ? 'info' : 'primary'
+          }
+        ></StyledBadge>
       </TableCell>
-      <TableCell align="center" sx={{ pr: 3 }}>
-        {moment(task.createdAt).format('MM/DD/YYYY h:mm A')}
+      <TableCell align="center" sx={{ p: 1, pr: 3 }}>
+        {moment(task.updatedAt).format('h:mm A MM/DD/YYYY')}
       </TableCell>
     </TableRow>
   );

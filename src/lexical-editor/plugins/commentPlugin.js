@@ -11,8 +11,8 @@ import {
   $setSelection,
   createCommand
 } from 'lexical';
-import { $isAtNodeEnd } from '@lexical/selection';
-import { mergeRegister, $wrapNodeInElement } from '@lexical/utils';
+// import { $isAtNodeEnd } from '@lexical/selection';
+import { mergeRegister } from '@lexical/utils'; //  , $wrapNodeInElement
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { isEmpty, isFunction, isUndefined, max, min, trim } from 'lodash';
 import { $isCommentNode } from '../nodes/commentNode';
@@ -35,6 +35,7 @@ import {
   Typography
 } from '@mui/material';
 import { IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { MailFilled, ZoomOutOutlined } from '@ant-design/icons';
 import { createPortal } from 'react-dom';
 import { $isRangeSelected } from 'lexical-editor/utils/$isRangeSelected';
@@ -51,6 +52,7 @@ import axiosServices from 'utils/axios';
 import DoneIcon from '@mui/icons-material/Done';
 import ReplyIcon from '@mui/icons-material/Reply';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import { getSelectedNode } from './toolbarPlugin';
 
 const EditorPriority = 1;
 export const SET_COMMENT_COMMAND = createCommand('SET_COMMENT_COMMAND');
@@ -286,9 +288,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
           const children = writable.getChildren();
           if (_comments.length === 0) {
             for (let i = 0; i < children.length; i += 1) writable.insertBefore(children[i]);
-            console.log(comment);
             writable.remove();
-            console.log(comment);
           } else {
             const newCommentNode = $createCommentNode('editor-comment', _comments, [user._id]);
             for (let i = 0; i < children.length; i += 1) newCommentNode.append(children[i]);
@@ -730,6 +730,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                       </IconButton> */}
                     </Grid>
                     <Grid justifyContent="start" item>
+                      {/* suppresse comment button */}
                       <Tooltip title="Don't show this comment when click text" placement="top" arrow>
                         <IconButton
                           variant={'outlined'}
@@ -749,7 +750,9 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                           <ZoomOutOutlined />
                         </IconButton>
                       </Tooltip>
+                      {/* reassign button */}
                       <ReassignButton users={users} me={me} />
+                      {/* reply button */}
                       <Tooltip title="Reply" placement="top" arrow>
                         <IconButton
                           variant={'outlined'}
@@ -768,91 +771,101 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                           <ReplyIcon color="success" />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip
-                        title={
-                          user === _comment.commentor._id
-                            ? _comment.status === 'completed'
-                              ? 'Completed'
-                              : _comment.status === 'review'
-                              ? 'Require Review'
-                              : 'Set complete'
-                            : user === _comment.assignee
-                            ? _comment.status === 'completed'
-                              ? 'Completed'
-                              : _comment.status === 'review'
-                              ? 'Cancel Review'
-                              : 'Set review'
-                            : "Can't touch this"
-                        }
-                        placement="top"
-                        arrow
-                      >
-                        <IconButton
-                          variant={'outlined'}
-                          sx={{
-                            paddingX: '0',
-                            position: 'absolute',
-                            bottom: '20px',
-                            right: '25px',
-                            transform: 'translate(-50%, 10px)'
-                          }}
-                          size={'medium'}
-                          onClick={() => {
-                            return user === _comment.commentor._id
+                      {/* require review/approve button */}
+                      {(user === _comment.commentor._id || user === _comment.assignee) && (
+                        <Tooltip
+                          title={
+                            user === _comment.commentor._id
                               ? _comment.status === 'completed'
                                 ? 'Completed'
-                                : handleSetStatusComment(_comment, 'completed')
+                                : _comment.status === 'review'
+                                ? 'Required Review-Approve'
+                                : 'Approve'
                               : user === _comment.assignee
                               ? _comment.status === 'completed'
                                 ? 'Completed'
                                 : _comment.status === 'review'
-                                ? handleSetStatusComment(_comment, 'assign')
-                                : handleSetStatusComment(_comment, 'review')
-                              : "Can't touch this";
-                          }}
+                                ? 'Cancel Review'
+                                : 'Require Review'
+                              : "Can't touch this"
+                          }
+                          placement="top"
+                          arrow
                         >
-                          <DoneIcon
-                            color={
+                          <IconButton
+                            variant={'outlined'}
+                            sx={{
+                              paddingX: '0',
+                              position: 'absolute',
+                              bottom: '20px',
+                              right: '25px',
+                              transform: 'translate(-50%, 10px)'
+                            }}
+                            size={'medium'}
+                            onClick={() =>
                               user === _comment.commentor._id
                                 ? _comment.status === 'completed'
-                                  ? 'success'
-                                  : _comment.status === 'review'
-                                  ? 'info'
-                                  : 'warning'
+                                  ? 'Completed'
+                                  : handleSetStatusComment(_comment, 'completed')
                                 : user === _comment.assignee
                                 ? _comment.status === 'completed'
-                                  ? 'success'
+                                  ? 'Completed'
                                   : _comment.status === 'review'
-                                  ? 'info'
-                                  : 'warning'
-                                : 'secondary'
+                                  ? handleSetStatusComment(_comment, 'assign')
+                                  : handleSetStatusComment(_comment, 'review')
+                                : "Can't touch this"
                             }
-                            style={
-                              _comment.status === 'review'
-                                ? { borderRadius: '50%', animation: 'pulse-info 1s infinite' }
-                                : { borderRadius: '50%' }
-                            }
-                          />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title={user === _comment.commentor._id ? 'Remove this comment' : "Can't touch this"} placement="top" arrow>
-                        <IconButton
-                          variant={'outlined'}
-                          sx={{
-                            paddingX: '0',
-                            position: 'absolute',
-                            bottom: '20px',
-                            right: '-10px',
-                            transform: 'translate(-50%, 10px)'
-                          }}
-                          size={'medium'}
-                          onClick={() => {
-                            if (user === _comment.commentor._id) handleRemoveComment(_comment);
-                          }}
-                        >
-                          <DeleteOutlineIcon color={user === _comment.commentor._id ? 'error' : 'secondary'} />
-                        </IconButton>
-                      </Tooltip>
+                          >
+                            <DoneIcon
+                              color={
+                                user === _comment.commentor._id
+                                  ? _comment.status === 'completed'
+                                    ? 'success'
+                                    : _comment.status === 'review'
+                                    ? 'info'
+                                    : 'warning'
+                                  : user === _comment.assignee
+                                  ? _comment.status === 'completed'
+                                    ? 'success'
+                                    : _comment.status === 'review'
+                                    ? 'info'
+                                    : 'warning'
+                                  : 'secondary'
+                              }
+                              style={
+                                _comment.status === 'review'
+                                  ? { borderRadius: '50%', animation: 'pulse-info 1s infinite' }
+                                  : { borderRadius: '50%' }
+                              }
+                            />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      {/* rework/remove button */}
+                      {user === _comment.commentor._id && (
+                        <Tooltip title={_comment.status === 'review' ? 'Reject' : 'Remove this comment'} placement="top" arrow>
+                          <IconButton
+                            variant={'outlined'}
+                            sx={{
+                              paddingX: '0',
+                              position: 'absolute',
+                              bottom: '20px',
+                              right: '-10px',
+                              transform: 'translate(-50%, 10px)'
+                            }}
+                            size={'medium'}
+                            onClick={() => {
+                              if (_comment.status === 'review') {
+                                handleSetStatusComment(_comment, 'rework');
+                              } else {
+                                handleRemoveComment(_comment);
+                              }
+                            }}
+                          >
+                            {_comment.status === 'review' ? <CloseIcon color={'error'} /> : <DeleteOutlineIcon color={'error'} />}
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </Grid>
                   </Grid>
                   {replyShow[_index] && (
@@ -947,19 +960,3 @@ CommentPlugin.propTypes = {
   user: PropTypes.string,
   uniqueId: PropTypes.any
 };
-
-function getSelectedNode(selection) {
-  const anchor = selection.anchor;
-  const focus = selection.focus;
-  const anchorNode = selection.anchor.getNode();
-  const focusNode = selection.focus.getNode();
-  if (anchorNode === focusNode) {
-    return anchorNode;
-  }
-  const isBackward = selection.isBackward();
-  if (isBackward) {
-    return $isAtNodeEnd(focus) ? anchorNode : focusNode;
-  } else {
-    return $isAtNodeEnd(anchor) ? focusNode : anchorNode;
-  }
-}

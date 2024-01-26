@@ -13,7 +13,6 @@ import { CommentNode, canRemoveCommentNode } from 'lexical-editor/nodes/commentN
 import { $isJumpNode, JumpNode } from 'lexical-editor/nodes/jumpNode';
 import { getNavList } from 'store/reducers/document';
 import { useDispatch } from 'store';
-import { ConsoleSqlOutlined } from '@ant-design/icons';
 
 export function ActionsPlugin({ user }) {
   const [editor] = useLexicalComposerContext();
@@ -209,7 +208,6 @@ export function ActionsPlugin({ user }) {
         return false;
       }),
       editor.registerMutationListener(CommentNode, (nodeMutations, { updateTags, prevEditorState }) => {
-        console.log(nodeMutations, updateTags);
         if (updateTags.has('collaboration')) return false;
         let nodeKey, mutation, same;
         for (const [nodeKey_, mutation_] of nodeMutations) {

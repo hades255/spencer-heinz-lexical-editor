@@ -5,11 +5,14 @@ import MenuItem from '@mui/material/MenuItem';
 import DownloadIcon from '@mui/icons-material/Download';
 import { ClickAwayListener, Grow, MenuList, Paper, Popper } from '@mui/material';
 import { useSelector } from 'store';
+import { DOWNLOAD_ALL_JSON } from 'lexical-editor/plugins/focusPlugin';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 
 export default function Download({ user }) {
   const doc = useSelector((state) => state.document.document);
   const [showDropDown, setShowDropDown] = useState(false);
   const anchorRef = useRef(null);
+  const [editor] = useLexicalComposerContext();
 
   const handleClose = (event) => {
     if (anchorRef.current && anchorRef.current.contains(event.target)) {
@@ -19,11 +22,7 @@ export default function Download({ user }) {
   };
 
   const handleClick = (event, type) => {
-    if (type === 'json') {
-      //
-    } else if (type === 'html') {
-      //
-    }
+    editor.dispatchCommand(DOWNLOAD_ALL_JSON, { type, name: doc.name });
     if (anchorRef.current && anchorRef.current.contains(event.target)) {
       return;
     }
@@ -70,9 +69,9 @@ export default function Download({ user }) {
                       <MenuItem onClick={(event) => handleClick(event, 'json')} sx={{ paddingX: '30px' }}>
                         JSON
                       </MenuItem>
-                      <MenuItem onClick={(event) => handleClick(event, 'html')} sx={{ paddingX: '30px' }}>
+                      {/* <MenuItem onClick={(event) => handleClick(event, 'html')} sx={{ paddingX: '30px' }}>
                         HTML
-                      </MenuItem>
+                      </MenuItem> */}
                     </MenuList>
                   </ClickAwayListener>
                 </Paper>

@@ -22,20 +22,21 @@ const mediaSX = {
   borderRadius: 1
 };
 
-const DashboardDocumentPage = ({ category, setSelect, select }) => {
+const DashboardDocumentPage = ({ category, setSelect, select, group = '' }) => {
   const navigate = useNavigate();
   const [docs, setDocs] = useState([]);
 
   useEffect(() => {
+    if (!group) return;
     (async () => {
       try {
-        const res = await axiosServices.get('/home/documents/' + category);
+        const res = await axiosServices.get('/home/documents/category/' + group + '/' + (category || group));
         setDocs(res.data.data);
       } catch (error) {
         console.log(error);
       }
     })();
-  }, [category]);
+  }, [category, group]);
 
   const handleGoNewDoc = useCallback(() => navigate('/document/create'), [navigate]);
 
@@ -88,6 +89,7 @@ export default DashboardDocumentPage;
 DashboardDocumentPage.propTypes = {
   category: PropTypes.any,
   setSelect: PropTypes.any,
+  group: PropTypes.any,
   select: PropTypes.any
 };
 

@@ -8,7 +8,7 @@ import AuthContext from 'contexts/JWTContext';
 import Check from './Check';
 import Document from './Document';
 import { useSelector, dispatch } from 'store';
-import { getDocumentSingleList } from 'store/reducers/document';
+import { getDocumentSingleList, getSingleList } from 'store/reducers/document';
 import BackgroundLetterAvatar from 'components/@extended/BackgroundLetterAvatar';
 import MainCard from 'components/MainCard';
 import CustomCell from 'components/customers/CustomCell';
@@ -30,9 +30,16 @@ const DocumentView = () => {
     handleRefresh();
   }, [handleRefresh]);
 
+  useEffect(() => {
+    return () => {
+      dispatch(getSingleList(null));
+    };
+  }, []);
+
   return (
     <>
       {document &&
+        document._id &&
         user &&
         (document.creator.email === user.email || document.invites.some((item) => item.email === user.email && item.reply === 'accept') ? (
           <Document user={user} document={document} />

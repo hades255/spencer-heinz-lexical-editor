@@ -120,10 +120,7 @@ export const USER_ROLES = {
 };
 
 export const CATEGORIES = [
-  { key: 'tasks', title: 'Tasks' },
-  { key: 'asks', title: 'Asks' },
-  { key: 'myDocs', title: 'Active Documents' },
-  { key: 'editDocs', title: 'Edits' },
+  { key: 'edit', title: 'Edits' },
   { key: 'reviews', title: 'Reviews' },
   { key: 'comments', title: 'Comments' },
   { key: 'approvals', title: 'Approvals' }

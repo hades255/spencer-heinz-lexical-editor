@@ -250,7 +250,6 @@ export class CommentNode extends ElementNode {
 
   exportDOM() {
     const element = document.createElement('span');
-    console.log(element);
     element.setAttribute('data-lexical-comment', 'true');
     element.setAttribute('data-comments', JSON.stringify(this.__comments));
     element.setAttribute('data-new_or_updated', JSON.stringify(this.__newOrUpdated));
@@ -315,7 +314,6 @@ export class CommentNode extends ElementNode {
 }
 
 function convertCommentElement(domNode) {
-  console.log(domNode);
   const { className, dataset } = domNode;
   const node = $createCommentNode(className, JSON.parse(dataset.comments, JSON.parse(dataset.new_or_updated)));
   return {

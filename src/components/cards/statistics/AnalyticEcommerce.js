@@ -12,11 +12,10 @@ import { useCallback } from 'react';
 
 // ==============================|| STATISTICS - ECOMMERCE CARD  ||============================== //
 
-const AnalyticEcommerce = ({ color = 'primary', title, count, percentage, isLoss, onClick = () => {}, index }) => {
+const AnalyticEcommerce = ({ color = 'primary', bgcolor = 'transparent', title, count, percentage, isLoss, onClick = () => {}, index }) => {
   const handleClick = useCallback(() => onClick(index), [onClick, index]);
-
   return (
-    <MainCard contentSX={{ p: 2.25, cursor: 'pointer' }} onClick={handleClick}>
+    <MainCard contentSX={{ p: 2.25, cursor: 'pointer', bgcolor }} onClick={handleClick}>
       <Stack spacing={0.5}>
         <Grid container alignItems="center">
           <Grid item>
@@ -42,19 +41,10 @@ const AnalyticEcommerce = ({ color = 'primary', title, count, percentage, isLoss
             </Grid>
           )}
         </Grid>
-        <Typography variant="h6" color="textSecondary">
+        <Typography variant="h6" color={'textSecondary'}>
           {title}
         </Typography>
       </Stack>
-      {/* <Box sx={{ pt: 2.25 }}>
-        <Typography variant="caption" color="textSecondary">
-          You made an extra{' '}
-          <Typography component="span" variant="caption" sx={{ color: `${color || 'primary'}.main` }}>
-            {extra}
-          </Typography>{' '}
-          this year
-        </Typography>
-      </Box> */}
     </MainCard>
   );
 };
@@ -62,12 +52,13 @@ const AnalyticEcommerce = ({ color = 'primary', title, count, percentage, isLoss
 AnalyticEcommerce.propTypes = {
   title: PropTypes.string,
   count: PropTypes.any,
-  percentage: PropTypes.number,
+  percentage: PropTypes.any,
   isLoss: PropTypes.bool,
   color: PropTypes.string,
   extra: PropTypes.string,
   onClick: PropTypes.func,
-  index: PropTypes.any
+  index: PropTypes.any,
+  bgcolor: PropTypes.any
 };
 
 export default AnalyticEcommerce;
