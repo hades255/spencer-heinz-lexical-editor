@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
+import PropType from 'prop-types';
 import lexical, { COPY_COMMAND, $getSelection, $isRangeSelection, $getRoot, createCommand } from 'lexical';
 import selection from '@lexical/selection';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
@@ -14,19 +15,31 @@ const EditorPriority = 1;
 export const DOWNLOAD_SELECT_JSON = createCommand('DOWNLOAD_SELECT_JSON');
 export const DOWNLOAD_ALL_JSON = createCommand('DOWNLOAD_ALL_JSON');
 
-const processJson = (jsonData) => {
-  for (let key in jsonData) {
-    // if (jsonData.hasOwnProperty(key)) {
-    if (typeof jsonData[key] === 'object') {
-      processJson(jsonData[key]);
+const processJson = (jsonData, user = '') => {
+  if (jsonData.type === 'black-out') {
+    if (!jsonData.users.includes(user)) {
+      jsonData.type = 'paragraph';
+      delete jsonData['className'];
+      delete jsonData['comments'];
+      delete jsonData['newOrUpdated'];
+      delete jsonData['users'];
+      delete jsonData['locker'];
+      delete jsonData['children'];
+      return jsonData;
     }
+  }
+  for (let key in jsonData) {
     if (key === 'type' && (jsonData[key] === 'comment' || jsonData[key] === 'lock' || jsonData[key] === 'black-out')) {
       jsonData[key] = 'paragraph';
       delete jsonData['className'];
       delete jsonData['comments'];
       delete jsonData['newOrUpdated'];
+      delete jsonData['users'];
+      delete jsonData['locker'];
     }
-    // }
+    if (typeof jsonData[key] === 'object') {
+      processJson(jsonData[key], user);
+    }
   }
   return jsonData;
 };
@@ -83,7 +96,7 @@ function findCommentNode(editor, currentNode, selection$1 = null, uniqueId) {
   return shouldInclude;
 }
 
-export default function FocusPlugin() {
+export default function FocusPlugin({ user }) {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
@@ -140,34 +153,32 @@ export default function FocusPlugin() {
         ({ type, name }) => {
           const selection = $getSelection();
           if ($isRangeSelection(selection)) {
-            const lexicalString = $getLexicalContent(editor);
-            console.log(lexicalString);
+            // const lexicalString = $getLexicalContent(editor);
+            // console.log(lexicalString);
             if (type === 'json') {
               const nodes = selection.extract();
+              console.log(JSON.stringify(nodes));
               let nNodes = [];
-              let pastNode = null;
               let ntype = '';
-              let ltype = '';
+              let key = null;
               for (let node of nodes) {
-                ntype = node.getType();
-                if (ntype === 'black-out') continue;
-                if (ntype === 'comment' || ntype === 'lock') {
-                  ltype = 'merge';
-                  pastNode = node;
-                } else {
-                  if (ltype === 'merge') {
-                    ltype = '';
-                    nNodes.push({
-                      ...node,
-                      __parent: pastNode.__parent,
-                      __prev: pastNode.__prev,
-                      __next: pastNode.__next,
-                      __key: pastNode.__key
-                    });
-                  } else {
-                    nNodes.push(node);
+                if (key) {
+                  if (node.__key !== key) {
+                    continue;
                   }
+                  key = null;
                 }
+                ntype = node.getType();
+                if (ntype === 'black-out') {
+                  if (!node.__users.includes(user)) {
+                    key = node.__next;
+                  }
+                  continue;
+                }
+                if (ntype === 'comment' || ntype === 'lock') {
+                  continue;
+                }
+                nNodes.push(node);
               }
               downloadTextFile(JSON.stringify(nNodes), `Editor-${name}-${Date.now()}.json`);
             } else {
@@ -182,16 +193,21 @@ export default function FocusPlugin() {
       editor.registerCommand(
         DOWNLOAD_ALL_JSON,
         ({ type, name }) => {
-          const data = processJson(editor.toJSON());
+          console.log(editor.toJSON());
+          const data = processJson(editor.toJSON(), user);
           downloadTextFile(JSON.stringify(data), `Editor-${name}-${Date.now()}.json`);
         },
         EditorPriority
       )
     );
-  }, [editor]);
+  }, [editor, user]);
 
   return null;
 }
+
+FocusPlugin.propTypes = {
+  user: PropType.any
+};
 
 /*
 (async () => {

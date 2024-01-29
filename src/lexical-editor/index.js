@@ -177,7 +177,7 @@ const LexicalEditor = ({ uniqueId, user }) => {
       <BlackoutPlugin user={user._id} />
       <JumpPlugin />
       <ActiveTeamPlugin />
-      <FocusPlugin />
+      <FocusPlugin user={user._id} />
     </LexicalComposer>
   );
 };

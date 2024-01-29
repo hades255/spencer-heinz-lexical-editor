@@ -9,7 +9,7 @@ import PropTypes from 'prop-types';
 import { debounce, isEmpty } from 'lodash';
 import { openSnackbar } from 'store/reducers/snackbar';
 import { $isBlackoutNode, BlackoutNode, isBlackedOutNode } from 'lexical-editor/nodes/blackoutNode';
-import { CommentNode, canRemoveCommentNode } from 'lexical-editor/nodes/commentNode';
+import { $isCommentNode, CommentNode, canRemoveCommentNode } from 'lexical-editor/nodes/commentNode';
 import { $isJumpNode, JumpNode } from 'lexical-editor/nodes/jumpNode';
 import { getNavList } from 'store/reducers/document';
 import { useDispatch } from 'store';
@@ -229,8 +229,23 @@ export function ActionsPlugin({ user }) {
                 return false;
               }
               validationFlag = canRemoveCommentNode(node, user);
-              console.log(validationFlag);
-              if (!validationFlag) editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
+              if (!validationFlag) {
+                editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
+                if ($isCommentNode(node)) {
+                  const comments = node.getComments();
+                  let ids = [];
+                  comments.forEach((item) => {
+                    ids.push(item.uniqueId);
+                  });
+                  (async () => {
+                    try {
+                      await axiosServices.delete('/task/uniqueIds/' + ids);
+                    } catch (error) {
+                      console.log(error);
+                    }
+                  })();
+                }
+              }
             });
           }
           if (mutation === 'created') {
