@@ -2,7 +2,19 @@ import { Link as RouterLink } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 // material-ui
-import { CardMedia, Grid, Link, Table, TableBody, TableCell, TableContainer, TableRow, Typography, Button } from '@mui/material';
+import {
+  CardMedia,
+  Grid,
+  Link,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  Typography,
+  Button,
+  IconButton
+} from '@mui/material';
 
 // project imports
 import MainCard from 'components/MainCard';
@@ -11,6 +23,7 @@ import SimpleBar from 'components/third-party/SimpleBar';
 import avatar from 'assets/images/users/avatar-group.png';
 
 import { PlusOutlined } from '@ant-design/icons';
+import ForwardIcon from '@mui/icons-material/Forward';
 import { useCallback, useEffect, useState } from 'react';
 import axiosServices from 'utils/axios';
 import moment from 'moment';
@@ -122,8 +135,11 @@ const DocumentRow = ({ row, setSelect, select }) => {
           <TableCell>
             <DocumentCell row={{ values: item }} />
           </TableCell>
-          <TableCell width={175} align="right" sx={{ pr: 3 }}>
-            {moment(item.createdAt).format('MM/DD/YYYY h:mm A')}
+          <TableCell width={40} align="right" sx={{ pr: 3 }}>
+            {/* {moment(item.createdAt).format('MM/DD/YYYY h:mm A')} */}
+            <IconButton component={RouterLink} to={`/document/${item._id}`} color='info'>
+              <ForwardIcon />
+            </IconButton>
           </TableCell>
         </TableRow>
       ))}

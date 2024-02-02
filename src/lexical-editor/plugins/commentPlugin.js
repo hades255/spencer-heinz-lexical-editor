@@ -132,10 +132,10 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
   }, [isOnFab]);
 
   const submitComment = useCallback(
-    ({ assignee, task, comment, commentor: { _id }, uniqueId, type }) => {
+    ({ assignee, task, comment, commentor: { _id, name }, uniqueId, type }) => {
       (async () => {
         try {
-          await axiosServices.post('/task', { assignee, task, comment, commentor: _id, uniqueId, type, doc });
+          await axiosServices.post('/task', { assignee, task, comment, commentor: _id, cname: name, uniqueId, type, doc });
         } catch (error) {
           console.log(error);
         }
@@ -466,6 +466,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
         // }
       });
       setTimeout(() => {
+        console.log(newComment);
         submitComment(newComment);
       });
     },

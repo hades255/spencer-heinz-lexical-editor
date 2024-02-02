@@ -48,14 +48,18 @@ export class CustomTextNode extends TextNode {
   createDOM(config) {
     const span = super.createDOM(config);
     if (isBlackedOutNode(this, CustomTextNode.getCurrentUser())) {
-      span.innerText = '█'.repeat(this.getTextContentSize());
+      span.innerText = '█'.repeat(10);
+      // span.innerText = '█'.repeat(Math.floor(Math.random() * 11) + 5);
+      // span.innerText = '█'.repeat(this.getTextContentSize());
     }
     return span;
   }
 
   updateDOM(prevNode, dom) {
     if (isBlackedOutNode(this, CustomTextNode.getCurrentUser())) {
-      dom.innerText = '█'.repeat(this.getTextContentSize());
+      dom.innerText = '█'.repeat(10);
+      // dom.innerText = '█'.repeat(Math.floor(Math.random() * 11) + 5);
+      // dom.innerText = '█'.repeat(this.getTextContentSize());
     }
     return dom;
   }

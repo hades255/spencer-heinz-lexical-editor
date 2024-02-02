@@ -33,7 +33,7 @@ export function getSelectedNode(selection) {
 
 const LowPriority = 1;
 
-export default function ToolbarPlugin({ user }) {
+export default function ToolbarPlugin({ user, filteredUser }) {
   const { creator } = useSelector((state) => state.document.document);
   const allUsers = useSelector((state) => state.document.users);
   const me = useSelector((state) => state.document.me);
@@ -102,7 +102,7 @@ export default function ToolbarPlugin({ user }) {
 
   return (
     <div className="toolbar" ref={toolbarRef}>
-      <UserFilter users={users} me={me} editor={editor} />
+      <UserFilter users={users} me={me} editor={editor} filteredUser={filteredUser} />
       <>
         <IconButton
           size="large"
@@ -189,7 +189,8 @@ export default function ToolbarPlugin({ user }) {
 }
 
 ToolbarPlugin.propTypes = {
-  user: PropTypes.any
+  user: PropTypes.any,
+  filteredUser: PropTypes.any
 };
 
 export const getUserIds = (userData) => {

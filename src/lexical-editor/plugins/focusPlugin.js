@@ -1,128 +1,24 @@
-import { useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 import PropType from 'prop-types';
-import lexical, { COPY_COMMAND, $getSelection, $isRangeSelection, $getRoot, createCommand } from 'lexical';
-import selection from '@lexical/selection';
+import { COPY_COMMAND, $getSelection, $isRangeSelection, createCommand } from 'lexical';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-// import { $generateHtmlFromNodes } from '@lexical/html';
+import { $generateHtmlFromNodes } from '@lexical/html';
 import { mergeRegister } from '@lexical/utils';
-import { CommentNode } from 'lexical-editor/nodes/commentNode';
 import { getSelectedNode } from './toolbarPlugin';
-import { $getHtmlContent, $getLexicalContent } from '@lexical/clipboard';
+import { $getHtmlContent } from '@lexical/clipboard';
 import { downloadTextFile } from 'lexical-editor/components/floatMenu/download';
+import { $isBlackoutNode } from 'lexical-editor/nodes/blackoutNode';
+import { $isRangeSelected } from 'lexical-editor/utils/$isRangeSelected';
+import { dispatch } from 'store';
+import { openSnackbar } from 'store/reducers/snackbar';
 
 const EditorPriority = 1;
 
 export const DOWNLOAD_SELECT_JSON = createCommand('DOWNLOAD_SELECT_JSON');
 export const DOWNLOAD_ALL_JSON = createCommand('DOWNLOAD_ALL_JSON');
 
-const processJson = (jsonData, user = '') => {
-  if (jsonData.type === 'black-out') {
-    if (!jsonData.users.includes(user)) {
-      jsonData.type = 'paragraph';
-      delete jsonData['className'];
-      delete jsonData['comments'];
-      delete jsonData['newOrUpdated'];
-      delete jsonData['users'];
-      delete jsonData['locker'];
-      delete jsonData['children'];
-      return jsonData;
-    }
-  }
-  for (let key in jsonData) {
-    if (key === 'type' && (jsonData[key] === 'comment' || jsonData[key] === 'lock' || jsonData[key] === 'black-out')) {
-      jsonData[key] = 'paragraph';
-      delete jsonData['className'];
-      delete jsonData['comments'];
-      delete jsonData['newOrUpdated'];
-      delete jsonData['users'];
-      delete jsonData['locker'];
-    }
-    if (typeof jsonData[key] === 'object') {
-      processJson(jsonData[key], user);
-    }
-  }
-  return jsonData;
-};
-
-function findCommentNodeWithId(editor, selection, uniqueId) {
-  if (typeof document === 'undefined' || typeof window === 'undefined') {
-    throw new Error(
-      'To use findCommentNodeWithId in headless mode please initialize a headless browser implementation such as JSDom before calling this function.'
-    );
-  }
-
-  const root = $getRoot();
-  const topLevelChildren = root.getChildren();
-
-  for (let i = 0; i < topLevelChildren.length; i++) {
-    const topLevelNode = topLevelChildren[i];
-    const n = findCommentNode(editor, topLevelNode, selection, uniqueId);
-    if (n) return n;
-  }
-  return false;
-}
-
-function findCommentNode(editor, currentNode, selection$1 = null, uniqueId) {
-  let shouldInclude = selection$1 != null ? currentNode.isSelected(selection$1) : true;
-  // console.log(currentNode);
-  //   if (currentNode.__type === 'comment') console.log(currentNode.getComments()[0].uniqueId);
-  if (currentNode.__type === 'comment' && currentNode.getComments().find((item) => item.uniqueId === uniqueId)) {
-    return currentNode;
-  }
-  let target = currentNode;
-
-  if (selection$1 !== null) {
-    let clone = selection.$cloneWithProperties(currentNode);
-    clone = lexical.$isTextNode(clone) && selection$1 != null ? selection.$sliceSelectedTextNodeContent(selection$1, clone) : clone;
-    target = clone;
-  }
-
-  const children = lexical.$isElementNode(target) ? target.getChildren() : [];
-  for (let i = 0; i < children.length; i++) {
-    const childNode = children[i];
-    const shouldIncludeChild = findCommentNode(editor, childNode, selection$1, uniqueId);
-    if (typeof shouldIncludeChild === 'object') return shouldIncludeChild;
-
-    if (
-      !shouldInclude &&
-      lexical.$isElementNode(currentNode) &&
-      shouldIncludeChild &&
-      currentNode.extractWithChild(childNode, selection$1, 'html')
-    ) {
-      shouldInclude = true;
-    }
-  }
-
-  return shouldInclude;
-}
-
 export default function FocusPlugin({ user }) {
   const [editor] = useLexicalComposerContext();
-
-  useEffect(() => {
-    if (!editor.hasNodes([CommentNode])) {
-      throw new Error('CommentPlugin: CommentNode not registered on editor');
-    }
-    editor.registerUpdateListener(({ editorState }) => {
-      //   const editorState = editor.getEditorState();
-      editorState.read(() => {
-        //   const root = $getRoot();
-        //   console.log(root.getNodes());
-        //   $getRoot().select();
-        const selection = $getSelection();
-        if (selection === null) {
-          const comment = findCommentNodeWithId(editor, selection, '2fc542ad-0769-4c36-908b-a0420ad6b973');
-          console.log(comment);
-          if (typeof comment === 'object') {
-            console.log(comment);
-            // editor.update((change) => {
-            //   $setSelection({ anchor: { path: [3, 4], offset: 4 }, focus: { path: [3, 4], offset: 4 } });
-            // });
-          }
-        }
-      });
-    });
-  }, [editor]);
 
   useEffect(() => {
     return mergeRegister(
@@ -131,14 +27,48 @@ export default function FocusPlugin({ user }) {
         (event) => {
           event.preventDefault();
           const selection = $getSelection();
+          const node = getSelectedNode(selection);
+          const parent = node.getParent();
           const clipboardData = event.clipboardData;
           if (clipboardData === null || selection === null) {
             return false;
           }
-          const plainString = selection.getTextContent();
+          if (($isBlackoutNode(parent) || $isBlackoutNode(node)) && $isRangeSelected(selection)) {
+            const _blackoutNode = $isBlackoutNode(parent) ? parent : node;
+            const writable = _blackoutNode.getWritable();
+            if (!writable.__users.includes(user)) {
+              clipboardData.setData('text/plain', '');
+              clipboardData.setData('text/html', ``);
+              dispatch(
+                openSnackbar({
+                  open: true,
+                  message: 'You are not authorized to read this block of text.',
+                  variant: 'alert',
+                  alert: {
+                    color: 'info'
+                  },
+                  close: true
+                })
+              );
+              return true;
+            }
+          }
+          const nodes = selection.extract();
+          let text = '';
+          nodes.forEach((node) => {
+            if ($isBlackoutNode(node)) {
+              text += '██████████';
+            } else if ($isBlackoutNode(node.getParent())) {
+              text += '';
+            } else {
+              text += node.getTextContent();
+            }
+          });
+          // const plainString = selection.getTextContent();
+          // console.log(plainString);
           // const htmlString = $getHtmlContent(editor);
-          clipboardData.setData('text/plain', plainString);
-          clipboardData.setData('text/html', `<span>${plainString}</span>`);
+          clipboardData.setData('text/plain', text);
+          clipboardData.setData('text/html', `<span>${text}</span>`);
           // console.log(clipboardData.getData('text/plain'));
           // const lexicalString = $getLexicalContent(editor);
           // clipboardData.setData('application/x-lexical-editor', lexicalString);
@@ -152,6 +82,26 @@ export default function FocusPlugin({ user }) {
         DOWNLOAD_SELECT_JSON,
         ({ type, name }) => {
           const selection = $getSelection();
+          const node = getSelectedNode(selection);
+          const parent = node.getParent();
+          if (($isBlackoutNode(parent) || $isBlackoutNode(node)) && $isRangeSelected(selection)) {
+            const _blackoutNode = $isBlackoutNode(parent) ? parent : node;
+            const writable = _blackoutNode.getWritable();
+            if (!writable.__users.includes(user)) {
+              dispatch(
+                openSnackbar({
+                  open: true,
+                  message: 'You are not authorized to download this block of text.',
+                  variant: 'alert',
+                  alert: {
+                    color: 'info'
+                  },
+                  close: true
+                })
+              );
+              return false;
+            }
+          }
           if ($isRangeSelection(selection)) {
             // const lexicalString = $getLexicalContent(editor);
             // console.log(lexicalString);
@@ -182,7 +132,21 @@ export default function FocusPlugin({ user }) {
               }
               downloadTextFile(JSON.stringify(nNodes), `Editor-${name}-${Date.now()}.json`);
             } else {
+              /**
+               * start new term
+               */
+
+              /**
+               * end
+               */
+              // const nodes = selection.extract();
+              // console.log(JSON.stringify(nodes));
+              // const lexicalString = $getLexicalContent(editor);
+              // console.log(lexicalString);
+
               const htmlString = $getHtmlContent(editor);
+              console.log(htmlString);
+
               downloadTextFile(htmlString, `Editor-${name}-${Date.now()}.html`);
             }
           }
@@ -193,9 +157,15 @@ export default function FocusPlugin({ user }) {
       editor.registerCommand(
         DOWNLOAD_ALL_JSON,
         ({ type, name }) => {
-          console.log(editor.toJSON());
-          const data = processJson(editor.toJSON(), user);
-          downloadTextFile(JSON.stringify(data), `Editor-${name}-${Date.now()}.json`);
+          if (type === 'json') {
+            console.log(editor.toJSON());
+            const data = processJson(editor.toJSON(), user);
+            downloadTextFile(JSON.stringify(data), `Editor-${name}-${Date.now()}.json`);
+          }
+          if (type === 'html') {
+            const data = $generateHtmlFromNodes(editor);
+            downloadTextFile(data, `Editor-${name}-${Date.now()}.html`);
+          }
         },
         EditorPriority
       )

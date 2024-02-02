@@ -5,6 +5,7 @@ import { isUndefined } from 'lodash';
 import CommentIcon from '../styles/comment.svg';
 import { not } from 'utils/array';
 import { isBlackedOutNode } from './blackoutNode';
+import axiosServices from 'utils/axios';
 
 /**
  * @class comment element node class
@@ -78,6 +79,14 @@ export class CommentNode extends ElementNode {
     }
     let _replies = _comment['replies'];
     _replies.unshift({ content: _content, replier: _replier, date: new Date().toISOString() });
+    (async () => {
+      try {
+        const res = await axiosServices.post('/task/uniqueId/' + _comment['uniqueId'] + '/reply', { content: _content, replier: _replier });
+        console.log(res);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
     return true;
   }
 

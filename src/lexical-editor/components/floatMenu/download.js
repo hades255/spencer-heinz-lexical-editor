@@ -7,6 +7,7 @@ import { MenuList, Paper } from '@mui/material';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { useSelector } from 'store';
 import { DOWNLOAD_SELECT_JSON } from 'lexical-editor/plugins/focusPlugin';
+import { FormOutlined } from '@ant-design/icons';
 
 export function downloadTextFile(textContent, fileName) {
   const blob = new Blob([textContent], { type: 'text/plain' });
@@ -76,8 +77,10 @@ export default function DownloadDropdownMenu({ setIsDropDownActive, isDropDownAc
         aria-expanded={open ? 'true' : undefined}
         aria-haspopup="true"
         onClick={handleClick}
+        color={`info`}
       >
-        <DownloadIcon color={`info`} />
+        {/* <DownloadIcon color={`info`} /> */}
+        <FormOutlined />
       </IconButton>
       <Paper
         sx={{
@@ -90,7 +93,7 @@ export default function DownloadDropdownMenu({ setIsDropDownActive, isDropDownAc
       >
         <MenuList>
           <MenuItem onClick={() => handleClose('json')}>JSON</MenuItem>
-          {/* <MenuItem onClick={() => handleClose('html')}>HTML</MenuItem> */}
+          <MenuItem onClick={() => handleClose('html')}>HTML</MenuItem>
         </MenuList>
       </Paper>
     </div>

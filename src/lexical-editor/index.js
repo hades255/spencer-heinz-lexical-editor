@@ -1,4 +1,5 @@
-import { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 // material-ui
 import { CodeNode } from '@lexical/code';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
@@ -49,9 +50,13 @@ excludedProperties.set(CommentNode, new Set(['__suppressed', '__currentUser']));
 excludedProperties.set(LockNode, new Set(['__currentUser']));
 
 const LexicalEditor = ({ uniqueId, user }) => {
+  const location = useLocation();
+  const searchParams = useMemo(() => new URLSearchParams(location.search), [location]);
+
   const { historyState } = useEditorHistoryState();
 
   const [isLoading, setIsLoading] = useState(true);
+  const [filteredUser, setFilteredUser] = useState('');
   // const [provider, setProvider] = useState(null);
 
   useEffect(() => {
@@ -121,10 +126,46 @@ const LexicalEditor = ({ uniqueId, user }) => {
     }
   };
 
-  const handleCopy = useCallback((e) => {
-    const permissionStatus = localStorage.getItem('clipboard');
-    if (permissionStatus != 'granted') e.preventDefault();
+  const handleCopy = useCallback(() => {
+    // const permissionStatus = localStorage.getItem('clipboard');
+    // if (permissionStatus != 'granted')
+    // e.preventDefault();
   }, []);
+
+  useEffect(() => {
+    let timer = null;
+    let cnt = 0;
+    if (searchParams.get('comment') && !isLoading) {
+      const timerFunc = () => {
+        console.log('timer');
+        if (document.querySelector(`[data-comments*="${searchParams.get('comment')}"]`)) {
+          const element = document.querySelector(`[data-comments*="${searchParams.get('comment')}"]`);
+          const comments = JSON.parse(element.dataset.comments) || [];
+          const comment = comments.find((comment) => comment.uniqueId === searchParams.get('comment'));
+          if (user._id && comment.commentor && comment.commentor._id) {
+            if (comment.assignee === user._id) setFilteredUser(comment.commentor._id);
+            if (comment.commentor._id === user._id) setFilteredUser(comment.assignee);
+          }
+          document
+            .querySelector(`[data-comments*="${searchParams.get('comment')}"]`)
+            .scrollIntoView({ behavior: 'smooth', block: 'center' });
+          document.querySelector(`[data-comments*="${searchParams.get('comment')}"]`).focus();
+        } else {
+          if (cnt > 20) return;
+          timer = setTimeout(() => {
+            timerFunc();
+          }, 100);
+          cnt++;
+        }
+      };
+      setTimeout(() => {
+        timer = timerFunc();
+      }, 100);
+    }
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [isLoading, searchParams, user]);
 
   return (
     <LexicalComposer initialConfig={config}>
@@ -136,7 +177,7 @@ const LexicalEditor = ({ uniqueId, user }) => {
           if (!isBlackedOutNode(_commentNode, user._id)) editor.dispatchCommand(TOUCH_COMMENT_COMMAND, nodeKey);
         }}
       />
-      <ToolbarPlugin user={user} />
+      <ToolbarPlugin user={user} filteredUser={filteredUser} />
       {!isLoading ? (
         <RichTextPlugin
           contentEditable={

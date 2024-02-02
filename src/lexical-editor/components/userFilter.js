@@ -1,10 +1,11 @@
+import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Person4Rounded } from '@mui/icons-material';
 import { Button, ClickAwayListener, Grow, MenuItem, MenuList, Paper, Popper } from '@mui/material';
 import { FILTER_COMMENT } from 'lexical-editor/plugins/commentPlugin';
-import { useRef, useState } from 'react';
 
-const UserFilter = ({ users, me, editor }) => {
+const UserFilter = ({ users, me, editor, filteredUser }) => {
   const team = me ? me.team : '';
   const [selectedUser, setSelectedUser] = useState('');
   const [showDropDown, setShowDropDown] = useState(false);
@@ -38,6 +39,11 @@ const UserFilter = ({ users, me, editor }) => {
     setSelectedUser(_user._id ?? '');
     handleClose(e);
   };
+
+  useEffect(() => {
+    editor.dispatchCommand(FILTER_COMMENT, { filter: filteredUser ?? '' });
+    setSelectedUser(filteredUser ?? '');
+  }, [filteredUser]);
 
   return (
     <>
@@ -114,5 +120,6 @@ export default UserFilter;
 UserFilter.propTypes = {
   users: PropTypes.any,
   me: PropTypes.any,
+  filteredUser: PropTypes.any,
   editor: PropTypes.any
 };

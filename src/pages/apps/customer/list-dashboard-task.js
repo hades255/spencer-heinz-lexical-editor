@@ -19,7 +19,8 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel
+  InputLabel,
+  Stack
 } from '@mui/material';
 
 // project imports
@@ -32,8 +33,9 @@ import { PlusOutlined } from '@ant-design/icons';
 import axiosServices from 'utils/axios';
 import moment from 'moment';
 import styled from '@emotion/styled';
-import { TruncatedText } from 'utils/string';
 import useAuth from 'hooks/useAuth';
+import BackgroundLetterAvatar from 'components/@extended/BackgroundLetterAvatar';
+import MailIcon from '@mui/icons-material/Mail';
 
 export const StyledBadge = styled(Badge)(({ theme }) => ({
   '& .MuiBadge-badge': {
@@ -114,19 +116,16 @@ const DashboardTaskPage = ({ group, select, category }) => {
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell align="center" width={'17%'} sx={{ pl: 3, pb: 0 }}>
+                      <TableCell align="center" width={'15%'} sx={{ pl: 3, pb: 0 }}>
                         Commentor
                       </TableCell>
-                      <TableCell align="center" width={'18%'} sx={{ pb: 0 }}>
+                      <TableCell align="center" width={'15%'} sx={{ pb: 0 }}>
                         Assignee
                       </TableCell>
-                      <TableCell align="center" width={'40%'} sx={{ pb: 0 }}>
-                        Comment
-                      </TableCell>
-                      <TableCell width={'10%'} align="center" sx={{ pb: 0 }}>
+                      <TableCell align="center" width={'10%'} sx={{ pb: 0 }}>
                         Task
                       </TableCell>
-                      <TableCell width={'10%'} align="center" sx={category ? { pb: 0 } : { p: 0 }}>
+                      <TableCell align="center" width={'15%'} sx={category ? { pb: 0 } : { p: 0 }}>
                         {category ? (
                           'Status'
                         ) : (
@@ -142,8 +141,11 @@ const DashboardTaskPage = ({ group, select, category }) => {
                           </FormControl>
                         )}
                       </TableCell>
-                      <TableCell width={'10%'} align="center" sx={{ pr: 3, pb: 0 }}>
+                      <TableCell align="center" width={'20%'} sx={{ pr: 3, pb: 0 }}>
                         Date
+                      </TableCell>
+                      <TableCell align="center" width={'25%'} sx={{ pr: 3, pb: 0 }}>
+                        Last Activity
                       </TableCell>
                     </TableRow>
                   </TableHead>
@@ -186,19 +188,12 @@ const TaskRow = ({ task }) => {
     [more]
   );
 
-  const handleClick = useCallback(() => navigate('/document/' + task.doc), [navigate, task]);
+  const handleClick = useCallback(() => navigate('/document/' + task.doc + '?comment=' + task.uniqueId), [navigate, task]);
+
   return (
     <TableRow hover onClick={handleClick} sx={{ cursor: 'pointer' }}>
       <TableCell align="center">{task.commentor._id === user._id ? 'You' : task.commentor.name}</TableCell>
       <TableCell align="center">{task.assignee._id === user._id ? 'You' : task.assignee.name}</TableCell>
-      <TableCell>
-        {more ? task.comment : TruncatedText(task.comment, 50)}
-        {task.comment.length > 50 && (
-          <Typography variant="caption" sx={{ pl: 1, pr: 1, fontWeight: 'bold', color: 'dark' }} onClick={handleSetMore}>
-            {more ? 'Hide' : 'More'}
-          </Typography>
-        )}
-      </TableCell>
       <TableCell align="center">{task.task}</TableCell>
       <TableCell align="center" sx={{ p: 0 }}>
         {task.type.toUpperCase()}
@@ -209,8 +204,21 @@ const TaskRow = ({ task }) => {
           }
         ></StyledBadge>
       </TableCell>
-      <TableCell align="center" sx={{ p: 1, pr: 3 }}>
+      <TableCell align="center" sx={{ p: 1 }}>
         {moment(task.updatedAt).format('h:mm A MM/DD/YYYY')}
+      </TableCell>
+      <TableCell sx={{ p: 0, pl: 2 }}>
+        <Stack direction={'row'} justifyContent={'space-between'} alignItems={'center'}>
+          <Stack direction={'row'} alignItems={'center'}>
+            <BackgroundLetterAvatar name={task.lastActivity.who} xs />
+            <Typography ml={2}>{task.lastActivity.what.substr(0, 1).toUpperCase() + task.lastActivity.what.substr(1)}</Typography>
+          </Stack>
+          {task.replies.length !== 0 && (
+            <Badge badgeContent={task.replies.length} color={task.lastActivity.what === 'Reply' ? 'error' : 'primary'}>
+              <MailIcon color="action" />
+            </Badge>
+          )}
+        </Stack>
       </TableCell>
     </TableRow>
   );

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { ClearEditorPlugin } from '@lexical/react/LexicalClearEditorPlugin';
-import { $getNodeByKey, $getRoot, $isParagraphNode, CLEAR_HISTORY_COMMAND, UNDO_COMMAND } from 'lexical';
+import { $getNodeByKey, $getRoot, $getSelection, $isParagraphNode, CLEAR_HISTORY_COMMAND, UNDO_COMMAND } from 'lexical';
 import { useEditorHistoryState } from 'contexts/LexicalEditor';
 import { $isLockNode, LockNode, isLockedNode } from 'lexical-editor/nodes/lockNode';
 import { mergeRegister } from '@lexical/utils';
@@ -13,6 +13,7 @@ import { $isCommentNode, CommentNode, canRemoveCommentNode } from 'lexical-edito
 import { $isJumpNode, JumpNode } from 'lexical-editor/nodes/jumpNode';
 import { getNavList } from 'store/reducers/document';
 import { useDispatch } from 'store';
+import axiosServices from 'utils/axios';
 
 export function ActionsPlugin({ user }) {
   const [editor] = useLexicalComposerContext();
@@ -63,8 +64,10 @@ export function ActionsPlugin({ user }) {
     return mergeRegister(
       editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves, tags }) => {
         // Don't update if nothing changed
+        // console.log(dirtyElements, dirtyLeaves);
         if (dirtyElements.size === 0 && dirtyLeaves.size === 0) return;
         editorState.read(() => {
+          // const selection = $getSelection();
           dirtyLeaves.forEach((_key) => {
             const node = $getNodeByKey(_key);
             if (!node) {
@@ -248,9 +251,10 @@ export function ActionsPlugin({ user }) {
               }
             });
           }
-          if (mutation === 'created') {
-            editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
-          }
+          // if (mutation === 'created') {
+          //   editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
+          // }
+          console.log(mutation);
         }
 
         if (validationFlag) {
