@@ -173,6 +173,7 @@ const LexicalEditor = ({ uniqueId, user }) => {
         nodeType={CommentNode}
         eventType={'click'}
         eventListener={(e, editor, nodeKey) => {
+          console.log('mhover');
           const _commentNode = $getNodeByKey(nodeKey);
           if (!isBlackedOutNode(_commentNode, user._id)) editor.dispatchCommand(TOUCH_COMMENT_COMMAND, nodeKey);
         }}

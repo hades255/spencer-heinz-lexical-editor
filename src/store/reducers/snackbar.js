@@ -3,7 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   action: false,
   open: false,
-  message: 'Note archived',
+  message: 'Something went wrong. Try it again',
   anchorOrigin: {
     vertical: 'top',
     horizontal: 'right'

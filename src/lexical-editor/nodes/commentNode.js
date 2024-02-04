@@ -221,6 +221,10 @@ export class CommentNode extends ElementNode {
       removeClassNamesFromElement(e.target, LexicalTheme.commentIconUnTouched);
       addClassNamesToElement(e.target, LexicalTheme.commentIcon);
     });
+    IconImage.addEventListener('mouseover', (e) => {
+      console.log('hover');
+      e.stopPropagation();
+    });
     const storedValue = window.localStorage.getItem('suppressedComments');
     let suppressedUniqueIds = storedValue === null ? [] : JSON.parse(storedValue);
     if (nComments.filter((value) => suppressedUniqueIds.includes(value.uniqueId)).length === nComments.length) {

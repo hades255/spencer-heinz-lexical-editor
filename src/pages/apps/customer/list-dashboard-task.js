@@ -191,7 +191,7 @@ const TaskRow = ({ task }) => {
   const handleClick = useCallback(() => navigate('/document/' + task.doc + '?comment=' + task.uniqueId), [navigate, task]);
 
   return (
-    <TableRow hover onClick={handleClick} sx={{ cursor: 'pointer' }}>
+    <TableRow hover onClick={handleClick} sx={{ cursor: 'pointer' }} title={task.comment}>
       <TableCell align="center">{task.commentor._id === user._id ? 'You' : task.commentor.name}</TableCell>
       <TableCell align="center">{task.assignee._id === user._id ? 'You' : task.assignee.name}</TableCell>
       <TableCell align="center">{task.task}</TableCell>
