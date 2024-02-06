@@ -10,13 +10,15 @@ import { useUserInteractions } from '../hooks/useUserInteractions';
 
 import { isFunction } from 'lodash';
 
-import { SET_COMMENT_COMMAND } from './commentPlugin';
+import { OPEN_COMMENT_DIALOG_COMMAND, SET_COMMENT_COMMAND } from './commentPlugin';
 import FloatDialog from '../components/floatMenu/floatDialog';
 import { getSelectedNode } from './toolbarPlugin';
-import { BlackoutNode, isBlackedOutNode } from 'lexical-editor/nodes/blackoutNode';
+import { $isBlackoutNode, BlackoutNode, isBlackedOutNode } from 'lexical-editor/nodes/blackoutNode';
 import { mergeRegister } from '@lexical/utils';
 import { ACTION_REQUEST_USER } from 'lexical-editor/utils/constants';
 import { useSelector } from 'store';
+import { dispatch } from 'store';
+import { openSnackbar } from 'store/reducers/snackbar';
 
 const ANCHOR_ELEMENT = document.body;
 
@@ -79,6 +81,64 @@ export const FloatMenuPlugin = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor, users]);
 
+  const checkCanComment = useCallback(() => {
+    let flag = true;
+    let flag_ = true;
+    const selection = $getSelection();
+    if (assignee === 'unblacked-users') return true;
+    if ($isRangeSelected(selection)) {
+      const nodes = selection.extract();
+      nodes.forEach((node) => {
+        if (!flag) return flag;
+        if (!flag_) return flag_;
+        if ($isBlackoutNode(node)) {
+          const writable = node.getWritable();
+          if (!writable.__users.includes(user._id)) {
+            flag = false;
+          }
+          if (!writable.__users.includes(assignee)) {
+            flag_ = false;
+          }
+        } else if ($isBlackoutNode(node.getParent())) {
+          const writable = node.getParent().getWritable();
+          if (!writable.__users.includes(user._id)) {
+            flag = false;
+          }
+          if (!writable.__users.includes(assignee)) {
+            flag_ = false;
+          }
+        }
+      });
+    }
+    if (!flag) {
+      dispatch(
+        openSnackbar({
+          open: true,
+          message: `You are not authorized to assign a comment to this block of text`,
+          variant: 'alert',
+          alert: {
+            color: 'info'
+          },
+          close: true
+        })
+      );
+    }
+    if (!flag_) {
+      dispatch(
+        openSnackbar({
+          open: true,
+          message: `Blacked out users can't receive comments`,
+          variant: 'alert',
+          alert: {
+            color: 'info'
+          },
+          close: true
+        })
+      );
+    }
+    return flag && flag_;
+  }, [user, assignee]);
+
   useEffect(() => {
     return mergeRegister(
       editor.registerUpdateListener(({ editorState }) => {
@@ -94,10 +154,23 @@ export const FloatMenuPlugin = () => {
           return false;
         },
         LowPriority
+      ),
+      editor.registerCommand(
+        OPEN_COMMENT_DIALOG_COMMAND,
+        // eslint-disable-next-line no-unused-vars
+        ({ value }) => {
+          if (value) {
+            if (checkCanComment()) setDialogOpen(value);
+          } else setDialogOpen(value);
+          return false;
+        },
+        LowPriority
       )
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editor, updateUsers]);
+  }, [editor, updateUsers, checkCanComment]);
+
+  const handleSetDialogOpen = useCallback((value) => editor.dispatchCommand(OPEN_COMMENT_DIALOG_COMMAND, { value }), [editor]);
 
   const handleSubmitComment = () => {
     let comment = commentRef.current.value;
@@ -172,13 +245,13 @@ export const FloatMenuPlugin = () => {
         assignee={assignee}
         task={task}
         setTask={setTask}
-        setDialogOpen={setDialogOpen}
+        setDialogOpen={handleSetDialogOpen}
         currentUser={user}
         users={permittedUsers}
       />
       <FloatDialog
         isDialogOpen={isDialogOpen}
-        setDialogOpen={setDialogOpen}
+        setDialogOpen={handleSetDialogOpen}
         assignee={assignee}
         task={task}
         commentError={commentError}

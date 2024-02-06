@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Person4Rounded } from '@mui/icons-material';
 import { Button, ClickAwayListener, Grow, MenuItem, MenuList, Paper, Popper } from '@mui/material';
@@ -43,7 +42,7 @@ const UserFilter = ({ users, me, editor, filteredUser }) => {
   useEffect(() => {
     editor.dispatchCommand(FILTER_COMMENT, { filter: filteredUser ?? '' });
     setSelectedUser(filteredUser ?? '');
-  }, [filteredUser]);
+  }, [filteredUser, editor]);
 
   return (
     <>

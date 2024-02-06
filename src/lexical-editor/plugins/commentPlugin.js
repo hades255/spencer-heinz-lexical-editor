@@ -29,6 +29,7 @@ import {
   DialogContent,
   DialogTitle,
   Grid,
+  Menu,
   Paper,
   TextField,
   Tooltip,
@@ -51,11 +52,12 @@ import { useSelector } from 'store';
 import axiosServices from 'utils/axios';
 import DoneIcon from '@mui/icons-material/Done';
 import ReplyIcon from '@mui/icons-material/Reply';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { getSelectedNode } from './toolbarPlugin';
+import RemoveCommentBtn from 'lexical-editor/components/removeCommentBtn';
 
 const EditorPriority = 1;
 export const SET_COMMENT_COMMAND = createCommand('SET_COMMENT_COMMAND');
+export const OPEN_COMMENT_DIALOG_COMMAND = createCommand('OPEN_COMMENT_DIALOG_COMMAND');
 export const UPDATE_COMMENT_COMMAND = createCommand('UPDATE_COMMENT_COMMAND');
 export const REMOVE_COMMENT = createCommand('REMOVE_COMMENT');
 
@@ -335,6 +337,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
   const setComment = useCallback(
     (payload) => {
       const { assignee, task, user, commentContent, type } = payload;
+      if (task === 'Perms Request') return;
       const selection = $getPreviousSelection().clone();
       $setSelection(selection);
       const anchorNode = selection.anchor.getNode();
@@ -609,6 +612,19 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
     [editor]
   );
 
+  const [anchorElApprove, setAnchorElApprove] = useState(null);
+  const openApprove = Boolean(anchorElApprove);
+
+  const handleClickApprove = (event) => {
+    setAnchorElApprove(event.currentTarget);
+  };
+  const handleCloseApprove = (value, _comment) => {
+    if (value) {
+      handleSetStatusComment(_comment, value);
+    }
+    setAnchorElApprove(null);
+  };
+
   return (
     <>
       {createPortal(
@@ -774,99 +790,100 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                       </Tooltip>
                       {/* require review/approve button */}
                       {(user === _comment.commentor._id || user === _comment.assignee) && (
-                        <Tooltip
-                          title={
-                            user === _comment.commentor._id
-                              ? _comment.status === 'completed'
-                                ? 'Completed'
-                                : _comment.status === 'review'
-                                ? 'Required Review-Approve'
-                                : 'Approve'
-                              : user === _comment.assignee
-                              ? _comment.status === 'completed'
-                                ? 'Completed'
-                                : _comment.status === 'review'
-                                ? 'Cancel Review'
-                                : 'Require Review'
-                              : "Can't touch this"
-                          }
-                          placement="top"
-                          arrow
-                        >
-                          <IconButton
-                            variant={'outlined'}
-                            sx={{
-                              paddingX: '0',
-                              position: 'absolute',
-                              bottom: '20px',
-                              right: '25px',
-                              transform: 'translate(-50%, 10px)'
-                            }}
-                            size={'medium'}
-                            onClick={() =>
+                        <>
+                          <Tooltip
+                            title={
                               user === _comment.commentor._id
                                 ? _comment.status === 'completed'
                                   ? 'Completed'
-                                  : handleSetStatusComment(_comment, 'completed')
+                                  : _comment.status === 'review'
+                                  ? 'Required Review'
+                                  : 'Approve'
                                 : user === _comment.assignee
                                 ? _comment.status === 'completed'
                                   ? 'Completed'
                                   : _comment.status === 'review'
-                                  ? handleSetStatusComment(_comment, 'assign')
-                                  : handleSetStatusComment(_comment, 'review')
+                                  ? 'Cancel Review'
+                                  : 'Require Review'
                                 : "Can't touch this"
                             }
+                            placement="top"
+                            arrow
                           >
-                            <DoneIcon
-                              color={
+                            <IconButton
+                              variant={'outlined'}
+                              sx={{
+                                paddingX: '0',
+                                position: 'absolute',
+                                bottom: '20px',
+                                right: '25px',
+                                transform: 'translate(-50%, 10px)'
+                              }}
+                              size={'medium'}
+                              onClick={(event) =>
                                 user === _comment.commentor._id
                                   ? _comment.status === 'completed'
-                                    ? 'success'
+                                    ? 'Completed'
                                     : _comment.status === 'review'
-                                    ? 'info'
-                                    : 'warning'
+                                    ? handleClickApprove(event)
+                                    : handleSetStatusComment(_comment, 'completed')
                                   : user === _comment.assignee
                                   ? _comment.status === 'completed'
-                                    ? 'success'
+                                    ? 'Completed'
                                     : _comment.status === 'review'
-                                    ? 'info'
-                                    : 'warning'
-                                  : 'secondary'
+                                    ? handleSetStatusComment(_comment, 'assign')
+                                    : handleSetStatusComment(_comment, 'review')
+                                  : "Can't touch this"
                               }
-                              style={
-                                _comment.status === 'review'
-                                  ? { borderRadius: '50%', animation: 'pulse-info 1s infinite' }
-                                  : { borderRadius: '50%' }
-                              }
-                            />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                      {/* rework/remove button */}
-                      {user === _comment.commentor._id && (
-                        <Tooltip title={_comment.status === 'review' ? 'Reject' : 'Remove this comment'} placement="top" arrow>
-                          <IconButton
-                            variant={'outlined'}
-                            sx={{
-                              paddingX: '0',
-                              position: 'absolute',
-                              bottom: '20px',
-                              right: '-10px',
-                              transform: 'translate(-50%, 10px)'
+                            >
+                              <DoneIcon
+                                color={
+                                  user === _comment.commentor._id
+                                    ? _comment.status === 'completed'
+                                      ? 'success'
+                                      : _comment.status === 'review'
+                                      ? 'info'
+                                      : 'warning'
+                                    : user === _comment.assignee
+                                    ? _comment.status === 'completed'
+                                      ? 'success'
+                                      : _comment.status === 'review'
+                                      ? 'info'
+                                      : 'warning'
+                                    : 'secondary'
+                                }
+                                style={
+                                  _comment.status === 'review'
+                                    ? { borderRadius: '50%', animation: 'pulse-info 1s infinite' }
+                                    : { borderRadius: '50%' }
+                                }
+                              />
+                            </IconButton>
+                          </Tooltip>
+                          <Menu
+                            id="basic-menu-approve"
+                            anchorEl={anchorElApprove}
+                            open={openApprove}
+                            onClose={() => handleCloseApprove(null)}
+                            MenuListProps={{
+                              'aria-labelledby': 'basic-button'
                             }}
-                            size={'medium'}
-                            onClick={() => {
-                              if (_comment.status === 'review') {
-                                handleSetStatusComment(_comment, 'rework');
-                              } else {
-                                handleRemoveComment(_comment);
-                              }
-                            }}
+                            sx={{ bgcolor: 'transparent' }}
                           >
-                            {_comment.status === 'review' ? <CloseIcon color={'error'} /> : <DeleteOutlineIcon color={'error'} />}
-                          </IconButton>
-                        </Tooltip>
+                            <Tooltip title="Approve">
+                              <IconButton sx={{ mx: 1 }} onClick={() => handleCloseApprove('completed', _comment)}>
+                                <DoneIcon color={'info'} />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Reject">
+                              <IconButton sx={{ mx: 1 }} onClick={() => handleCloseApprove('rework', _comment)}>
+                                <CloseIcon color={'error'} />
+                              </IconButton>
+                            </Tooltip>
+                          </Menu>
+                        </>
                       )}
+                      {user === _comment.commentor._id && <RemoveCommentBtn comment={_comment} handleRemoveComment={handleRemoveComment} />}
                     </Grid>
                   </Grid>
                   {replyShow[_index] && (

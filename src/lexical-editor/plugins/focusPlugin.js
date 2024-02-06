@@ -57,9 +57,20 @@ export default function FocusPlugin({ user }) {
           let text = '';
           nodes.forEach((node) => {
             if ($isBlackoutNode(node)) {
-              text += '██████████';
+              console.log('A');
+              // const writable = node.getWritable();
+              // if (writable.__users.includes(user)) {
+              //   text += node.getTextContent();
+              // } else {
+              //   text += '██████████';
+              // }
             } else if ($isBlackoutNode(node.getParent())) {
-              text += '';
+              const writable = node.getParent().getWritable();
+              if (writable.__users.includes(user)) {
+                text += node.getTextContent();
+              } else {
+                text += '██████████';
+              }
             } else {
               text += node.getTextContent();
             }

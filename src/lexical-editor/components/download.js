@@ -1,8 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import IconButton from '@mui/material/IconButton';
-import MenuItem from '@mui/material/MenuItem';
-import DownloadIcon from '@mui/icons-material/Download';
 import {
   Box,
   Button,
@@ -12,7 +10,6 @@ import {
   FormControlLabel,
   FormLabel,
   Grow,
-  MenuList,
   Paper,
   Popper,
   Radio,
@@ -38,27 +35,26 @@ export default function Download({ user }) {
     setShowDropDown(false);
   }, []);
 
-  const handleClick = useCallback(
-    (event, type) => {
-      editor.dispatchCommand(DOWNLOAD_ALL_JSON, { type, name: doc.name });
-      if (anchorRef.current && anchorRef.current.contains(event.target)) {
-        return;
-      }
-      setShowDropDown(false);
-    },
-    [editor]
-  );
+  // const handleClick = useCallback(
+  //   (event, type) => {
+  //     editor.dispatchCommand(DOWNLOAD_ALL_JSON, { type, name: doc.name });
+  //     if (anchorRef.current && anchorRef.current.contains(event.target)) {
+  //       return;
+  //     }
+  //     setShowDropDown(false);
+  //   },
+  //   [editor]
+  // );
 
   const handleDownload = useCallback(
     (event) => {
-      console.log(type);
       editor.dispatchCommand(DOWNLOAD_ALL_JSON, { type, name: doc.name });
       if (anchorRef.current && anchorRef.current.contains(event.target)) {
         return;
       }
       setShowDropDown(false);
     },
-    [editor, type]
+    [editor, type, doc]
   );
 
   const handleRadioChange = useCallback((event) => setType(event.target.value), []);

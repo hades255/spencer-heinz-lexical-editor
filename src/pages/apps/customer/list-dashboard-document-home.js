@@ -26,7 +26,6 @@ import { PlusOutlined } from '@ant-design/icons';
 import ForwardIcon from '@mui/icons-material/Forward';
 import { useCallback, useEffect, useState } from 'react';
 import axiosServices from 'utils/axios';
-import moment from 'moment';
 import DocumentCell from 'components/documents/DocumentCell';
 
 const mediaSX = {
@@ -137,7 +136,7 @@ const DocumentRow = ({ row, setSelect, select }) => {
           </TableCell>
           <TableCell width={40} align="right" sx={{ pr: 3 }}>
             {/* {moment(item.createdAt).format('MM/DD/YYYY h:mm A')} */}
-            <IconButton component={RouterLink} to={`/document/${item._id}`} color='info'>
+            <IconButton component={RouterLink} to={`/document/${item._id}`} color="info">
               <ForwardIcon />
             </IconButton>
           </TableCell>

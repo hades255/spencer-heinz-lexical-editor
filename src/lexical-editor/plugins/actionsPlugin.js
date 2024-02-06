@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { ClearEditorPlugin } from '@lexical/react/LexicalClearEditorPlugin';
-import { $getNodeByKey, $getRoot, $getSelection, $isParagraphNode, CLEAR_HISTORY_COMMAND, UNDO_COMMAND } from 'lexical';
+import { $getNodeByKey, $getRoot, $isParagraphNode, CLEAR_HISTORY_COMMAND, UNDO_COMMAND } from 'lexical';
 import { useEditorHistoryState } from 'contexts/LexicalEditor';
 import { $isLockNode, LockNode, isLockedNode } from 'lexical-editor/nodes/lockNode';
 import { mergeRegister } from '@lexical/utils';

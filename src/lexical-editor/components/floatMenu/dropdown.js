@@ -55,7 +55,7 @@ export default function DropDownMenu({
 
   const handleTaskClick = (option) => {
     if (step < 1 || !assignee) {
-      alert('Please select the car!');
+      alert('Please select the user!');
       window.getSelection().removeAllRanges();
       handleClose();
       return false;

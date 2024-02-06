@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 import DownloadDropdownMenu from './download';
 
 let setPosTimeout = 0;
+
 const FloatMenu = ({ show, ...props }) => {
   const ref = useRef(null);
   const [pos, setPos] = useState(undefined);

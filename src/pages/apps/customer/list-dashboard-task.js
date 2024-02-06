@@ -177,16 +177,16 @@ DashboardTaskPage.propTypes = {
 const TaskRow = ({ task }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [more, setMore] = useState(false);
+  // const [more, setMore] = useState(false);
 
-  const handleSetMore = useCallback(
-    (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setMore(!more);
-    },
-    [more]
-  );
+  // const handleSetMore = useCallback(
+  //   (e) => {
+  //     e.preventDefault();
+  //     e.stopPropagation();
+  //     setMore(!more);
+  //   },
+  //   [more]
+  // );
 
   const handleClick = useCallback(() => navigate('/document/' + task.doc + '?comment=' + task.uniqueId), [navigate, task]);
 

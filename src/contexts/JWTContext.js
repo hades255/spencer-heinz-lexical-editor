@@ -136,7 +136,7 @@ export const JWTProvider = ({ children }) => {
       dispatch_(
         openSnackbar({
           open: true,
-          message: error.message,
+          message: error === 'Unauthorized' ? 'User ID/Password Incorrect' : error.message,
           variant: 'alert',
           alert: {
             color: 'error'
