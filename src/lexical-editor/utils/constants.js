@@ -5,7 +5,7 @@ export const COLOR_OPTIONS = ['Blue', 'Green', 'Black', 'White', 'Red'];
 export const USER_OPTIONS = ['User 1', 'User 2', 'User 3', 'User 4', 'User 5'];
 
 export const USER_TASKS = ['Create', 'Edit', 'Review', 'Comment', 'Approve'];
-export const PERMISSION_TASK = ['Perms Request'];
+export const PERMISSION_TASK = ['Permission'];
 
 export const DOCUMENT_STATUS = { CREATED: 'created', EDITING: 'editing', COMPLETED: 'completed', BLOCKED: 'blocked' };
 export const EVENT_STATUS = { CONNECTED: 'connected', DISCONNECTED: 'disconnected' };

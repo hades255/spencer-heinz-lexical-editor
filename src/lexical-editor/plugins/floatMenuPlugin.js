@@ -85,7 +85,7 @@ export const FloatMenuPlugin = () => {
     let flag = true;
     let flag_ = true;
     const selection = $getSelection();
-    if (assignee === 'unblacked-users') return true;
+    if (assignee === ACTION_REQUEST_USER._id) return true;
     if ($isRangeSelected(selection)) {
       const nodes = selection.extract();
       nodes.forEach((node) => {

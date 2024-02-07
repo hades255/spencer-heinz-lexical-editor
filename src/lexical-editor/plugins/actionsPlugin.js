@@ -217,6 +217,7 @@ export function ActionsPlugin({ user }) {
           nodeKey = nodeKey_;
           mutation = mutation || mutation_;
           same = mutation ? mutation === mutation_ : false;
+          console.log(mutation);
         }
         // if (updateTags.has('history-merge')) {
         //   console.log('history-merge');

@@ -28,7 +28,7 @@ import { TRANSFORMERS } from '@lexical/markdown';
 import { useEditorHistoryState } from 'contexts/LexicalEditor';
 import { v4 as uuidv4 } from 'uuid';
 import { CommentNode } from './nodes/commentNode';
-import CommentPlugin, { TOUCH_COMMENT_COMMAND } from './plugins/commentPlugin';
+import CommentPlugin, { MOUSE_ENTER_COMMAND, TOUCH_COMMENT_COMMAND } from './plugins/commentPlugin';
 import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
 import { FloatMenuPlugin } from './plugins/floatMenuPlugin';
 import ToolbarPlugin from './plugins/toolbarPlugin';
@@ -173,9 +173,16 @@ const LexicalEditor = ({ uniqueId, user }) => {
         nodeType={CommentNode}
         eventType={'click'}
         eventListener={(e, editor, nodeKey) => {
-          console.log('mhover');
           const _commentNode = $getNodeByKey(nodeKey);
           if (!isBlackedOutNode(_commentNode, user._id)) editor.dispatchCommand(TOUCH_COMMENT_COMMAND, nodeKey);
+        }}
+      />
+      <NodeEventPlugin
+        nodeType={CommentNode}
+        eventType={'mouseenter'}
+        eventListener={(e, editor, nodeKey) => {
+          const _commentNode = $getNodeByKey(nodeKey);
+          if (!isBlackedOutNode(_commentNode, user._id)) editor.dispatchCommand(MOUSE_ENTER_COMMAND, nodeKey);
         }}
       />
       <ToolbarPlugin user={user} filteredUser={filteredUser} />

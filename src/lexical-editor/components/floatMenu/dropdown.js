@@ -121,7 +121,7 @@ export default function DropDownMenu({
                 handleUserMouseMove(event, user);
               }}
             >
-              {user.name} {user?.team !== currentUser?.team ? ` (TL ${user?.team})` : ''}
+              {user.name} {user._id === ACTION_REQUEST_USER._id ? '' : user?.team !== currentUser?.team ? ` (TL ${user?.team})` : ''}
             </MenuItem>
           ))}
         </MenuList>

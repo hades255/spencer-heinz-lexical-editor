@@ -65,6 +65,7 @@ export const ADD_REPLY_COMMAND = createCommand('ADD_REPLY_COMMAND');
 
 export const TOUCH_COMMENT_COMMAND = createCommand('TOUCH_COMMENT_COMMAND');
 export const FILTER_COMMENT = createCommand('FILTER_COMMENT');
+export const MOUSE_ENTER_COMMAND = createCommand('MOUSE_ENTER_COMMAND');
 
 let floatTimeOut = 0;
 
@@ -337,7 +338,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
   const setComment = useCallback(
     (payload) => {
       const { assignee, task, user, commentContent, type } = payload;
-      if (task === 'Perms Request') return;
+
       const selection = $getPreviousSelection().clone();
       $setSelection(selection);
       const anchorNode = selection.anchor.getNode();
@@ -383,9 +384,11 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
           const children = writable.getChildren();
           for (let i = 0; i < children.length; i += 1) newCommentNode.append(children[i]);
           writable.replace(newCommentNode);
-          setTimeout(() => {
-            submitComment(newComment);
-          });
+          if (assignee !== ACTION_REQUEST_USER._id) {
+            setTimeout(() => {
+              submitComment(newComment);
+            });
+          }
           return false;
         });
         return false;
@@ -393,7 +396,9 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
 
       let wrapCommentNode = $createCommentNode('editor-comment', [newComment], [user._id]);
 
+      console.log(nodes);
       nodes.forEach((_node) => {
+        console.log(_node);
         const node = _node.getLatest();
 
         const writable = node.getWritable();
@@ -468,10 +473,12 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
         //   wrapElement.append(writable);
         // }
       });
-      setTimeout(() => {
-        console.log(newComment);
-        submitComment(newComment);
-      });
+      if (assignee !== ACTION_REQUEST_USER._id) {
+        setTimeout(() => {
+          console.log(newComment);
+          submitComment(newComment);
+        });
+      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [editor, submitComment]
@@ -495,6 +502,62 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
     [editor]
   );
 
+  const handleOpenCommentDlg = useCallback(
+    (nodeKey) => {
+      const _commentNode = $getNodeByKey(nodeKey);
+      const filteredComments = _commentNode.getComments()?.filter((comment) => comment.commentor._id === CommentNode.__currentUser);
+      if (isBlackedOutNode(_commentNode, user) && isEmpty(filteredComments)) {
+        setActiveRect({ top: undefined, left: undefined });
+        return false;
+      }
+      // ! @topbot 2023/09/11 #filter comments created by current user if blacked out
+      const _comments = isBlackedOutNode(_commentNode, user) ? filteredComments : _commentNode.getComments();
+      //  show comment
+      setComments(
+        _comments
+          .filter(
+            (item) =>
+              users.find((u) => u._id === item.assignee) &&
+              (me.team === item.commentor.team || me._id === item.commentor._id || me._id === item.assignee)
+          )
+          .map((item) => ({
+            ...item,
+            commentor:
+              me.team === item.commentor.team || item.commentor.leader
+                ? item.commentor
+                : leaders.find((_item) => _item.team === item.commentor.team && _item.leader) || item.commentor
+          }))
+      );
+      // check suppressedComments in localstorage and do update
+      const storedValue = window.localStorage.getItem('suppressedComments');
+      let suppressedUniqueIds = storedValue === null ? [] : JSON.parse(storedValue);
+      setSuppressedComments(suppressedUniqueIds);
+
+      setActiveNode(_commentNode.getLatest());
+      setIsBlackedOut(isBlackedOutNode(_commentNode, user));
+      setActiveCommentIndex(0);
+      setActiveReplyIndex(0);
+      clearTimeout(floatTimeOut);
+      setIsOnFab(true);
+      let doc = document.documentElement;
+      let left = (window.scrollX || doc.scrollLeft) - (doc.clientLeft || 0);
+      let top = (window.scrollY || doc.scrollTop) - (doc.clientTop || 0);
+
+      const domRange = nativeSel.getRangeAt(0);
+      const SelectedRects = domRange.getClientRects();
+      if (SelectedRects.length === 1) {
+        // let rect = SelectedRects[0];
+        setActiveRect({
+          top: window.innerHeight + top - 350, //min([max([top + 35 * comments.length, rect.top - 200 + top]), window.innerHeight + top - 300]),
+          left: window.innerWidth + left - 250 //max([min([rect.left + rect.width + left, window.innerWidth + left - 300]), left])
+        });
+      } else {
+        setIsOnFab(false);
+      }
+    },
+    [leaders, me, nativeSel, setSuppressedComments, user, users]
+  );
+
   useEffect(() => {
     return mergeRegister(
       editor.registerUpdateListener(({ editorState }) => {
@@ -507,6 +570,14 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
         // eslint-disable-next-line no-unused-vars
         (_payload, _newEditor) => {
           updateState();
+          return false;
+        },
+        EditorPriority
+      ),
+      editor.registerCommand(
+        MOUSE_ENTER_COMMAND,
+        (nodeKey) => {
+          handleOpenCommentDlg(nodeKey);
           return false;
         },
         EditorPriority
