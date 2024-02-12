@@ -46,10 +46,11 @@ const ToolbarBlackout = ({ user, users, editor, active }) => {
           .getParents()
           .reverse()
           .find((parent) => $isBlackoutNode(parent) && !parent.getUsers()?.includes(user._id));
+        const initUser = _blackoutNode.getUser();
         const _unlockedUsers = _blackoutNode.getUsers();
-        const _lockedUsers = getUserIds(users).filter((value) => _unlockedUsers?.indexOf(value) === -1);
+        const _lockedUsers = getUserIds(users).filter((value) => value !== initUser && _unlockedUsers?.indexOf(value) === -1);
         setLockedUsers(_lockedUsers);
-        setUnlockedUsers(not(getUserIds(users), _lockedUsers));
+        setUnlockedUsers(not(getUserIds(users), initUser === user ? _lockedUsers : [..._lockedUsers, initUser]));
         setIsBlackedOut(true);
       } else {
         setIsBlackedOut(false);
@@ -66,7 +67,7 @@ const ToolbarBlackout = ({ user, users, editor, active }) => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editor, users]);
+  }, [editor, users, user]);
 
   useEffect(() => {
     return mergeRegister(

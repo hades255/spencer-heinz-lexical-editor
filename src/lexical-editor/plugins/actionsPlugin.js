@@ -62,7 +62,7 @@ export function ActionsPlugin({ user }) {
 
   useEffect(() => {
     return mergeRegister(
-      editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves, tags }) => {
+      editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves, tags, ...rest }) => {
         // Don't update if nothing changed
         // console.log(dirtyElements, dirtyLeaves);
         if (dirtyElements.size === 0 && dirtyLeaves.size === 0) return;
@@ -217,7 +217,6 @@ export function ActionsPlugin({ user }) {
           nodeKey = nodeKey_;
           mutation = mutation || mutation_;
           same = mutation ? mutation === mutation_ : false;
-          console.log(mutation);
         }
         // if (updateTags.has('history-merge')) {
         //   console.log('history-merge');

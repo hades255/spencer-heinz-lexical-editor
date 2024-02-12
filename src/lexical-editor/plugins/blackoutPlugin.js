@@ -97,7 +97,7 @@ export const BlackoutPlugin = ({ user }) => {
       const anchorNode = selection.anchor.getNode();
       const focusNode = selection.focus.getNode();
 
-      let wrapBlackoutNode = $createBlackoutNode('editor-black-out', [...not(unlockedUsers, [user]), user]);
+      let wrapBlackoutNode = $createBlackoutNode('editor-black-out', [...not(unlockedUsers, [user]), user], user);
 
       let isValid = true;
       // check if orginally have lock node in selection

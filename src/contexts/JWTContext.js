@@ -158,7 +158,6 @@ export const JWTProvider = ({ children }) => {
     workPhone,
     status = 'pending'
   }) => {
-    // todo: this flow need to be recode as it not verified
     try {
       const name = `${firstname} ${lastname}`;
       const response = await axios.post('/auth/signup', {

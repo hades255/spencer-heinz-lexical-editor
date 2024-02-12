@@ -330,6 +330,30 @@
   transition: all 0.2s ease-in-out;
 }
 
+.permission-comment {
+  scale: 1.5;
+  border-radius: 5px;
+  background-color: white;
+}
+
+@keyframes permission-comment-untouched-anim {
+  from {
+    background-color: white;
+    scale: 1;
+  }
+
+  to {
+    background-color: orange;
+  }
+}
+
+.permission-comment-untouched {
+  background-color: orange;
+  border-radius: 5px;
+  animation: permission-comment-untouched-anim 0.5s linear 5 alternate;
+  scale: 1.5;
+}
+
 .editor-black-out-inactive {
   cursor: not-allowed;
   border: 1px dashed black;

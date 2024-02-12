@@ -153,7 +153,7 @@ const DashboardTaskPage = ({ group, select, category }) => {
                     {tasks
                       .filter((item) => status === 'all' || item.status === status)
                       .map((item, index) => (
-                        <TaskRow key={index} task={item} />
+                        <TaskRow key={index} task={item} category={category} group={group} />
                       ))}
                   </TableBody>
                 </Table>
@@ -174,7 +174,7 @@ DashboardTaskPage.propTypes = {
   category: PropTypes.any
 };
 
-const TaskRow = ({ task }) => {
+const TaskRow = ({ task, group }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   // const [more, setMore] = useState(false);
@@ -188,7 +188,10 @@ const TaskRow = ({ task }) => {
   //   [more]
   // );
 
-  const handleClick = useCallback(() => navigate('/document/' + task.doc + '?comment=' + task.uniqueId), [navigate, task]);
+  const handleClick = useCallback(
+    () => navigate('/document/' + task.doc + '?comment=' + task.uniqueId + '&group=' + group),
+    [navigate, task, group]
+  );
 
   return (
     <TableRow hover onClick={handleClick} sx={{ cursor: 'pointer' }} title={task.comment}>
@@ -225,5 +228,6 @@ const TaskRow = ({ task }) => {
 };
 
 TaskRow.propTypes = {
-  task: PropTypes.object
+  task: PropTypes.object,
+  group: PropTypes.any
 };

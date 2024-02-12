@@ -28,7 +28,7 @@ import { TRANSFORMERS } from '@lexical/markdown';
 import { useEditorHistoryState } from 'contexts/LexicalEditor';
 import { v4 as uuidv4 } from 'uuid';
 import { CommentNode } from './nodes/commentNode';
-import CommentPlugin, { MOUSE_ENTER_COMMAND, TOUCH_COMMENT_COMMAND } from './plugins/commentPlugin';
+import CommentPlugin, { MOUSE_ENTER_BLACKOUT_NODE, MOUSE_ENTER_COMMAND, TOUCH_COMMENT_COMMAND } from './plugins/commentPlugin';
 import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
 import { FloatMenuPlugin } from './plugins/floatMenuPlugin';
 import ToolbarPlugin from './plugins/toolbarPlugin';
@@ -37,7 +37,7 @@ import { LockNode } from './nodes/lockNode';
 import { BlackoutNode, isBlackedOutNode } from './nodes/blackoutNode';
 import { BlackoutPlugin } from './plugins/blackoutPlugin';
 import { EVENT_STATUS } from './utils/constants';
-import { LinearProgress } from '@mui/material';
+import { Box, LinearProgress } from '@mui/material';
 import { $createCustomTextNode, CustomTextNode } from './nodes/customTextNode';
 import { JumpNode } from './nodes/jumpNode';
 import { JumpPlugin } from './plugins/jumpPlugin';
@@ -137,12 +137,11 @@ const LexicalEditor = ({ uniqueId, user }) => {
     let cnt = 0;
     if (searchParams.get('comment') && !isLoading) {
       const timerFunc = () => {
-        console.log('timer');
         if (document.querySelector(`[data-comments*="${searchParams.get('comment')}"]`)) {
           const element = document.querySelector(`[data-comments*="${searchParams.get('comment')}"]`);
           const comments = JSON.parse(element.dataset.comments) || [];
           const comment = comments.find((comment) => comment.uniqueId === searchParams.get('comment'));
-          if (user._id && comment.commentor && comment.commentor._id) {
+          if (searchParams.get('group') === 'asks' && user._id && comment.commentor && comment.commentor._id) {
             if (comment.assignee === user._id) setFilteredUser(comment.commentor._id);
             if (comment.commentor._id === user._id) setFilteredUser(comment.assignee);
           }
@@ -179,30 +178,45 @@ const LexicalEditor = ({ uniqueId, user }) => {
       />
       <NodeEventPlugin
         nodeType={CommentNode}
-        eventType={'mouseenter'}
+        eventType={'mouseenter'} //  fix when mouse over this node, make it selected
         eventListener={(e, editor, nodeKey) => {
           const _commentNode = $getNodeByKey(nodeKey);
-          if (!isBlackedOutNode(_commentNode, user._id)) editor.dispatchCommand(MOUSE_ENTER_COMMAND, nodeKey);
+          if (!isBlackedOutNode(_commentNode, user._id)) editor.dispatchCommand(MOUSE_ENTER_COMMAND, { e, nodeKey });
+        }}
+      />
+      <NodeEventPlugin
+        nodeType={BlackoutNode}
+        eventType={'mouseenter'} //  fix when mouse over this node, make it selected
+        eventListener={(e, editor, nodeKey) => {
+          const classList = e.target.classList;
+          if (
+            classList.contains(LexicalTheme.blackoutIcon) &&
+            (classList.contains(LexicalTheme.requestPermissionIcon) || classList.contains(LexicalTheme.requestPermissionIconUntouched))
+          ) {
+            editor.dispatchCommand(MOUSE_ENTER_BLACKOUT_NODE, { e, nodeKey });
+          }
         }}
       />
       <ToolbarPlugin user={user} filteredUser={filteredUser} />
-      {!isLoading ? (
-        <RichTextPlugin
-          contentEditable={
-            <ContentEditable
-              className="editor-input"
-              rows={40}
-              spellCheck={true}
-              style={{ minHeight: '65vh' }}
-              onCopy={handleCopy}
-              onCut={handleCopy}
-            />
-          }
-          ErrorBoundary={LexicalErrorBoundary}
-        />
-      ) : (
-        <LinearProgress />
-      )}
+      <Box sx={{ height: '65vh' }}>
+        {!isLoading ? (
+          <RichTextPlugin
+            contentEditable={
+              <ContentEditable
+                className="editor-input"
+                rows={40}
+                spellCheck={true}
+                style={{ height: '100%', overflowY: 'scroll' }}
+                onCopy={handleCopy}
+                onCut={handleCopy}
+              />
+            }
+            ErrorBoundary={LexicalErrorBoundary}
+          />
+        ) : (
+          <LinearProgress />
+        )}
+      </Box>
       <HistoryPlugin externalHistoryState={historyState} />
       <CollaborationPlugin
         id={uniqueId}

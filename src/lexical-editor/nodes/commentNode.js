@@ -4,8 +4,9 @@ import LexicalTheme from '../utils/theme';
 import { isUndefined } from 'lodash';
 import CommentIcon from '../styles/comment.svg';
 import { not } from 'utils/array';
-import { isBlackedOutNode } from './blackoutNode';
+import { $isBlackoutNode, isBlackedOutNode } from './blackoutNode';
 import axiosServices from 'utils/axios';
+import { PERMISSION_TASK } from 'lexical-editor/utils/constants';
 
 /**
  * @class comment element node class
@@ -79,14 +80,19 @@ export class CommentNode extends ElementNode {
     }
     let _replies = _comment['replies'];
     _replies.unshift({ content: _content, replier: _replier, date: new Date().toISOString() });
-    (async () => {
-      try {
-        const res = await axiosServices.post('/task/uniqueId/' + _comment['uniqueId'] + '/reply', { content: _content, replier: _replier });
-        console.log(res);
-      } catch (error) {
-        console.log(error);
-      }
-    })();
+    if (!PERMISSION_TASK.includes(_comment.task)) {
+      (async () => {
+        try {
+          const res = await axiosServices.post('/task/uniqueId/' + _comment['uniqueId'] + '/reply', {
+            content: _content,
+            replier: _replier
+          });
+          console.log(res);
+        } catch (error) {
+          console.log(error);
+        }
+      })();
+    }
     return true;
   }
 
@@ -163,18 +169,23 @@ export class CommentNode extends ElementNode {
     // check if blacked out and return empty span
     if (
       isBlackedOutNode(this, CommentNode.__currentUser) &&
-      !this.__comments?.find((comment) => comment.commentor._id === CommentNode.__currentUser)
+      !this.getComments()?.find((comment) => comment.commentor._id === CommentNode.__currentUser)
     ) {
       return span;
     }
+    let blackoutList = [];
+    if (this.getComments().find((item) => PERMISSION_TASK.includes(item.task))) {
+      const childNode = this.getFirstChild();
+      if ($isBlackoutNode(childNode)) blackoutList = childNode.__users;
+    }
 
-    // console.log('handle showing comments', CommentNode.__currentUser, CommentNode.__team, CommentNode.__users, this.__comments);
-    let nComments = this.__comments?.filter(
-      (comment) =>
-        comment.commentor._id === CommentNode.__currentUser ||
-        comment.assignee === CommentNode.__currentUser ||
-        !comment.commentor.team ||
-        comment.commentor.team === CommentNode.__team
+    let nComments = this.getComments()?.filter((comment) =>
+      PERMISSION_TASK.includes(comment.task)
+        ? comment.commentor._id === CommentNode.__currentUser || blackoutList.includes(CommentNode.__currentUser)
+        : comment.commentor._id === CommentNode.__currentUser ||
+          comment.assignee === CommentNode.__currentUser ||
+          !comment.commentor.team ||
+          comment.commentor.team === CommentNode.__team
     );
     if (!nComments || nComments?.length === 0) return span;
 
@@ -191,61 +202,62 @@ export class CommentNode extends ElementNode {
     span.setAttribute('data-lexical-text', 'true');
     span.setAttribute('data-comments', JSON.stringify(nComments));
     span.setAttribute('data-new_or_updated', JSON.stringify(this.__newOrUpdated));
-    addClassNamesToElement(span, LexicalTheme.comment);
-    const IconImage = document.createElement('img');
-    IconImage.setAttribute('src', CommentIcon);
-    // add unsuppressing click event listener to icon image
-    IconImage.addEventListener('click', (e) => {
-      e.stopPropagation();
+    if (blackoutList.length === 0) {
+      addClassNamesToElement(span, LexicalTheme.comment);
+      const IconImage = document.createElement('img');
+      IconImage.setAttribute('src', CommentIcon);
+      // add unsuppressing click event listener to icon image
+      IconImage.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const storedValue = window.localStorage.getItem('suppressedComments');
+        let suppressedUniqueIds = storedValue === null ? [] : JSON.parse(storedValue);
+        suppressedUniqueIds = not(
+          suppressedUniqueIds,
+          nComments.map((value) => value.uniqueId)
+        );
+        window.localStorage.setItem('suppressedComments', JSON.stringify(suppressedUniqueIds));
+        // set selection of first child node so that comment box appears
+        let range = new Range();
+
+        // if (e.target.nextElementSibling) {
+        range.setStart(e.target.nextElementSibling, 0);
+        range.setEnd(e.target.nextElementSibling, 0);
+        // }
+
+        // apply the selection, explained later below
+        document.getSelection().removeAllRanges();
+        document.getSelection().addRange(range);
+
+        // set new or updated flag -> false
+        removeClassNamesFromElement(e.target.parentNode, LexicalTheme.suppressedComment);
+        removeClassNamesFromElement(e.target, LexicalTheme.commentIconUnTouched);
+        addClassNamesToElement(e.target, LexicalTheme.commentIcon);
+      });
+      IconImage.addEventListener('mouseover', (e) => {
+        e.stopPropagation();
+      });
       const storedValue = window.localStorage.getItem('suppressedComments');
       let suppressedUniqueIds = storedValue === null ? [] : JSON.parse(storedValue);
-      suppressedUniqueIds = not(
-        suppressedUniqueIds,
-        nComments.map((value) => value.uniqueId)
-      );
-      window.localStorage.setItem('suppressedComments', JSON.stringify(suppressedUniqueIds));
-      // set selection of first child node so that comment box appears
-      let range = new Range();
+      if (nComments.filter((value) => suppressedUniqueIds.includes(value.uniqueId)).length === nComments.length) {
+        addClassNamesToElement(span, LexicalTheme.suppressedComment);
+      }
 
-      // if (e.target.nextElementSibling) {
-      range.setStart(e.target.nextElementSibling, 0);
-      range.setEnd(e.target.nextElementSibling, 0);
-      // }
-
-      // apply the selection, explained later below
-      document.getSelection().removeAllRanges();
-      document.getSelection().addRange(range);
-
-      // set new or updated flag -> false
-      removeClassNamesFromElement(e.target.parentNode, LexicalTheme.suppressedComment);
-      removeClassNamesFromElement(e.target, LexicalTheme.commentIconUnTouched);
-      addClassNamesToElement(e.target, LexicalTheme.commentIcon);
-    });
-    IconImage.addEventListener('mouseover', (e) => {
-      console.log('hover');
-      e.stopPropagation();
-    });
-    const storedValue = window.localStorage.getItem('suppressedComments');
-    let suppressedUniqueIds = storedValue === null ? [] : JSON.parse(storedValue);
-    if (nComments.filter((value) => suppressedUniqueIds.includes(value.uniqueId)).length === nComments.length) {
-      addClassNamesToElement(span, LexicalTheme.suppressedComment);
+      addClassNamesToElement(IconImage, this.isTouched() ? LexicalTheme.commentIcon : LexicalTheme.commentIconUnTouched);
+      span.appendChild(IconImage);
     }
-
-    addClassNamesToElement(IconImage, this.isTouched() ? LexicalTheme.commentIcon : LexicalTheme.commentIconUnTouched);
-    span.appendChild(IconImage);
     return span;
   }
 
   // eslint-disable-next-line no-unused-vars
   updateDOM(prevNode, dom, config) {
     const commentSpan = dom;
-    commentSpan.setAttribute('data-comments', JSON.stringify(this.__comments));
+    commentSpan.setAttribute('data-comments', JSON.stringify(this.getComments()));
     commentSpan.setAttribute('data-new_or_updated', JSON.stringify(this.__newOrUpdated));
 
     const storedValue = window.localStorage.getItem('suppressedComments');
     let suppressedUniqueIds = storedValue === null ? [] : JSON.parse(storedValue);
     removeClassNamesFromElement(commentSpan, LexicalTheme.suppressedComment);
-    if (this.__comments.filter((value) => suppressedUniqueIds.includes(value.uniqueId)).length === this.__comments.length) {
+    if (this.getComments().filter((value) => suppressedUniqueIds.includes(value.uniqueId)).length === this.getComments().length) {
       addClassNamesToElement(commentSpan, LexicalTheme.suppressedComment);
     } else if (this.getSuppressed()) {
       addClassNamesToElement(commentSpan, LexicalTheme.suppressedComment);
@@ -264,7 +276,7 @@ export class CommentNode extends ElementNode {
   exportDOM() {
     const element = document.createElement('span');
     element.setAttribute('data-lexical-comment', 'true');
-    element.setAttribute('data-comments', JSON.stringify(this.__comments));
+    element.setAttribute('data-comments', JSON.stringify(this.getComments()));
     element.setAttribute('data-new_or_updated', JSON.stringify(this.__newOrUpdated));
     return { element };
   }
@@ -299,7 +311,7 @@ export class CommentNode extends ElementNode {
     const element = this.getParentOrThrow().insertNewAfter(selection);
 
     if ($isElementNode(element)) {
-      const commentNode = $createCommentNode(this.__className, this.__comments, this.__newOrUpdated);
+      const commentNode = $createCommentNode(this.__className, this.getComments(), this.__newOrUpdated);
 
       element?.append(commentNode);
 

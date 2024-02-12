@@ -46,7 +46,7 @@ import useLocalStorage from 'lexical-editor/hooks/useLocalStorage';
 import { not } from 'utils/array';
 import { $isLockNode } from 'lexical-editor/nodes/lockNode';
 import { $isBlackoutNode, isBlackedOutNode } from 'lexical-editor/nodes/blackoutNode';
-import { ACTION_REQUEST_USER, COMMENT_TYPES } from 'lexical-editor/utils/constants';
+import { ACTION_REQUEST_USER, COMMENT_TYPES, PERMISSION_TASK } from 'lexical-editor/utils/constants';
 import { ReassignButton } from 'lexical-editor/components/comment/reassignButton';
 import { useSelector } from 'store';
 import axiosServices from 'utils/axios';
@@ -66,6 +66,7 @@ export const ADD_REPLY_COMMAND = createCommand('ADD_REPLY_COMMAND');
 export const TOUCH_COMMENT_COMMAND = createCommand('TOUCH_COMMENT_COMMAND');
 export const FILTER_COMMENT = createCommand('FILTER_COMMENT');
 export const MOUSE_ENTER_COMMAND = createCommand('MOUSE_ENTER_COMMAND');
+export const MOUSE_ENTER_BLACKOUT_NODE = createCommand('MOUSE_ENTER_BLACKOUT_NODE');
 
 let floatTimeOut = 0;
 
@@ -85,6 +86,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
   const [replyShow, setReplyShow] = useState({});
   const [isBlackedOut, setIsBlackedOut] = useState(false);
   const [isDialogOpen, setDialogOpen] = useState(false);
+  const [canRemove, setCanRemove] = useState(null);
   const replyRef = useRef('');
 
   const nativeSel = window.getSelection();
@@ -168,6 +170,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
   }, []);
 
   const updateState = useCallback(() => {
+    //xx show comment
     const selection = $getSelection();
     if (editor.isComposing() || isPointerDown || isKeyDown) {
       setActiveRect({ top: undefined, left: undefined });
@@ -182,7 +185,21 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
         // !! check this part
         // check if comment node is wraped with black out node let this user out of it.
         // ! @topbot 2023/09/11 #check if comment is created by current user or not
-        const filteredComments = _commentNode.getComments()?.filter((comment) => comment.commentor._id === CommentNode.__currentUser);
+        const filteredComments = _commentNode
+          .getComments()
+          ?.filter((comment) => comment.commentor._id === CommentNode.__currentUser)
+          .filter(
+            (item) =>
+              users.find((u) => u._id === item.assignee) &&
+              (me.team === item.commentor.team || me._id === item.commentor._id || me._id === item.assignee)
+          )
+          .map((item) => ({
+            ...item,
+            commentor:
+              me.team === item.commentor.team || item.commentor.leader
+                ? item.commentor
+                : leaders.find((_item) => _item.team === item.commentor.team && _item.leader) || item.commentor
+          }));
         if (isBlackedOutNode(_commentNode, user) && isEmpty(filteredComments)) {
           setActiveRect({ top: undefined, left: undefined });
           return false;
@@ -190,21 +207,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
         // ! @topbot 2023/09/11 #filter comments created by current user if blacked out
         const _comments = isBlackedOutNode(_commentNode, user) ? filteredComments : _commentNode.getComments();
         //  show comment
-        setComments(
-          _comments
-            .filter(
-              (item) =>
-                users.find((u) => u._id === item.assignee) &&
-                (me.team === item.commentor.team || me._id === item.commentor._id || me._id === item.assignee)
-            )
-            .map((item) => ({
-              ...item,
-              commentor:
-                me.team === item.commentor.team || item.commentor.leader
-                  ? item.commentor
-                  : leaders.find((_item) => _item.team === item.commentor.team && _item.leader) || item.commentor
-            }))
-        );
+        setComments(_comments);
         // check suppressedComments in localstorage and do update
         const storedValue = window.localStorage.getItem('suppressedComments');
         let suppressedUniqueIds = storedValue === null ? [] : JSON.parse(storedValue);
@@ -293,7 +296,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
             for (let i = 0; i < children.length; i += 1) writable.insertBefore(children[i]);
             writable.remove();
           } else {
-            const newCommentNode = $createCommentNode('editor-comment', _comments, [user._id]);
+            const newCommentNode = $createCommentNode('editor-comment', _comments, [user]);
             for (let i = 0; i < children.length; i += 1) newCommentNode.append(children[i]);
             writable.replace(newCommentNode);
           }
@@ -323,7 +326,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
               : item.commentor
         })) */
       const writable = $getNodeByKey(nodeKey).getWritable();
-      const newCommentNode = $createCommentNode('editor-comment', writable.getComments(), [...writable.getNewOrUpdated(), user]);
+      const newCommentNode = $createCommentNode('editor-comment', writable.getComments(), [...writable.getNewOrUpdated(), user]); //todo - touch comment
       const children = writable.getChildren();
       for (let index = 0; index < children.length; index++) {
         newCommentNode.append(children[index]);
@@ -337,9 +340,10 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
 
   const setComment = useCallback(
     (payload) => {
-      const { assignee, task, user, commentContent, type } = payload;
+      const { assignee, task, user: commentor, commentContent, type } = payload;
 
-      const selection = $getPreviousSelection().clone();
+      console.log($getPreviousSelection());
+      const selection = $getPreviousSelection().clone(); //x cannot read properities of null
       $setSelection(selection);
       const anchorNode = selection.anchor.getNode();
       const focusNode = selection.focus.getNode();
@@ -359,7 +363,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
         assignee: assignee,
         task: task,
         comment: commentContent,
-        commentor: user,
+        commentor,
         replies: [],
         date: new Date().toISOString(),
         uniqueId: uuidv4(),
@@ -379,43 +383,39 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
             .getParents()
             .reverse()
             .find((_parent) => $isCommentNode(_parent))
-            .getWritable();
-          const newCommentNode = $createCommentNode('editor-comment', [newComment, ...writable.getComments()], [user._id]);
+            .getWritable(); //x cannot read writable
+          const newCommentNode = $createCommentNode('editor-comment', [newComment, ...writable.getComments()], [commentor._id]);
           const children = writable.getChildren();
           for (let i = 0; i < children.length; i += 1) newCommentNode.append(children[i]);
           writable.replace(newCommentNode);
-          if (assignee !== ACTION_REQUEST_USER._id) {
-            setTimeout(() => {
-              submitComment(newComment);
-            });
-          }
+          setTimeout(() => {
+            submitComment(newComment);
+          });
           return false;
         });
         return false;
       }
 
-      let wrapCommentNode = $createCommentNode('editor-comment', [newComment], [user._id]);
+      let wrapCommentNode = $createCommentNode('editor-comment', [newComment], [commentor._id]);
 
-      console.log(nodes);
       nodes.forEach((_node) => {
-        console.log(_node);
         const node = _node.getLatest();
 
         const writable = node.getWritable();
 
         // check if parent node is paragraph node @topbot 9/4/2023
         if ($isParagraphNode(node)) {
-          wrapCommentNode = $createCommentNode('editor-comment', [newComment], [user._id]);
+          wrapCommentNode = $createCommentNode('editor-comment', [newComment], [commentor._id]);
           return false;
         }
 
         // check if parent node is blacked out of
-        if (isBlackedOutNode(writable, user._id) || ($isBlackoutNode(node) && !node.isEditable())) {
+        if (isBlackedOutNode(writable, commentor._id) || ($isBlackoutNode(node) && !node.isEditable())) {
           const writable = node.getParent().getWritable();
-          if (isBlackedOutNode(writable, user._id)) {
+          if (isBlackedOutNode(writable, commentor._id)) {
             return false;
           }
-          // const newCommentNode = $createCommentNode('editor-comment', [newComment], [user._id]);
+          // const newCommentNode = $createCommentNode('editor-comment', [newComment], [commentor._id]);
           // newCommentNode.append($createTextNode('🖐'));
           // writable.append(newCommentNode);
           // return false;
@@ -429,7 +429,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
 
         if ($isCommentNode(node)) {
           const writable = node.getWritable();
-          const newCommentNode = $createCommentNode('editor-comment', [newComment, ...writable.getComments()], [user._id]);
+          const newCommentNode = $createCommentNode('editor-comment', [newComment, ...writable.getComments()], [commentor._id]);
           const children = writable.getChildren();
           for (let i = 0; i < children.length; i += 1) newCommentNode.append(children[i]);
           writable.replace(newCommentNode);
@@ -439,7 +439,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
           if (nodes.length === 1) {
             const writable = node.getParent().getWritable();
             const prevCommentNode = $createCommentNode('editor-comment', [...writable.getComments()], [...writable.getNewOrUpdated()]);
-            const newCommentNode = $createCommentNode('editor-comment', [newComment, ...writable.getComments()], [user._id]);
+            const newCommentNode = $createCommentNode('editor-comment', [newComment, ...writable.getComments()], [commentor._id]);
             const nextCommentNode = $createCommentNode('editor-comment', [...writable.getComments()], [...writable.getNewOrUpdated()]);
             const children = writable.getChildren();
             const selectedIndex = node.getIndexWithinParent();
@@ -467,21 +467,84 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
         wrapCommentNode.append(writable);
 
         // $wrapNodeInElement(writable, () => {
-        //   return $createCommentNode('editor-comment', [newComment], [user._id]);
+        //   return $createCommentNode('editor-comment', [newComment], [commentor._id]);
         // });
         // } else {
         //   wrapElement.append(writable);
         // }
       });
-      if (assignee !== ACTION_REQUEST_USER._id) {
-        setTimeout(() => {
-          console.log(newComment);
-          submitComment(newComment);
-        });
-      }
+      setTimeout(() => {
+        submitComment(newComment);
+      });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [editor, submitComment]
+  );
+
+  const setPermissionComment = useCallback(
+    (payload) => {
+      const selection = $getPreviousSelection().clone();
+      // $setSelection(selection);
+      const anchorNode = selection.anchor.getNode();
+      const focusNode = selection.focus.getNode();
+      const blackoutNode = anchorNode.getParent();
+      if (anchorNode.__parent === focusNode.__parent && $isBlackoutNode(blackoutNode)) {
+        console.log('right');
+        const { task, user: commentor, commentContent, type } = payload;
+        const assignee = blackoutNode.__user;
+        if (!assignee) return;
+        const newComment = {
+          assignee,
+          task: task,
+          comment: commentContent,
+          commentor: commentor,
+          replies: [],
+          date: new Date().toISOString(),
+          uniqueId: uuidv4(),
+          type: type ?? COMMENT_TYPES.ASSIGNED
+        };
+        if (type === COMMENT_TYPES.REASSIGNED) {
+          const commentNode = blackoutNode.getParent();
+          if ($isCommentNode(commentNode) && commentNode.getComments().find((item) => PERMISSION_TASK.includes(item.task))) {
+            console.log('reassign');
+            const writable = commentNode.getWritable();
+            const newCommentNode = $createCommentNode('editor-comment', [newComment, ...writable.getComments()], [commentor._id]);
+            const children = writable.getChildren();
+            for (let i = 0; i < children.length; i += 1) newCommentNode.append(children[i]);
+            writable.replace(newCommentNode);
+            setTimeout(() => {
+              submitComment(newComment);
+            });
+          } else {
+            console.log('cannot assign');
+          }
+        } else {
+          const commentNode = blackoutNode.getParent();
+          if ($isCommentNode(commentNode) && commentNode.getComments().find((item) => PERMISSION_TASK.includes(item.task))) {
+            console.log('reassign');
+            const writable = commentNode.getWritable();
+            const newCommentNode = $createCommentNode('editor-comment', [newComment, ...writable.getComments()], [commentor._id]);
+            const children = writable.getChildren();
+            for (let i = 0; i < children.length; i += 1) newCommentNode.append(children[i]);
+            writable.replace(newCommentNode);
+          } else {
+            let wrapCommentNode = $createCommentNode('editor-comment', [newComment], [commentor._id]);
+            const writable = blackoutNode.getWritable();
+
+            if (!wrapCommentNode.isAttached()) {
+              writable.insertBefore(wrapCommentNode);
+            }
+            wrapCommentNode.append(writable);
+          }
+          setTimeout(() => {
+            submitComment(newComment);
+          });
+        }
+      } else {
+        console.log('NO');
+      }
+    }, // eslint-disable-next-line react-hooks/exhaustive-deps
+    [editor]
   );
 
   const filterComment = useCallback(
@@ -503,18 +566,19 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
   );
 
   const handleOpenCommentDlg = useCallback(
-    (nodeKey) => {
+    ({ e, nodeKey }) => {
       const _commentNode = $getNodeByKey(nodeKey);
-      const filteredComments = _commentNode.getComments()?.filter((comment) => comment.commentor._id === CommentNode.__currentUser);
-      if (isBlackedOutNode(_commentNode, user) && isEmpty(filteredComments)) {
-        setActiveRect({ top: undefined, left: undefined });
-        return false;
-      }
-      // ! @topbot 2023/09/11 #filter comments created by current user if blacked out
-      const _comments = isBlackedOutNode(_commentNode, user) ? filteredComments : _commentNode.getComments();
-      //  show comment
-      setComments(
-        _comments
+      let blackoutList = [];
+      let _comments = [];
+      if (_commentNode.getComments().find((item) => PERMISSION_TASK.includes(item.task))) {
+        const childNode = _commentNode.getFirstChild();
+        if ($isBlackoutNode(childNode)) blackoutList = childNode.__users;
+        else return;
+        _comments = _commentNode.getComments()?.filter((comment) => comment.commentor._id === user || blackoutList.includes(user));
+        setCanRemove(childNode.getUser());
+      } else {
+        _comments = _commentNode
+          .getComments()
           .filter(
             (item) =>
               users.find((u) => u._id === item.assignee) &&
@@ -526,9 +590,11 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
               me.team === item.commentor.team || item.commentor.leader
                 ? item.commentor
                 : leaders.find((_item) => _item.team === item.commentor.team && _item.leader) || item.commentor
-          }))
-      );
-      // check suppressedComments in localstorage and do update
+          }));
+        setCanRemove(null);
+      }
+      if (_comments.length === 0) return;
+      setComments(_comments);
       const storedValue = window.localStorage.getItem('suppressedComments');
       let suppressedUniqueIds = storedValue === null ? [] : JSON.parse(storedValue);
       setSuppressedComments(suppressedUniqueIds);
@@ -539,45 +605,63 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
       setActiveReplyIndex(0);
       clearTimeout(floatTimeOut);
       setIsOnFab(true);
+
       let doc = document.documentElement;
       let left = (window.scrollX || doc.scrollLeft) - (doc.clientLeft || 0);
       let top = (window.scrollY || doc.scrollTop) - (doc.clientTop || 0);
-
-      const domRange = nativeSel.getRangeAt(0);
-      const SelectedRects = domRange.getClientRects();
-      if (SelectedRects.length === 1) {
-        // let rect = SelectedRects[0];
-        setActiveRect({
-          top: window.innerHeight + top - 350, //min([max([top + 35 * comments.length, rect.top - 200 + top]), window.innerHeight + top - 300]),
-          left: window.innerWidth + left - 250 //max([min([rect.left + rect.width + left, window.innerWidth + left - 300]), left])
-        });
-      } else {
-        setIsOnFab(false);
-      }
+      setActiveRect({
+        top: min([max([top + 35 * comments.length, e.clientY + top]), window.innerHeight + top - 300]),
+        left: max([min([e.clientX + left, window.innerWidth + left - 300]), left])
+      });
     },
-    [leaders, me, nativeSel, setSuppressedComments, user, users]
+    [leaders, me, setSuppressedComments, user, users, comments]
+  );
+
+  const handleSetCommentUnSupressed = useCallback(
+    ({ nodeKey }) => {
+      const _blackoutNode = $getNodeByKey(nodeKey);
+      const _commentNode = _blackoutNode.getParent();
+      const _comments = _commentNode.getComments();
+      const storedValue = window.localStorage.getItem('suppressedComments');
+      let suppressedUniqueIds = storedValue === null ? [] : JSON.parse(storedValue);
+      suppressedUniqueIds = not(
+        suppressedUniqueIds,
+        _comments.map((value) => value.uniqueId)
+      );
+      window.localStorage.setItem('suppressedComments', JSON.stringify(suppressedUniqueIds));
+      setSuppressedComments(suppressedUniqueIds);
+    },
+    [setSuppressedComments]
   );
 
   useEffect(() => {
     return mergeRegister(
       editor.registerUpdateListener(({ editorState }) => {
         editorState.read(() => {
-          updateState();
+          updateState(); //xx make show comment event
         });
       }),
       editor.registerCommand(
         SELECTION_CHANGE_COMMAND,
         // eslint-disable-next-line no-unused-vars
         (_payload, _newEditor) => {
-          updateState();
+          updateState(); //xx make show comment event
           return false;
         },
         EditorPriority
       ),
       editor.registerCommand(
         MOUSE_ENTER_COMMAND,
-        (nodeKey) => {
-          handleOpenCommentDlg(nodeKey);
+        (_payload) => {
+          handleOpenCommentDlg(_payload);
+          return false;
+        },
+        EditorPriority
+      ),
+      editor.registerCommand(
+        MOUSE_ENTER_BLACKOUT_NODE,
+        (_payload) => {
+          handleSetCommentUnSupressed(_payload);
           return false;
         },
         EditorPriority
@@ -625,7 +709,8 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
       editor.registerCommand(
         SET_COMMENT_COMMAND,
         (payload) => {
-          setComment(payload);
+          if (PERMISSION_TASK.includes(payload.task)) setPermissionComment(payload);
+          else setComment(payload);
           return true;
         },
         EditorPriority
@@ -689,6 +774,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
   const handleClickApprove = (event) => {
     setAnchorElApprove(event.currentTarget);
   };
+
   const handleCloseApprove = (value, _comment) => {
     if (value) {
       handleSetStatusComment(_comment, value);
@@ -769,8 +855,13 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                             borderBottom: '1px solid #fafafb'
                           }}
                         >
-                          To: {[...users, ACTION_REQUEST_USER].find((user) => user._id === _comment.assignee)?.name}, Action:{' '}
-                          {_comment.task}
+                          {!PERMISSION_TASK.includes(_comment.task) && (
+                            <>
+                              To: {[...users, ACTION_REQUEST_USER].find((user) => user._id === _comment.assignee)?.name}
+                              <br />
+                            </>
+                          )}
+                          Action: {_comment.task}
                         </h3>
                         <Tooltip title="View Replies">
                           <IconButton
@@ -859,8 +950,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                           <ReplyIcon color="success" />
                         </IconButton>
                       </Tooltip>
-                      {/* require review/approve button */}
-                      {(user === _comment.commentor._id || user === _comment.assignee) && (
+                      {!PERMISSION_TASK.includes(_comment.task) && (user === _comment.commentor._id || user === _comment.assignee) && (
                         <>
                           <Tooltip
                             title={
@@ -954,7 +1044,9 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                           </Menu>
                         </>
                       )}
-                      {user === _comment.commentor._id && <RemoveCommentBtn comment={_comment} handleRemoveComment={handleRemoveComment} />}
+                      {(user === _comment.commentor._id || (PERMISSION_TASK.includes(_comment.task) && canRemove === user)) && (
+                        <RemoveCommentBtn comment={_comment} handleRemoveComment={handleRemoveComment} />
+                      )}
                     </Grid>
                   </Grid>
                   {replyShow[_index] && (
@@ -990,7 +1082,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                                   {_reply['content']}
                                 </Typography>
                                 <Typography variant="body2" sx={{ mb: 1.5 }} color="text.secondary">
-                                  <strong>From {isBlackedOut ? 'XXX' : users.find((user) => user._id === _reply['replier'])?.name}</strong>{' '}
+                                  <strong>From {isBlackedOut ? '***' : users.find((user) => user._id === _reply['replier'])?.name}</strong>{' '}
                                   {new Date(_reply['date']).toLocaleString()}
                                 </Typography>
                               </Box>
@@ -1049,3 +1141,7 @@ CommentPlugin.propTypes = {
   user: PropTypes.string,
   uniqueId: PropTypes.any
 };
+
+/**
+if (_commentNode.__comment.find((item) => PERMISSION_TASK.includes(item.task))) return;
+ */
