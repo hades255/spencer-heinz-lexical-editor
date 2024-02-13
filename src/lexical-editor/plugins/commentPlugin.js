@@ -930,7 +930,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                         </IconButton>
                       </Tooltip>
                       {/* reassign button */}
-                      <ReassignButton users={users} me={me} />
+                      {!PERMISSION_TASK.includes(_comment.task) && <ReassignButton users={users} me={me} />}
                       {/* reply button */}
                       <Tooltip title="Reply" placement="top" arrow>
                         <IconButton

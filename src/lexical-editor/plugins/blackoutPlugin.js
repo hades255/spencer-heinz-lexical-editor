@@ -13,6 +13,8 @@ import { $isLockNode, isLockedNode } from 'lexical-editor/nodes/lockNode';
 import { openSnackbar } from 'store/reducers/snackbar';
 import { dispatch } from 'store';
 import { useSelector } from 'store';
+import { PERMISSION_TASK } from 'lexical-editor/utils/constants';
+import axiosServices from 'utils/axios';
 
 const EditorPriority = 1;
 export const BLACK_OUT_COMMAND = createCommand('BLACK_OUT_COMMAND');
@@ -210,14 +212,36 @@ export const BlackoutPlugin = ({ user }) => {
         const parent = node.getParent();
         if (($isBlackoutNode(parent) || $isBlackoutNode(node)) && !$isRangeSelected(selection)) {
           const _blackoutNode = $isBlackoutNode(parent) ? parent : node;
-          const writable = _blackoutNode.getWritable();
-          const children = writable.getChildren();
-          for (let i = 0; i < children.length; i += 1) {
-            if (!$isCommentNode(children[i]) || children[i].getTextContent() !== '🖐') {
-              writable.insertBefore(children[i]);
+          const parentNode = _blackoutNode.getParent();
+          if ($isCommentNode(parentNode) && parentNode.getComments().find((item) => PERMISSION_TASK.includes(item.task))) {
+            //xx remove permission request comment when remove blackout node
+            (async () => {
+              try {
+                const ids = parentNode.getComments().map((item) => item.uniqueId);
+                await axiosServices.delete('/task/uniqueIds/' + ids);
+              } catch (error) {
+                console.log(error);
+              }
+            })();
+            const writable_ = parentNode.getWritable();
+            const writable = _blackoutNode.getWritable();
+            const children = writable.getChildren();
+            for (let i = 0; i < children.length; i += 1) {
+              if (!$isCommentNode(children[i]) || children[i].getTextContent() !== '🖐') {
+                writable_.insertBefore(children[i]);
+              }
             }
+            writable_.remove();
+          } else {
+            const writable = _blackoutNode.getWritable();
+            const children = writable.getChildren();
+            for (let i = 0; i < children.length; i += 1) {
+              if (!$isCommentNode(children[i]) || children[i].getTextContent() !== '🖐') {
+                writable.insertBefore(children[i]);
+              }
+            }
+            writable.remove();
           }
-          writable.remove();
         }
       }
       return false;

@@ -235,13 +235,10 @@ export function ActionsPlugin({ user }) {
               if (!validationFlag) {
                 editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
                 if ($isCommentNode(node)) {
-                  const comments = node.getComments();
-                  let ids = [];
-                  comments.forEach((item) => {
-                    ids.push(item.uniqueId);
-                  });
                   (async () => {
                     try {
+                      const comments = node.getComments();
+                      const ids = comments.map((item) => item.uniqueId);
                       await axiosServices.delete('/task/uniqueIds/' + ids);
                     } catch (error) {
                       console.log(error);
