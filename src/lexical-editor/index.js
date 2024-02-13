@@ -43,6 +43,8 @@ import { JumpNode } from './nodes/jumpNode';
 import { JumpPlugin } from './plugins/jumpPlugin';
 import ActiveTeamPlugin from './plugins/activeTeamPlugin';
 import FocusPlugin from './plugins/focusPlugin';
+import { JsontagNode } from './nodes/jsontagNode';
+import { JsontagPlugin, TOUCH_JSONTAG_NODE } from './plugins/jsontagPlugin';
 
 // set excluded properties for collab
 const excludedProperties = new Map();
@@ -61,6 +63,7 @@ const LexicalEditor = ({ uniqueId, user }) => {
 
   useEffect(() => {
     CustomTextNode.setCurrentUser(user._id);
+    JsontagNode.setCurrentUser(user._id);
   }, [user]);
 
   const handleProvider = useCallback(
@@ -103,6 +106,7 @@ const LexicalEditor = ({ uniqueId, user }) => {
     AutoLinkNode,
     LinkNode,
     CommentNode,
+    JsontagNode,
     LockNode,
     BlackoutNode,
     JumpNode,
@@ -178,7 +182,7 @@ const LexicalEditor = ({ uniqueId, user }) => {
       />
       <NodeEventPlugin
         nodeType={CommentNode}
-        eventType={'mouseenter'} //  fix when mouse over this node, make it selected
+        eventType={'mouseenter'}
         eventListener={(e, editor, nodeKey) => {
           const _commentNode = $getNodeByKey(nodeKey);
           if (!isBlackedOutNode(_commentNode, user._id)) editor.dispatchCommand(MOUSE_ENTER_COMMAND, { e, nodeKey });
@@ -186,7 +190,7 @@ const LexicalEditor = ({ uniqueId, user }) => {
       />
       <NodeEventPlugin
         nodeType={BlackoutNode}
-        eventType={'mouseenter'} //  fix when mouse over this node, make it selected
+        eventType={'mouseenter'}
         eventListener={(e, editor, nodeKey) => {
           const classList = e.target.classList;
           if (
@@ -195,6 +199,13 @@ const LexicalEditor = ({ uniqueId, user }) => {
           ) {
             editor.dispatchCommand(MOUSE_ENTER_BLACKOUT_NODE, { e, nodeKey });
           }
+        }}
+      />
+      <NodeEventPlugin
+        nodeType={JsontagNode}
+        eventType={'click'}
+        eventListener={(e, editor, nodeKey) => {
+          editor.dispatchCommand(TOUCH_JSONTAG_NODE, { e, nodeKey });
         }}
       />
       <ToolbarPlugin user={user} filteredUser={filteredUser} />
@@ -239,6 +250,7 @@ const LexicalEditor = ({ uniqueId, user }) => {
       <LockPlugin user={user._id} />
       <BlackoutPlugin user={user._id} />
       <JumpPlugin />
+      <JsontagPlugin />
       <ActiveTeamPlugin />
       <FocusPlugin user={user._id} />
     </LexicalComposer>

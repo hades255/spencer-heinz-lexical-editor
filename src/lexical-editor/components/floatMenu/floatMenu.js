@@ -5,6 +5,7 @@ import { inRange, isUndefined } from 'lodash';
 import DropDownMenu from '../../components/floatMenu/dropdown';
 import PropTypes from 'prop-types';
 import DownloadDropdownMenu from './download';
+import JsontagDropdown from './jsontag';
 
 let setPosTimeout = 0;
 
@@ -169,7 +170,8 @@ const FloatMenu = ({ show, ...props }) => {
           pos={pos}
           currentUser={props.currentUser}
         />
-        <DownloadDropdownMenu setIsDropDownActive={props.setIsDropDownActive} setStep={setStep} pos={pos} />
+        <DownloadDropdownMenu setIsDropDownActive={props.setIsDropDownActive} isDropDownActive={props.isDropDownActive} pos={pos} />
+        <JsontagDropdown setIsDropDownActive={props.setIsDropDownActive} isDropDownActive={props.isDropDownActive} pos={pos} />
       </Box>
     </>
   );

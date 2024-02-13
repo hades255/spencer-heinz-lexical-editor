@@ -249,7 +249,7 @@ export const FloatMenuPlugin = () => {
         currentUser={user}
         users={permittedUsers}
       />
-      <FloatDialog
+      <FloatDialog  //xx new comment dialog
         isDialogOpen={isDialogOpen}
         setDialogOpen={handleSetDialogOpen}
         assignee={assignee}

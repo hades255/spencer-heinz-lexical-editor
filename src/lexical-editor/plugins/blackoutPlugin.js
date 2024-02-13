@@ -17,6 +17,7 @@ import { useSelector } from 'store';
 const EditorPriority = 1;
 export const BLACK_OUT_COMMAND = createCommand('BLACK_OUT_COMMAND');
 export const UNBLACK_OUT_COMMAND = createCommand('UNBLACK_OUT_COMMAND');
+
 export const BlackoutPlugin = ({ user }) => {
   const users = useSelector((state) => state.document.users);
   const [editor] = useLexicalComposerContext();
@@ -189,6 +190,7 @@ export const BlackoutPlugin = ({ user }) => {
         wrapBlackoutNode.append(writable);
       });
       // check if all users are selected
+      //todo feedback 114
       if (isEqual(getUserIds(users).sort(), [...not(unlockedUsers, [user]), user].sort())) {
         const children = wrapBlackoutNode.getChildren();
         for (let i = 0; i < children.length; i += 1) wrapBlackoutNode.insertBefore(children[i]);

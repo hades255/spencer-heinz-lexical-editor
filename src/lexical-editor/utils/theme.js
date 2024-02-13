@@ -79,7 +79,8 @@ const LexicalTheme = {
   requestPermissionIcon: 'permission-comment',
   requestPermissionIconUntouched: 'permission-comment-untouched',
   inactiveBlackout: 'editor-black-out-inactive',
-  jump: 'editor-jump'
+  jump: 'editor-jump',
+  jsontag: 'editor-jsontag'
 };
 
 export default LexicalTheme;

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import PropType from 'prop-types';
-import { COPY_COMMAND, $getSelection, $isRangeSelection, createCommand } from 'lexical';
+import { COPY_COMMAND, $getSelection, $isRangeSelection, createCommand, $nodesOfType } from 'lexical';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $generateHtmlFromNodes } from '@lexical/html';
 import { mergeRegister } from '@lexical/utils';
@@ -11,6 +11,7 @@ import { $isBlackoutNode } from 'lexical-editor/nodes/blackoutNode';
 import { $isRangeSelected } from 'lexical-editor/utils/$isRangeSelected';
 import { dispatch } from 'store';
 import { openSnackbar } from 'store/reducers/snackbar';
+import { JsontagNode } from 'lexical-editor/nodes/jsontagNode';
 
 const EditorPriority = 1;
 
@@ -170,8 +171,34 @@ export default function FocusPlugin({ user }) {
         ({ type, name }) => {
           if (type === 'json') {
             console.log(editor.toJSON());
-            const data = processJson(editor.toJSON(), user);
+            const data = editor.toJSON(); //processJson(editor.toJSON(), user);
             downloadTextFile(JSON.stringify(data), `Editor-${name}-${Date.now()}.json`);
+          }
+          if (type === 'tags') {
+            const nodes = $nodesOfType(JsontagNode);
+            let data = {};
+            console.log(nodes);
+            nodes.forEach((node) => {
+              if (data[node.__uniqueId]) {
+                data[node.__uniqueId] = {
+                  key: node.__tag,
+                  value: data[node.__uniqueId].value + ' ' + node.getTextContent()
+                };
+              } else {
+                data[node.__uniqueId] = {
+                  key: node.__tag,
+                  value: node.getTextContent()
+                };
+              }
+            });
+            let res = [];
+            console.log(data);
+            for (let key in data) {
+              res.push({
+                [data[key].key]: data[key].value
+              });
+            }
+            downloadTextFile(JSON.stringify(res), `Editor-${name}-${Date.now()}.json`);
           }
           if (type === 'html') {
             const data = $generateHtmlFromNodes(editor);

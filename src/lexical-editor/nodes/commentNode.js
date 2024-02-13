@@ -340,7 +340,7 @@ export class CommentNode extends ElementNode {
 
 function convertCommentElement(domNode) {
   const { className, dataset } = domNode;
-  const node = $createCommentNode(className, JSON.parse(dataset.comments, JSON.parse(dataset.new_or_updated)));
+  const node = $createCommentNode(className, JSON.parse(dataset.comments), JSON.parse(dataset.new_or_updated));
   return {
     node
   };

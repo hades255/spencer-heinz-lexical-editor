@@ -94,7 +94,7 @@ export default function CheckClipboardPermission() {
         </IconButton>
         <Popper
           sx={{
-            zIndex: 999
+            zIndex: 1202
           }}
           open={open}
           anchorEl={anchorRef.current}
