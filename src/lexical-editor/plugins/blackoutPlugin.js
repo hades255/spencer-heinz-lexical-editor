@@ -1,37 +1,63 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { $getSelection, $isParagraphNode, $isRangeSelection, createCommand } from 'lexical';
+import { $getSelection, $isParagraphNode, $isRangeSelection, $nodesOfType, createCommand } from 'lexical';
 import PropTypes from 'prop-types';
-import { useCallback, useEffect } from 'react';
-import { mergeRegister } from '@lexical/utils';
+import { useCallback, useEffect, useMemo } from 'react';
+import { mergeRegister, addClassNamesToElement, removeClassNamesFromElement } from '@lexical/utils';
 import { not } from 'utils/array';
 import { $isRangeSelected } from 'lexical-editor/utils/$isRangeSelected';
-import { getSelectedNode, getUserIds } from './toolbarPlugin';
-import { isEqual } from 'lodash';
+import { getSelectedNode } from './toolbarPlugin';
 import { $createBlackoutNode, $isBlackoutNode, BlackoutNode, isBlackedOutNode } from 'lexical-editor/nodes/blackoutNode';
 import { $isCommentNode } from 'lexical-editor/nodes/commentNode';
 import { $isLockNode, isLockedNode } from 'lexical-editor/nodes/lockNode';
 import { openSnackbar } from 'store/reducers/snackbar';
 import { dispatch } from 'store';
-import { useSelector } from 'store';
 import { PERMISSION_TASK } from 'lexical-editor/utils/constants';
 import axiosServices from 'utils/axios';
+import LexicalTheme from 'lexical-editor/utils/theme';
+import { useSelector } from 'store';
+import { difference, intersection, isEqual } from 'lodash';
 
 const EditorPriority = 1;
 export const BLACK_OUT_COMMAND = createCommand('BLACK_OUT_COMMAND');
 export const UNBLACK_OUT_COMMAND = createCommand('UNBLACK_OUT_COMMAND');
+export const BLACKOUT_CHECK_USERS = createCommand('BLACKOUT_CHECK_USERS');
+
+let lastUsers = [];
 
 export const BlackoutPlugin = ({ user }) => {
-  const users = useSelector((state) => state.document.users);
+  const allUsers = useSelector((state) => state.document.users.map((item) => item._id));
+  const leaders = useSelector((state) => state.document.leaders);
+  const me = useSelector((state) => state.document.me);
+  const users = useMemo(
+    () => [...allUsers, ...leaders.filter((item) => item.team !== me.team).map((item) => item._id)],
+    [allUsers, leaders, me]
+  );
+
   const [editor] = useLexicalComposerContext();
+
   useEffect(() => {
     // set current user when initialized
     BlackoutNode.setCurrentUser(user);
+    BlackoutNode.setAllUser(users);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(
+    () => {
+      //xx sendMessage-check all blackout nodes with new updated
+      if (!isEqual(users, lastUsers)) {
+        console.log('sendmessage', lastUsers, users);
+        editor.dispatchCommand(BLACKOUT_CHECK_USERS, { users });
+        lastUsers = users;
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [users]
+  );
+
   const blackoutContent = useCallback(
     (payload) => {
-      const { users: unlockedUsers } = payload;
+      const { users: unlockedUsers, allusers } = payload;
       const selection = $getSelection();
       const nodes = selection.extract();
       // nodes.forEach((_node) => {
@@ -100,7 +126,11 @@ export const BlackoutPlugin = ({ user }) => {
       const anchorNode = selection.anchor.getNode();
       const focusNode = selection.focus.getNode();
 
-      let wrapBlackoutNode = $createBlackoutNode('editor-black-out', [...not(unlockedUsers, [user]), user], user);
+      // const className = isEqual(getUserIds(users).sort(), [...not(unlockedUsers, [user]), user].sort())
+      //   ? 'editor-black-out-remove-style'
+      //   : 'editor-black-out';
+      // console.log(className);
+      let wrapBlackoutNode = $createBlackoutNode(LexicalTheme.blackout, [...not(unlockedUsers, [user]), user], user, allusers);
 
       let isValid = true;
       // check if orginally have lock node in selection
@@ -140,8 +170,8 @@ export const BlackoutPlugin = ({ user }) => {
         const children = writable.getChildren();
         const selectedFirstIndex = nodes[0].getIndexWithinParent();
         const selectedLastIndex = nodes[nodes.length - 1].getIndexWithinParent();
-        const prevBlackedoutNode = $createBlackoutNode('editor-black-out', writable.getUsers());
-        const nextBlackedoutNode = $createBlackoutNode('editor-black-out', writable.getUsers());
+        const prevBlackedoutNode = $createBlackoutNode('editor-black-out', writable.getUsers(), writable.getUser(), writable.getAllUsers());
+        const nextBlackedoutNode = $createBlackoutNode('editor-black-out', writable.getUsers(), writable.getUser(), writable.getAllUsers());
         for (let i = 0; i < children.length; i += 1) {
           if (i < selectedFirstIndex) {
             prevBlackedoutNode.append(children[i]);
@@ -162,7 +192,7 @@ export const BlackoutPlugin = ({ user }) => {
 
         // check if node is paragraph node or not @topbot 4/9/2023
         if ($isParagraphNode(_node)) {
-          wrapBlackoutNode = $createBlackoutNode('editor-black-out', [...not(unlockedUsers, [user]), user]);
+          wrapBlackoutNode = $createBlackoutNode('editor-black-out', [...not(unlockedUsers, [user]), user], user, allusers);
           return false;
         }
         if ($isLockNode(writable.getParent()) || $isCommentNode(writable.getParent()) || $isBlackoutNode(writable.getParent())) {
@@ -193,16 +223,36 @@ export const BlackoutPlugin = ({ user }) => {
       });
       // check if all users are selected
       //todo feedback 114
-      if (isEqual(getUserIds(users).sort(), [...not(unlockedUsers, [user]), user].sort())) {
-        const children = wrapBlackoutNode.getChildren();
-        for (let i = 0; i < children.length; i += 1) wrapBlackoutNode.insertBefore(children[i]);
-        wrapBlackoutNode.remove();
-        return false;
-      }
+      // console.log(wrapBlackoutNode);
+      // if (isEqual(getUserIds(users).sort(), [...not(unlockedUsers, [user]), user].sort())) {
+      //   wrapBlackoutNode.__className = 'editor-black-out-remove-style';
+      //   // const children = wrapBlackoutNode.getChildren();
+      //   // for (let i = 0; i < children.length; i += 1) wrapBlackoutNode.insertBefore(children[i]);
+      //   // wrapBlackoutNode.remove();
+      //   return false;
+      // }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [editor]
   );
+
+  const checkAllBlackoutNodesWithUsers = useCallback(({ users: allUsers }) => {
+    const blackoutNodes = $nodesOfType(BlackoutNode);
+    blackoutNodes.forEach((node) => {
+      const writable = node.getWritable();
+      const children = writable.getChildren();
+      const nweBlackoutNode = $createBlackoutNode(LexicalTheme.blackout, writable.getUsers(), writable.getUser(), allUsers);
+      for (let i = 0; i < children.length; i += 1) nweBlackoutNode.append(children[i]);
+      writable.replace(nweBlackoutNode);
+      // const _users = writable.getUsers();
+      // const lastClassName = writable.__className;
+      // if (intersection(allUsers, _users).length === allUsers.length) {
+      //   console.log(lastClassName === LexicalTheme.blackoutNoNeed);
+      // } else {
+      //   console.log(lastClassName === LexicalTheme.blackoutNoNeed);
+      // }
+    });
+  }, []);
 
   const unblackoutContent = useCallback(
     () => {
@@ -273,6 +323,14 @@ export const BlackoutPlugin = ({ user }) => {
           return true;
         },
         EditorPriority
+      ),
+      editor.registerCommand(
+        BLACKOUT_CHECK_USERS,
+        (_payload) => {
+          checkAllBlackoutNodesWithUsers(_payload);
+          return true;
+        },
+        EditorPriority
       )
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -282,6 +340,5 @@ export const BlackoutPlugin = ({ user }) => {
 };
 
 BlackoutPlugin.propTypes = {
-  user: PropTypes.string,
-  users: PropTypes.array
+  user: PropTypes.string
 };

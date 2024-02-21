@@ -279,14 +279,19 @@ export const LockPlugin = ({ user }) => {
       const selection = $getSelection();
       if ($isRangeSelection(selection)) {
         const node = getSelectedNode(selection);
-        const parent = node.getParent();
-        if (($isLockNode(parent) || $isLockNode(node)) && !$isRangeSelected(selection)) {
-          const _lockNode = $isLockNode(parent) ? parent : node;
-          const writable = _lockNode.getWritable();
-          const children = writable.getChildren();
-          for (let i = 0; i < children.length; i += 1) writable.insertBefore(children[i]);
-          writable.remove();
-        }
+        const parents = node.getParents();
+        let unlocked = false;
+        parents.forEach((parent) => {
+          if (unlocked) return;
+          if (($isLockNode(parent) || $isLockNode(node)) && !$isRangeSelected(selection)) {
+            const _lockNode = $isLockNode(parent) ? parent : node;
+            const writable = _lockNode.getWritable();
+            const children = writable.getChildren();
+            for (let i = 0; i < children.length; i += 1) writable.insertBefore(children[i]);
+            writable.remove();
+            unlocked = true;
+          }
+        });
       }
       return false;
     },

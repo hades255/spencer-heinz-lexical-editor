@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import DriveEtaIcon from '@mui/icons-material/DriveEta';
@@ -23,10 +23,10 @@ export default function DropDownMenu({
   pos,
   currentUser
 }) {
-  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isDropDownActive || !pos?.x || !pos?.y) {
       setIsDropDownActive(false);
       setAnchorEl(null);
@@ -34,52 +34,72 @@ export default function DropDownMenu({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDropDownActive, pos?.x, pos?.y]);
 
-  const handleClick = (event) => {
-    if (open) {
-      setAnchorEl(null);
-    } else {
-      setIsDropDownActive(true);
-      setAnchorEl(event.currentTarget);
-    }
-  };
-  const handleClose = () => {
+  const handleClick = useCallback(
+    (event) => {
+      if (open) {
+        setAnchorEl(null);
+      } else {
+        setIsDropDownActive(true);
+        setAnchorEl(event.currentTarget);
+      }
+    },
+    [open, setIsDropDownActive]
+  );
+
+  const handleClose = useCallback(() => {
     setIsDropDownActive(false);
     setAnchorEl(null);
-  };
-  const handleUserClick = (option) => {
-    clearTimeout(timer);
-    setAssignee(option);
-    setStep(1);
-    return false;
-  };
+  }, [setIsDropDownActive]);
 
-  const handleTaskClick = (option) => {
-    if (step < 1 || !assignee) {
-      alert('Please select the user!');
-      window.getSelection().removeAllRanges();
+  const handleUserClick = useCallback(
+    (option) => {
+      clearTimeout(timer);
+      setAssignee(option);
+      setStep(1);
+      return false;
+    },
+    [setAssignee, setStep]
+  );
+
+  const handleTaskClick = useCallback(
+    (option) => {
+      if (step < 1 || !assignee) {
+        alert('Please select the user!');
+        window.getSelection().removeAllRanges();
+        handleClose();
+        return false;
+      }
+
+      setTask(option);
+      setDialogOpen(true);
+      setIsDropDownActive(false);
       handleClose();
       return false;
-    }
+    },
+    [step, assignee, handleClose, setDialogOpen, setIsDropDownActive, setTask]
+  );
 
-    setTask(option);
-    setDialogOpen(true);
-    setIsDropDownActive(false);
-    handleClose();
-    return false;
-  };
+  const handleUserMouseMove = useCallback(
+    (event, option) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        if (isDropDownActive && anchorEl) {
+          handleUserClick(option._id);
+        }
+      }, 200);
+    },
+    [anchorEl, handleUserClick, isDropDownActive]
+  );
 
-  const handleUserMouseMove = (event, option) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      if (isDropDownActive && anchorEl) {
-        handleUserClick(option._id);
-      }
-    }, 200);
-  };
-  const handleTaskEnter = () => {
+  const handleTaskEnter = useCallback(() => {
     clearTimeout(timer);
     return false;
-  };
+  }, []);
+
+  // if (pos) {
+  //   console.log(pos, window.innerHeight);
+  // }
+
   return (
     <div>
       <IconButton
@@ -95,7 +115,7 @@ export default function DropDownMenu({
       <Paper
         sx={{
           position: 'absolute',
-          top: '30px',
+          [pos && pos.y + 200 > window.innerHeight ? 'bottom' : 'top']: '30px',
           display: open && pos?.x && pos?.y ? 'flex' : 'none',
           maxHeight: ITEM_HEIGHT * 4.5,
           overflowY: `auto`,
@@ -129,7 +149,7 @@ export default function DropDownMenu({
       <Paper
         sx={{
           position: 'absolute',
-          top: '30px',
+          [pos && pos.y + 200 > window.innerHeight ? 'bottom' : 'top']: '30px',
           display: assignee && step && open ? 'flex' : 'none',
           maxHeight: ITEM_HEIGHT * 4.5,
           overflowY: `auto`,

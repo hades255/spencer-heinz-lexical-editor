@@ -87,6 +87,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
   const [isBlackedOut, setIsBlackedOut] = useState(false);
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [canRemove, setCanRemove] = useState(null);
+  const [nodeKey, setNodeKey] = useState(null);
   const replyRef = useRef('');
 
   const nativeSel = window.getSelection();
@@ -104,7 +105,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
         left: activeRect.left
       });
     });
-    // set current user of commentNode
+    //xx set current user, team name and team members to the commentNode
     CommentNode.setCurrentUser(user);
     CommentNode.setCurrentTeam(me?.team);
     CommentNode.setUsers(users);
@@ -182,6 +183,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
       const parent = node.getParent();
       if (($isCommentNode(parent) || $isCommentNode(node)) && !$isRangeSelected(selection)) {
         const _commentNode = $isCommentNode(parent) ? parent : node;
+        setNodeKey(_commentNode.__key);
         // !! check this part
         // check if comment node is wraped with black out node let this user out of it.
         // ! @topbot 2023/09/11 #check if comment is created by current user or not
@@ -342,7 +344,6 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
     (payload) => {
       const { assignee, task, user: commentor, commentContent, type } = payload;
 
-      console.log($getPreviousSelection());
       const selection = $getPreviousSelection().clone(); //x cannot read properities of null
       $setSelection(selection);
       const anchorNode = selection.anchor.getNode();
@@ -374,6 +375,8 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
         nodes.forEach((_node) => {
           const node = _node.getLatest();
           // check if parent is lock or black-out
+          //xx check if locked
+          console.log($isLockNode(node.getParent()));
           if ($isLockNode(node.getParent()) || $isBlackoutNode(node.getParent())) {
             if (anchorNode?.getParent() !== focusNode?.getParent() || _node.getParent() !== focusNode?.getParent()) {
               return false;
@@ -420,7 +423,8 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
           // writable.append(newCommentNode);
           // return false;
         }
-        // check if parent is lock or black-out
+        //xx check if parent is lock or black-out
+        console.log('check locked');
         if ($isLockNode(node.getParent()) || $isBlackoutNode(node.getParent())) {
           if (anchorNode?.getParent() !== focusNode?.getParent() || _node.getParent() !== focusNode?.getParent()) {
             return false;
@@ -638,7 +642,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
     return mergeRegister(
       editor.registerUpdateListener(({ editorState }) => {
         editorState.read(() => {
-          updateState(); //xx make show comment event
+          // updateState(); //xx make show comment event
         });
       }),
       editor.registerCommand(
@@ -653,6 +657,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
       editor.registerCommand(
         MOUSE_ENTER_COMMAND,
         (_payload) => {
+          setNodeKey(_payload.nodeKey);
           handleOpenCommentDlg(_payload);
           return false;
         },
@@ -689,6 +694,7 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
         TOUCH_COMMENT_COMMAND,
         // eslint-disable-next-line no-unused-vars
         (_payload, _newEditor) => {
+          setNodeKey(_payload);
           handleTouchComment(_payload);
           return false;
         },
@@ -924,6 +930,9 @@ export default function CommentPlugin({ user, uniqueId: doc }) {
                           onClick={() => {
                             const suppressedUniqueIds = comments.slice(_index).map((value) => value.uniqueId);
                             setSuppressedComments([...not(suppressedComments, suppressedUniqueIds), ...suppressedUniqueIds]);
+                            if (nodeKey) {
+                              editor.dispatchCommand(TOUCH_COMMENT_COMMAND, nodeKey);
+                            }
                           }}
                         >
                           <ZoomOutOutlined />

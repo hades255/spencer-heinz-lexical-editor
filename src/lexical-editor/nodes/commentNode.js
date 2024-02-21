@@ -230,7 +230,7 @@ export class CommentNode extends ElementNode {
 
         // set new or updated flag -> false
         removeClassNamesFromElement(e.target.parentNode, LexicalTheme.suppressedComment);
-        removeClassNamesFromElement(e.target, LexicalTheme.commentIconUnTouched);
+        // removeClassNamesFromElement(e.target, LexicalTheme.commentIconUnTouched);
         addClassNamesToElement(e.target, LexicalTheme.commentIcon);
       });
       IconImage.addEventListener('mouseover', (e) => {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Grid, IconButton, Stack, Typography } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
@@ -51,6 +51,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
 
 const Document = ({ user, document }) => {
   const theme = useTheme();
+  const isMounted = useRef(true);
   const [openDrawer, setOpenDrawer] = useState(true);
   const handleDrawerOpen = useCallback(() => {
     setOpenDrawer((prevState) => !prevState);
@@ -60,6 +61,12 @@ const Document = ({ user, document }) => {
   const [load, setLoad] = useState(false);
   const [showDesc, setShowDesc] = useState(false);
   const blocked = useSelector((state) => state.document.blockTeams.includes(state.document.me?.team));
+
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   const handleShowDescMore = useCallback(() => setShowDesc(!showDesc), [showDesc]);
 
@@ -72,6 +79,7 @@ const Document = ({ user, document }) => {
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
+      // console.log(data);
       switch (data.type) {
         case 'active-team':
           dispatch(setDocActiveTeam(data.active)); //  active status team
@@ -108,12 +116,18 @@ const Document = ({ user, document }) => {
   }, [user, document]);
 
   useEffect(() => {
-    if (socket) {
+    if (socket === null) {
+      console.log('restart socket');
+      handleSetSocket();
+    } else {
       setLoad(true);
-    } else handleSetSocket();
+    }
 
     return () => {
-      if (socket) socket.close();
+      if (!isMounted.current) {
+        console.log('close socket');
+        if (socket) socket.close();
+      }
     };
   }, [socket, handleSetSocket]);
 

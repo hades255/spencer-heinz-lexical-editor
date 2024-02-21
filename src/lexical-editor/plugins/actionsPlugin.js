@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { ClearEditorPlugin } from '@lexical/react/LexicalClearEditorPlugin';
-import { $getNodeByKey, $getRoot, $isParagraphNode, CLEAR_HISTORY_COMMAND, UNDO_COMMAND } from 'lexical';
+import { $getNodeByKey, $getRoot, CLEAR_HISTORY_COMMAND, UNDO_COMMAND } from 'lexical';
 import { useEditorHistoryState } from 'contexts/LexicalEditor';
 import { $isLockNode, LockNode, isLockedNode } from 'lexical-editor/nodes/lockNode';
 import { mergeRegister } from '@lexical/utils';
@@ -19,11 +19,11 @@ export function ActionsPlugin({ user }) {
   const [editor] = useLexicalComposerContext();
   const { historyState } = useEditorHistoryState();
 
-  const [isEditorEmpty, setIsEditorEmpty] = useState(true);
+  // const [isEditorEmpty, setIsEditorEmpty] = useState(true);
 
-  const { undoStack, redoStack } = historyState ?? {};
-  const [hasUndo, setHasUndo] = useState(undoStack?.length !== 0);
-  const [hasRedo, setHasRedo] = useState(redoStack?.length !== 0);
+  const { undoStack } = historyState ?? {};
+  // const [hasUndo, setHasUndo] = useState(undoStack?.length !== 0);
+  // const [hasRedo, setHasRedo] = useState(redoStack?.length !== 0);
 
   const dispatch = useDispatch();
 
@@ -37,39 +37,40 @@ export function ActionsPlugin({ user }) {
   //   });
   //   // eslint-disable-next-line react-hooks/exhaustive-deps
   // }, []);
-  useEffect(
-    function checkEditorEmptyState() {
-      return editor.registerUpdateListener(({ editorState }) => {
-        editorState.read(() => {
-          const root = $getRoot();
-          const children = root.getChildren();
 
-          if (children.length > 1) {
-            setIsEditorEmpty(false);
-            return;
-          }
+  // useEffect(
+  //   function checkEditorEmptyState() {
+  //     return editor.registerUpdateListener(({ editorState }) => {
+  //       editorState.read(() => {
+  //         const root = $getRoot();
+  //         const children = root.getChildren();
 
-          if ($isParagraphNode(children[0])) {
-            setIsEditorEmpty(children[0].getChildren().length === 0);
-          } else {
-            setIsEditorEmpty(false);
-          }
-        });
-      });
-    },
-    [editor]
-  );
+  //         if (children.length > 1) {
+  //           setIsEditorEmpty(false);
+  //           return;
+  //         }
+
+  //         if ($isParagraphNode(children[0])) {
+  //           setIsEditorEmpty(children[0].getChildren().length === 0);
+  //         } else {
+  //           setIsEditorEmpty(false);
+  //         }
+  //       });
+  //     });
+  //   },
+  //   [editor]
+  // );
 
   useEffect(() => {
     return mergeRegister(
-      editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves, tags, ...rest }) => {
+      editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves, tags }) => {
         // Don't update if nothing changed
-        // console.log(dirtyElements, dirtyLeaves);
+        // console.log('change');
         if (dirtyElements.size === 0 && dirtyLeaves.size === 0) return;
         editorState.read(() => {
-          // const selection = $getSelection();
           dirtyLeaves.forEach((_key) => {
             const node = $getNodeByKey(_key);
+            // console.log(node, node.getParent());
             if (!node) {
               return false;
             }
@@ -85,14 +86,20 @@ export function ActionsPlugin({ user }) {
               }
               return false;
             }
-
+            // if (isLockedNode(node, user) || $isLockNode(node)) {
+            //   console.log(dirtyElements.size, dirtyLeaves.size, tags);
+            //   return;
+            // }
+            //  && tags.has('paste')
             if (
               isLockedNode(node, user) ||
               ($isLockNode(node) && !node.isEditable()) ||
               isBlackedOutNode(node, user) ||
               ($isBlackoutNode(node) && !node.isEditable())
             ) {
-              console.log('Not allowed to edit this node.');
+              //todo here must be key of feedback 117
+              //fix why this always happening
+              console.log('Not allowed to edit this node.', undoStack);
               if (!isEmpty(undoStack)) {
                 dispatch(
                   openSnackbar({
@@ -130,10 +137,11 @@ export function ActionsPlugin({ user }) {
           }
           return false;
         }
-        let validationFlag = false;
-        for (const [nodeKey, mutation] of nodeMutations) {
-          if (mutation === 'created' || mutation === 'updated') continue;
-          prevEditorState.read(() => {
+        console.log('lock change', nodeMutations, updateTags);
+        prevEditorState.read(() => {
+          let validationFlag = false;
+          for (const [nodeKey, mutation] of nodeMutations) {
+            if (mutation === 'created' || mutation === 'updated') continue;
             const node = $getNodeByKey(nodeKey);
             if (!node) {
               return false;
@@ -141,25 +149,26 @@ export function ActionsPlugin({ user }) {
             if (isLockedNode(node, user) || ($isLockNode(node) && !node.isEditable())) {
               validationFlag = true;
             }
-          });
-        }
-        if (validationFlag) {
-          console.log('Not allowed to destroy this node.');
-          dispatch(
-            openSnackbar({
-              open: true,
-              message: 'You are not authorized to edit this block of text.',
-              variant: 'alert',
-              alert: {
-                color: 'error'
-              },
-              close: true
-            })
-          );
-          editor.setEditable(false);
-          debouncedUnDo(editor);
-        }
-        return false;
+          }
+          // console.log(validationFlag);
+          if (validationFlag) {
+            console.log('Not allowed to destroy this node.');
+            dispatch(
+              openSnackbar({
+                open: true,
+                message: 'You are not authorized to edit this block of text.',
+                variant: 'alert',
+                alert: {
+                  color: 'error'
+                },
+                close: true
+              })
+            );
+            editor.setEditable(false);
+            debouncedUnDo(editor);
+          }
+          return false;
+        });
       }),
       editor.registerMutationListener(BlackoutNode, (nodeMutations, { updateTags, prevEditorState }) => {
         // !check if other mutated nodes
@@ -212,27 +221,33 @@ export function ActionsPlugin({ user }) {
       }),
       editor.registerMutationListener(CommentNode, (nodeMutations, { updateTags, prevEditorState }) => {
         if (updateTags.has('collaboration')) return false;
-        let nodeKey, mutation, same;
+        let nodeKey, mutation;
+        let same = true;
+        let mutation0 = null;
         for (const [nodeKey_, mutation_] of nodeMutations) {
+          if (!mutation0) mutation0 = mutation_;
           nodeKey = nodeKey_;
-          mutation = mutation || mutation_;
-          same = mutation ? mutation === mutation_ : false;
+          same = same && mutation0 === mutation_;
+          mutation = mutation_;
         }
         // if (updateTags.has('history-merge')) {
         //   console.log('history-merge');
         // }
 
-        let validationFlag = false;
+        prevEditorState.read(() => {
+          let validationFlag = false;
 
-        if (same) {
-          if (mutation === 'destroyed') {
-            prevEditorState.read(() => {
+          if (same || mutation0 === 'updated') {
+            console.log(mutation0, mutation);
+            if (mutation === 'destroyed') {
               const node = $getNodeByKey(nodeKey);
               if (!node) {
                 return false;
               }
               validationFlag = canRemoveCommentNode(node, user);
               if (!validationFlag) {
+                console.log('clear history');
+                //xx clear history when destroy comment so that locked users can remove comment on locked content
                 editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
                 if ($isCommentNode(node)) {
                   (async () => {
@@ -246,30 +261,33 @@ export function ActionsPlugin({ user }) {
                   })();
                 }
               }
-            });
+            }
+            //xx clear history when create comment so that locked users can create comment on locked content
+            if (mutation === 'created') {
+              console.log('clear history');
+              editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
+            }
+            console.log(mutation);
           }
-          // if (mutation === 'created') {
-          //   editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
-          // }
-          console.log(mutation);
-        }
 
-        if (validationFlag) {
-          dispatch(
-            openSnackbar({
-              open: true,
-              message: 'You are not authorized to edit this block of text.',
-              variant: 'alert',
-              alert: {
-                color: 'info'
-              },
-              close: true
-            })
-          );
-          editor.setEditable(false);
-          debouncedUnDo(editor);
-        }
-        return false;
+          if (validationFlag) {
+            console.log('you are not authorized to edit this block of text');
+            dispatch(
+              openSnackbar({
+                open: true,
+                message: 'You are not authorized to edit this block of text.',
+                variant: 'alert',
+                alert: {
+                  color: 'info'
+                },
+                close: true
+              })
+            );
+            editor.setEditable(false);
+            debouncedUnDo(editor);
+          }
+          return false;
+        });
       }),
       editor.registerMutationListener(JumpNode, () => {
         const navList = [];
@@ -294,15 +312,15 @@ export function ActionsPlugin({ user }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor]);
 
-  useEffect(
-    function checkEditorHistoryActions() {
-      return editor.registerUpdateListener(() => {
-        setHasRedo(redoStack?.length !== 0);
-        setHasUndo(undoStack?.length !== 0);
-      });
-    },
-    [editor, undoStack, redoStack]
-  );
+  // useEffect(
+  //   function checkEditorHistoryActions() {
+  //     return editor.registerUpdateListener(() => {
+  //       setHasRedo(redoStack?.length !== 0);
+  //       setHasUndo(undoStack?.length !== 0);
+  //     });
+  //   },
+  //   [editor, undoStack, redoStack]
+  // );
 
   return <>{MandatoryPlugins}</>;
 }

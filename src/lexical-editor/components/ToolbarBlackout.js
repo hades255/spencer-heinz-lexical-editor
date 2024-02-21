@@ -114,7 +114,7 @@ const ToolbarBlackout = ({ user, users, editor, active }) => {
    * @Todo check and reinforce properties should be preserved
    */
   const blackoutNode = () => {
-    editor.dispatchCommand(BLACK_OUT_COMMAND, { users: unlockedUsers });
+    editor.dispatchCommand(BLACK_OUT_COMMAND, { users: unlockedUsers, allusers: getUserIds(users) });
     return false;
   };
 
@@ -134,7 +134,7 @@ const ToolbarBlackout = ({ user, users, editor, active }) => {
             dispatch(
               openSnackbar({
                 open: true,
-                message: 'You do not have the authority to change lock permissions for this block of text.',
+                message: 'You do not have the authority to change blackout permissions for this block of text.',
                 variant: 'alert',
                 alert: {
                   color: 'error'

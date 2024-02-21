@@ -412,3 +412,11 @@
 .editor-jsontag {
   background-color: wheat;
 }
+
+.editor-black-out-remove-style {
+  border: none;
+}
+
+.editor-black-out-remove-style img {
+  display: none;
+}

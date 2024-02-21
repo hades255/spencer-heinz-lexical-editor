@@ -219,6 +219,16 @@ export function isLockedNode(_node, user) {
   return validationFlag;
 }
 
+export function canTouchLockedNode(_node, user) {
+  if ($isLockNode(_node)) {
+    const unlockedUsers = _node.getUsers();
+    if (unlockedUsers.includes(user)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function clickLockBtn() {
   const lockBtn = document.getElementById('lock-btn');
   lockBtn.click();

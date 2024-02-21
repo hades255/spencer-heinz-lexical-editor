@@ -33,7 +33,7 @@ import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
 import { FloatMenuPlugin } from './plugins/floatMenuPlugin';
 import ToolbarPlugin from './plugins/toolbarPlugin';
 import { LockPlugin } from './plugins/lockPlugin';
-import { LockNode } from './nodes/lockNode';
+import { LockNode, canTouchLockedNode, isLockedNode } from './nodes/lockNode';
 import { BlackoutNode, isBlackedOutNode } from './nodes/blackoutNode';
 import { BlackoutPlugin } from './plugins/blackoutPlugin';
 import { EVENT_STATUS } from './utils/constants';
@@ -73,12 +73,12 @@ const LexicalEditor = ({ uniqueId, user }) => {
       permanentUserData.setUserMapping(doc, doc.clientID, user._id);
       yjsDocMap.set(id, doc);
       const serviceToken = window.localStorage.getItem('serviceToken');
-      console.log('connecting to Y server');
+      // console.log('connecting to Y server');
       const provider = new WebsocketProvider(process.env.REACT_APP_YSOCKET_URL || 'ws://192.168.148.86:8000/document/connect', id, doc, {
         params: { token: serviceToken }
       });
       provider.on('status', (event) => {
-        console.log('event.status: ', event.status);
+        // console.log('event.status: ', event.status);
         if (event.status === EVENT_STATUS.CONNECTED) {
           setIsLoading(false);
         }
@@ -172,6 +172,16 @@ const LexicalEditor = ({ uniqueId, user }) => {
 
   return (
     <LexicalComposer initialConfig={config}>
+      <NodeEventPlugin
+        nodeType={LockNode}
+        eventType={'contextmenu'}
+        eventListener={(e, editor, nodeKey) => {
+          const _lockedNode = $getNodeByKey(nodeKey);
+          if (!(canTouchLockedNode(_lockedNode, user._id) && !isLockedNode(_lockedNode, user._id))) {
+            e.preventDefault();
+          }
+        }}
+      />
       <NodeEventPlugin
         nodeType={CommentNode}
         eventType={'click'}

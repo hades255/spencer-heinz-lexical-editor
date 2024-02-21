@@ -76,6 +76,7 @@ const LexicalTheme = {
   inactiveLock: 'editor-lock-inactive',
   blackout: 'editor-black-out',
   blackoutIcon: 'black-out-icon',
+  blackoutNoNeed: 'editor-black-out-remove-style',
   requestPermissionIcon: 'permission-comment',
   requestPermissionIconUntouched: 'permission-comment-untouched',
   inactiveBlackout: 'editor-black-out-inactive',

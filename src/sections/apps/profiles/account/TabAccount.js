@@ -397,6 +397,51 @@ const TabAccount = () => {
             </List>
           </MainCard>
         </Grid>
+        {/* <Grid item xs={12} sm={12}>
+          <MainCard title="Social Login" content={false}>
+            <List sx={{ p: 0 }}>
+              <ListItem divider>
+                <ListItemText
+                  id="switch-list-label-ln"
+                  primary="Login Notifications"
+                  secondary="Notify when login attempted from other place"
+                />
+                <Switch
+                  edge="end"
+                  name="loginNotification"
+                  onChange={handleToggle}
+                  checked={checked.loginNotification}
+                  inputProps={{
+                    'aria-labelledby': 'switch-list-label-ln'
+                  }}
+                />
+              </ListItem>
+              <ListItem divider>
+                <ListItemText
+                  id="switch-list-label-sh"
+                  primary="Secure Searching"
+                  secondary="Don't show you when others searching in document"
+                />
+                <Switch
+                  edge="end"
+                  name="hide"
+                  onChange={handleToggle}
+                  checked={checked.hide}
+                  inputProps={{
+                    'aria-labelledby': 'switch-list-label-sh'
+                  }}
+                />
+              </ListItem>
+              <ListItem divider>
+                <ListItemText id="switch-list-label-sh" primary="Sign in method" secondary="Set how you can sign in" />
+                <Select value={checked.loginMethod} onChange={handleLoginMethodChange}>
+                  <MenuItem value={'password'}>Password</MenuItem>
+                  <MenuItem value={'google'}>Google</MenuItem>
+                </Select>
+              </ListItem>
+            </List>
+          </MainCard>
+        </Grid> */}
         <Box ref={refTabPassword} />
         <TabPassword />
         <DeleteAccount />
