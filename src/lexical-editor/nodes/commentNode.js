@@ -365,6 +365,7 @@ export function isCommentNode(_node, user) {
 export function canRemoveCommentNode(_node, user) {
   if ($isCommentNode(_node)) {
     const __comments = _node.getComments();
+    if (__comments.find((item) => PERMISSION_TASK.includes(item.task))) return false;
     let flag = false;
     __comments.forEach((comment) => {
       if (comment.commentor._id !== user) flag = true;

@@ -2,7 +2,7 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import { $getSelection, $isParagraphNode, $isRangeSelection, $nodesOfType, createCommand } from 'lexical';
 import PropTypes from 'prop-types';
 import { useCallback, useEffect, useMemo } from 'react';
-import { mergeRegister, addClassNamesToElement, removeClassNamesFromElement } from '@lexical/utils';
+import { mergeRegister } from '@lexical/utils';
 import { not } from 'utils/array';
 import { $isRangeSelected } from 'lexical-editor/utils/$isRangeSelected';
 import { getSelectedNode } from './toolbarPlugin';
@@ -15,7 +15,7 @@ import { PERMISSION_TASK } from 'lexical-editor/utils/constants';
 import axiosServices from 'utils/axios';
 import LexicalTheme from 'lexical-editor/utils/theme';
 import { useSelector } from 'store';
-import { difference, intersection, isEqual } from 'lodash';
+import { isEqual } from 'lodash';
 
 const EditorPriority = 1;
 export const BLACK_OUT_COMMAND = createCommand('BLACK_OUT_COMMAND');
@@ -46,7 +46,6 @@ export const BlackoutPlugin = ({ user }) => {
     () => {
       //xx sendMessage-check all blackout nodes with new updated
       if (!isEqual(users, lastUsers)) {
-        console.log('sendmessage', lastUsers, users);
         editor.dispatchCommand(BLACKOUT_CHECK_USERS, { users });
         lastUsers = users;
       }
@@ -259,9 +258,14 @@ export const BlackoutPlugin = ({ user }) => {
       const selection = $getSelection();
       if ($isRangeSelection(selection)) {
         const node = getSelectedNode(selection);
-        const parent = node.getParent();
-        if (($isBlackoutNode(parent) || $isBlackoutNode(node)) && !$isRangeSelected(selection)) {
-          const _blackoutNode = $isBlackoutNode(parent) ? parent : node;
+        let _blackoutNode = null;
+        if ($isBlackoutNode(node)) _blackoutNode = node;
+        else {
+          node.getParents().forEach((item) => {
+            if (_blackoutNode === null && $isBlackoutNode(item)) _blackoutNode = item;
+          });
+        }
+        if (_blackoutNode && $isBlackoutNode(_blackoutNode) && !$isRangeSelected(selection)) {
           const parentNode = _blackoutNode.getParent();
           if ($isCommentNode(parentNode) && parentNode.getComments().find((item) => PERMISSION_TASK.includes(item.task))) {
             //xx remove permission request comment when remove blackout node
