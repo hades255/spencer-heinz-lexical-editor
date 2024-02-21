@@ -2,7 +2,7 @@ import { $isElementNode, ElementNode } from 'lexical';
 import { addClassNamesToElement } from '@lexical/utils';
 import LexicalTheme from '../utils/theme';
 import LockIcon from '../styles/lock.svg';
-import { debounce } from 'lodash';
+import { debounce, intersection } from 'lodash';
 
 /**
  * @class lock element node class
@@ -12,6 +12,8 @@ export class LockNode extends ElementNode {
   __className;
   /** @internal users unlocked for this block of content*/
   __users;
+  /** @internal users can access this block of text*/
+  static __allusers;
   /** @internal user who locked this block of text*/
   __locker;
   /** @internal timestamp locked*/
@@ -29,6 +31,11 @@ export class LockNode extends ElementNode {
 
   static setCurrentUser(_user) {
     LockNode.__currentUser = _user;
+    return false;
+  }
+
+  static setAllUsers(__allusers) {
+    LockNode.__allusers = __allusers;
     return false;
   }
 
@@ -54,6 +61,11 @@ export class LockNode extends ElementNode {
   getUsers() {
     const node = this.getLatest();
     return node.__users;
+  }
+
+  getAllUsers() {
+    const node = this.getLatest();
+    return node.__allusers;
   }
 
   getLocker() {
@@ -110,6 +122,10 @@ export class LockNode extends ElementNode {
     });
     addClassNamesToElement(IconImage, LexicalTheme.lockIcon);
     span.appendChild(IconImage);
+    console.log(LockNode.__allusers, this.__users);
+    if (LockNode.__allusers && intersection(LockNode.__allusers, this.__users).length === LockNode.__allusers.length) {
+      addClassNamesToElement(span, LexicalTheme.lockNoNeed);
+    }
     return span;
   }
 

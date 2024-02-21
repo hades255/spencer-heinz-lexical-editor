@@ -47,11 +47,12 @@ const ToolbarLock = ({ user, users, editor, active }) => {
           .getParents()
           .reverse()
           .find((parent) => $isLockNode(parent) && !parent.getUsers()?.includes(user._id));
+        const initUser = _lockNode.getLocker();
         const _unlockedUsers = _lockNode.getUsers();
-        const _lockedUsers = getUserIds(users).filter((value) => _unlockedUsers?.indexOf(value) === -1);
+        const _lockedUsers = getUserIds(users).filter((value) => value !== initUser && _unlockedUsers?.indexOf(value) === -1);
         setLockedUsers(_lockedUsers);
-        setUnlockedUsers(not(getUserIds(users), _lockedUsers));
-        locker.current = users.find((_user) => _user._id === _lockNode.getLocker())?.name;
+        setUnlockedUsers(not(getUserIds(users), initUser === user ? _lockedUsers : [..._lockedUsers, initUser]));
+        locker.current = users.find((_user) => _user._id === initUser)?.name;
         timestamp.current = _lockNode.getTimestamp();
         setIsLocked(true);
       } else {

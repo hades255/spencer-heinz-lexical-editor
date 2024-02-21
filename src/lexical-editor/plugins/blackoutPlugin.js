@@ -38,7 +38,6 @@ export const BlackoutPlugin = ({ user }) => {
   useEffect(() => {
     // set current user when initialized
     BlackoutNode.setCurrentUser(user);
-    BlackoutNode.setAllUser(users);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -72,6 +72,7 @@ const LexicalTheme = {
   commentIcon: 'comment-icon',
   commentIconUnTouched: 'comment-icon-untouched',
   lock: 'editor-lock',
+  lockNoNeed: 'editor-lock-remove-stype',
   lockIcon: 'lock-icon',
   inactiveLock: 'editor-lock-inactive',
   blackout: 'editor-black-out',

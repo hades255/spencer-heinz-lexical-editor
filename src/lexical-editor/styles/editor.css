@@ -420,3 +420,12 @@
 .editor-black-out-remove-style img {
   display: none;
 }
+
+.editor-lock-remove-stype {
+  border: none;
+  color: black;
+}
+
+.editor-lock-remove-style img {
+  display: none;
+}

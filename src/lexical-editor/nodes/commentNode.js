@@ -124,7 +124,7 @@ export class CommentNode extends ElementNode {
   addNewOrUpdated(_user) {
     const writable = this.getWritable();
     if (!this.isTouched()) {
-      writable.__newOrUpdated.unshift(_user);
+      if (!writable.__newOrUpdated.includes(_user)) writable.__newOrUpdated.unshift(_user);
     }
     return writable;
   }

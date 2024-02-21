@@ -1,7 +1,7 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $getSelection, $isParagraphNode, $isRangeSelection, createCommand } from 'lexical';
 import PropTypes from 'prop-types';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { mergeRegister } from '@lexical/utils';
 import { $createLockNode, $isLockNode, LockNode, isLockedNode } from 'lexical-editor/nodes/lockNode';
 import { not } from 'utils/array';
@@ -19,13 +19,23 @@ export const LOCK_COMMAND = createCommand('LOCK_COMMAND');
 export const UNLOCK_COMMAND = createCommand('UNLOCK_COMMAND');
 
 export const LockPlugin = ({ user }) => {
-  const users = useSelector((state) => state.document.users);
+  const allUsers = useSelector((state) => state.document.users.map((item) => item._id));
+  const leaders = useSelector((state) => state.document.leaders);
+  const me = useSelector((state) => state.document.me);
+  const users = useMemo(
+    () => [...allUsers, ...leaders.filter((item) => item.team !== me.team).map((item) => item._id)],
+    [allUsers, leaders, me]
+  );
+
   const [editor] = useLexicalComposerContext();
+
   useEffect(() => {
-    // set current user when initialized
     LockNode.setCurrentUser(user);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user]);
+
+  useEffect(() => {
+    LockNode.setAllUsers(users);
+  }, [users]);
 
   const lockContent = useCallback(
     (payload) => {
@@ -263,12 +273,12 @@ export const LockPlugin = ({ user }) => {
         wrapLockNode.append(writable);
       });
       // check if all users are selected
-      if (isEqual(getUserIds(users).sort(), [...not(unlockedUsers, [user]), user].sort())) {
-        const children = wrapLockNode.getChildren();
-        for (let i = 0; i < children.length; i += 1) wrapLockNode.insertBefore(children[i]);
-        wrapLockNode.remove();
-        return false;
-      }
+      // if (isEqual(getUserIds(users).sort(), [...not(unlockedUsers, [user]), user].sort())) {
+      //   const children = wrapLockNode.getChildren();
+      //   for (let i = 0; i < children.length; i += 1) wrapLockNode.insertBefore(children[i]);
+      //   wrapLockNode.remove();
+      //   return false;
+      // }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [editor]
@@ -331,6 +341,5 @@ export const LockPlugin = ({ user }) => {
 };
 
 LockPlugin.propTypes = {
-  user: PropTypes.string,
-  users: PropTypes.array
+  user: PropTypes.string
 };
